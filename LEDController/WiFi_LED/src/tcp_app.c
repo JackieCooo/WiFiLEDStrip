@@ -21,8 +21,9 @@ static void tcp_event_handler(tcp_event_base_t base, tcp_event_id_t id, void* pa
     {
         if (id == TCP_SERVER_RECEIVED_DATA)
         {
-            uint8_t* buf = (uint8_t*)param;
-            xQueueSend(data_received, buf, portMAX_DELAY);  // 发送至任务队列
+            // ESP_LOGI(TAG, "Sending LED message");
+            xQueueSend(data_received, param, portMAX_DELAY);  // 发送至任务队列
+            // ESP_LOGI(TAG, "LED message sent");
         }
     }
 }
@@ -130,12 +131,11 @@ static void tcp_server_task(void* param)
     int keepInterval = KEEPALIVE_INTERVAL;
     int keepCount = KEEPALIVE_COUNT;
     char addr_str[128];
-    uint8_t rx_buffer[16];
+    uint8_t rx_buffer[RX_BUF_SIZE];
+    data_received = xQueueCreate(3, sizeof(rx_buffer));
 
     while(true)
     {
-        data_received = xQueueCreate(1, sizeof(rx_buffer));
-
         ESP_LOGI(TAG, "Socket listening");
 
         struct sockaddr_storage source_addr; // Large enough for both IPv4 or IPv6
@@ -155,7 +155,7 @@ static void tcp_server_task(void* param)
         if (source_addr.ss_family == PF_INET) {
             inet_ntoa_r(((struct sockaddr_in *)&source_addr)->sin_addr, addr_str, sizeof(addr_str) - 1);
         }
-        #ifdef CONFIG_EXAMPLE_IPV6
+        #if (IP_PROTOCOL == 2 || IP_PROTOCOL == 3)
         else if (source_addr.ss_family == PF_INET6) {
             inet6_ntoa_r(((struct sockaddr_in6 *)&source_addr)->sin6_addr, addr_str, sizeof(addr_str) - 1);
         }
@@ -171,12 +171,12 @@ static void tcp_server_task(void* param)
         }
         else {
             ESP_LOGI(TAG, "Received %d bytes", len);
-            tcp_event_handler(TCP_SERVER, TCP_SERVER_RECEIVED_DATA, rx_buffer);
             for (uint8_t i = 0; i < len; i++)
             {
                 printf("%x ", rx_buffer[i]);
             }
             printf("\n");
+            tcp_event_handler(TCP_SERVER, TCP_SERVER_RECEIVED_DATA, (void*)rx_buffer);  // 处理数据接收成功事件
         }
 
         shutdown(sock, 0);

@@ -5,6 +5,10 @@
 #include <string.h>
 #include "esp_log.h"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+
 #include "lwip/err.h"
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
@@ -12,6 +16,7 @@
 
 #define IP_PROTOCOL 1  /* 1. IPV4 2. IPV6 3. IPV4&IPV6*/
 #define TCP_MODE 1  /* 1. 服务端模式 2. 客户端模式 3. 双模模式 */
+#define RX_BUF_SIZE 16  /* 接收缓冲区大小 */
 
 #if (TCP_MODE == 1 || TCP_MODE == 3)
 
