@@ -144,7 +144,7 @@ void lv_port_disp_init(void)
 /*Initialize your display and the required peripherals.*/
 static void disp_init(void)
 {
-	ILI9341_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH);
+	
 }
 
 #if USE_GPU

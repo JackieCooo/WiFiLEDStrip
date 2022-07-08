@@ -530,14 +530,24 @@
               <FilePath>.\User\stm32f10x_it.c</FilePath>
             </File>
             <File>
-              <FileName>usart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\User\usart\usart.c</FilePath>
-            </File>
-            <File>
               <FileName>systick.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\systick\systick.c</FilePath>
+            </File>
+            <File>
+              <FileName>esp8266.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\esp8266\esp8266.c</FilePath>
+            </File>
+            <File>
+              <FileName>esp8266_app.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\esp8266\esp8266_app.c</FilePath>
+            </File>
+            <File>
+              <FileName>usart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\usart\usart.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -213,8 +213,7 @@ void lv_port_indev_init(void)
 /*Initialize your touchpad*/
 static void touchpad_init(void)
 {
-    /*Your code comes here*/
-//	XPT2046_Init();
+	XPT2046_Init();
 }
 
 /*Will be called by the library to read the touchpad*/

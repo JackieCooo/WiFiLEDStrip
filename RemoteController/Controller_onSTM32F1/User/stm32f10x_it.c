@@ -23,6 +23,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h"
 #include "./systick/systick.h"
+#include "./esp8266/esp8266.h"
+#include <stdio.h>
 #include "lvgl.h"
 
 /** @addtogroup STM32F10x_StdPeriph_Template
@@ -154,6 +156,55 @@ void SysTick_Handler(void)
 /*void PPP_IRQHandler(void)
 {
 }*/
+
+/**
+  * @brief  串口3中断处理
+  * @param  None
+  * @retval None
+  */
+void USART3_IRQHandler(void)
+{
+	uint8_t ucCh;
+	
+	if ( USART_GetITStatus ( macESP8266_USARTx, USART_IT_RXNE ) != RESET )
+	{
+		ucCh = USART_ReceiveData( macESP8266_USARTx );
+		
+		if ( strEsp8266_Fram_Record.InfBit.FramLength < ( RX_BUF_MAX_LEN - 1 ) )  // 预留1个字节写结束符
+			strEsp8266_Fram_Record.Data_RX_BUF[ strEsp8266_Fram_Record.InfBit.FramLength++ ] = ucCh;
+	}
+	 	 
+	if ( USART_GetITStatus( macESP8266_USARTx, USART_IT_IDLE ) == SET )  // 数据帧接收完毕
+	{
+		strEsp8266_Fram_Record.InfBit.FramFinishFlag = 1;
+		ucCh = USART_ReceiveData( macESP8266_USARTx );  // 由软件序列清除中断标志位(先读USART_SR，然后读USART_DR)
+		ucTcpClosedFlag = strstr( strEsp8266_Fram_Record.Data_RX_BUF, "CLOSED\r\n" ) ? 1 : 0;  // 获取连接状态
+	}
+}
+
+/**
+  * @brief  串口1中断处理
+  * @param  None
+  * @retval None
+  */
+void USART1_IRQHandler(void)
+{
+	uint8_t ucCh;
+	if ( USART_GetITStatus ( USART1, USART_IT_RXNE ) != RESET )
+	{
+		ucCh  = USART_ReceiveData( USART1 );
+		
+		if ( strUSART_Fram_Record.InfBit.FramLength < ( RX_BUF_MAX_LEN - 1 ) )  // 预留1个字节写结束符
+		{
+			strUSART_Fram_Record.Data_RX_BUF[ strUSART_Fram_Record.InfBit.FramLength++ ]  = ucCh;
+		}
+	}
+	if ( USART_GetITStatus( USART1, USART_IT_IDLE ) == SET )  // 数据帧接收完毕
+	{
+		strUSART_Fram_Record.InfBit.FramFinishFlag = 1;		
+		ucCh = USART_ReceiveData( USART1 );  // 由软件序列清除中断标志位(先读USART_SR，然后读USART_DR)	
+	}	
+}
 
 /**
   * @}

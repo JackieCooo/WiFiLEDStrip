@@ -3,6 +3,7 @@
 
 #include "lvgl.h"
 #include <stdio.h>
+#include "./esp8266/esp8266_app.h"
 
 void interface_init(void);
 
