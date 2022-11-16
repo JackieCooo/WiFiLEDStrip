@@ -334,8 +334,7 @@ void Arduino_ST7789::setRotation(uint8_t m) {
   }
 }
 
-void Arduino_ST7789::setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1,
- uint16_t y1) {
+void Arduino_ST7789::setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
 
   uint16_t x_start = x0 + _xstart, x_end = x1 + _xstart;
   uint16_t y_start = y0 + _ystart, y_end = y1 + _ystart;
@@ -364,6 +363,29 @@ void Arduino_ST7789::pushColor(uint16_t color) {
   spiwrite(color >> 8);
   spiwrite(color);
 
+  CS_HIGH();
+  SPI_END_TRANSACTION();
+}
+
+void Arduino_ST7789::pushColors(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t* colors) {
+  // rudimentary clipping (drawChar w/big text requires this)
+  if((x >= _width) || (y >= _height)) return;
+  if((x + w - 1) >= _width)  w = _width  - x;
+  if((y + h - 1) >= _height) h = _height - y;
+
+  uint32_t n = w * h;
+
+  setAddrWindow(x, y, x+w-1, y+h-1);
+    
+  SPI_BEGIN_TRANSACTION();
+
+  DC_HIGH();
+  CS_LOW();
+  for(uint32_t i = 0; i < n; ++i) {
+      uint8_t hi = colors[i] >> 8, lo = colors[i];
+      spiwrite(hi);
+      spiwrite(lo);
+  }
   CS_HIGH();
   SPI_END_TRANSACTION();
 }
@@ -432,7 +454,7 @@ void Arduino_ST7789::drawFastHLine(int16_t x, int16_t y, int16_t w,
 }
 
 void Arduino_ST7789::fillScreen(uint16_t color) {
-  fillRect(0, 0,  _width, _height, color);
+  fillRect(0, 0, _width, _height, color);
 }
 
 // fill a rectangle

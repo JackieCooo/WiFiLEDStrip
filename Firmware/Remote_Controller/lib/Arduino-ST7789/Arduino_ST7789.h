@@ -98,6 +98,7 @@ class Arduino_ST7789 : public Adafruit_GFX {
 
   void    setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1),
           pushColor(uint16_t color),
+          pushColors(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t* colors),
           fillScreen(uint16_t color),
           drawPixel(int16_t x, int16_t y, uint16_t color),
           drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color),
