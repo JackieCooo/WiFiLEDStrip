@@ -1,32 +1,27 @@
 #include <Arduino.h>
-#include <focaltech.h>
-#include <Wire.h>
 #include <lvgl.h>
 
 #include "display.h"
-
-#define FT6236_SDA 22
-#define FT6236_SCL 21
+#include "indev.h"
+#include "main_gui.h"
 
 Display display;
-FocalTech_Class touch = FocalTech_Class(FT6236_SDA, FT6236_SCL);
-uint16_t x = 0, y = 0;
+Indev indev;
 
 void setup(void) {
   Serial.begin(115200);
   Serial.println("lvgl init");
   lv_init();
   Serial.println("lvgl init done");
-  Serial.println("ST7789 init");
+  Serial.println("display init");
   display.init();
-  Serial.println("ST7789 init done");
-  Serial.println("FT6236 init");
-  touch.begin();
-  Serial.printf("VID: 0x%x, VID1: 0x%x\n", touch.getVendorID(), touch.getVendor1ID());
-  Serial.println("FT6236 init done");
-  Serial.println("example init");
-
-  Serial.println("example init done");
+  Serial.println("display init done");
+  Serial.println("touch init");
+  indev.init();
+  Serial.println("touch init done");
+  Serial.println("gui init");
+  create_main_gui();
+  Serial.println("gui init done");
 }
 
 void loop(void) {
