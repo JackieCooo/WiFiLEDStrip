@@ -1,11 +1,12 @@
-#ifndef _MAIN_GUI_H
-#define _MAIN_GUI_H
+#ifndef LVGL_MAIN_GUI_H
+#define LVGL_MAIN_GUI_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <lvgl.h>
+#include "lvgl.h"
+#include <stdio.h>
 
 void create_main_gui(void);
 
@@ -13,4 +14,4 @@ void create_main_gui(void);
 } /* extern "C" */
 #endif
 
-#endif
+#endif //LVGL_MAIN_GUI_H
