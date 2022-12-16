@@ -15,6 +15,7 @@ static void touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 
     /*Save the pressed coordinates and the state*/
     if(touchpad_is_pressed()) {
+        // Serial.println("Touched");
         touchpad_get_xy(&last_x, &last_y);
         data->state = LV_INDEV_STATE_PR;
     }
@@ -42,22 +43,21 @@ static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y)
     uint16_t t_x, t_y;
     if(touch.getPoint(t_x, t_y))
     {
-        if(t_x >= MY_DISP_HOR_RES || t_y >= MY_DISP_VER_RES)
-        {
-            (*x) = MY_DISP_HOR_RES - t_x;
-            (*y) = MY_DISP_VER_RES - t_y;
+        if (t_x >= MY_DISP_HOR_RES) {
+            t_x = MY_DISP_HOR_RES;
         }
-        else
-        {
-            (*x) = 0;
-            (*y) = 0;
+        if (t_y >= MY_DISP_VER_RES) {
+            t_y = MY_DISP_VER_RES;
         }
+        (*x) = MY_DISP_HOR_RES - t_x;
+        (*y) = MY_DISP_VER_RES - t_y;
     }
     else
     {
         (*x) = 0;
         (*y) = 0;
     }
+    // Serial.printf("x: %d, y: %d\n", *x, *y);
 }
 
 void Indev::init(void)
@@ -65,6 +65,7 @@ void Indev::init(void)
     static lv_indev_drv_t indev_drv;
 
     touch.begin();
+    Serial.printf("VID: 0x%x\n", touch.getVendorID());
 
     /*Register a touchpad input device*/
     lv_indev_drv_init(&indev_drv);

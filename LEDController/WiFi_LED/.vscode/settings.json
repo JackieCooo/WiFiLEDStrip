@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "freertos.h": "c",
-        "portmacro.h": "c",
-        "freertosconfig.h": "c",
-        "esp_task_wdt.h": "c"
-    }
-}
