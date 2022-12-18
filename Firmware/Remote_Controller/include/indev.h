@@ -2,11 +2,10 @@
 #define _INDEV_H
 
 #include <lvgl.h>
-#include <focaltech.h>
-#include <Wire.h>
+#include "CST816D.h"
 
-#define FT6236_SDA 22
-#define FT6236_SCL 21
+#define CST816D_SDA 21
+#define CST816D_SCL 22
 
 class Indev
 {

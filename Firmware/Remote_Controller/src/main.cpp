@@ -7,7 +7,6 @@
 
 Display display;
 Indev indev;
-// FocalTech_Class touch = FocalTech_Class(FT6236_SDA, FT6236_SCL);
 
 void setup(void) {
   Serial.begin(115200);
@@ -33,10 +32,4 @@ void loop(void) {
   lv_task_handler();
   lv_tick_inc(5);
   delay(5);
-  // if (touch.getTouched()) {
-  //   uint16_t x, y;
-  //   touch.getPoint(x, y);
-  //   Serial.printf("x: %d, y: %d\n", x, y);
-  // }
-  // delay(500);
 }

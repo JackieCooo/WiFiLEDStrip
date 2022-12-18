@@ -1,21 +1,33 @@
 #include "display.h"
 
-Arduino_ST7789 screen = Arduino_ST7789(ST7789_DC, ST7789_RST, ST7789_MOSI, ST7789_SCLK, ST7789_CS, ST7789_BLC);
+TFT_eSPI screen = TFT_eSPI();
 
+static void display_init(void);
 static void my_disp_flush(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* color_p);
 
 static void my_disp_flush(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* color_p)
 {
-    uint16_t w = area->x2 - area->x1 + 1;
-    uint16_t h = area->y2 - area->y1 + 1;
-    screen.pushColors(area->x1, area->y1, w, h, (uint16_t*)color_p);
+    uint32_t w = area->x2 - area->x1 + 1;
+    uint32_t h = area->y2 - area->y1 + 1;
+
+    screen.startWrite();
+    screen.setAddrWindow(area->x1, area->y1, w, h);
+    screen.pushColors((uint16_t*)color_p, w*h);
+    screen.endWrite();
 
 	lv_disp_flush_ready(disp);
 }
 
+static void display_init(void) {
+    pinMode(TFT_BLC, OUTPUT);
+    digitalWrite(TFT_BLC, HIGH);
+    screen.init();
+    screen.fillScreen(TFT_BLACK);
+}
+
 void Display::init(void)
 {
-    screen.init();
+    display_init();
 
     // static lv_disp_draw_buf_t draw_buf_dsc_1;
     // static lv_color_t buf_1[MY_DISP_HOR_RES * 10];                          /*A buffer for 10 rows*/

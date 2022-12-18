@@ -244,9 +244,9 @@
     #define LV_LOG_TRACE_INDEV      1
     #define LV_LOG_TRACE_DISP_REFR  1
     #define LV_LOG_TRACE_EVENT      1
-    #define LV_LOG_TRACE_OBJ_CREATE 0
-    #define LV_LOG_TRACE_LAYOUT     0
-    #define LV_LOG_TRACE_ANIM       0
+    #define LV_LOG_TRACE_OBJ_CREATE 1
+    #define LV_LOG_TRACE_LAYOUT     1
+    #define LV_LOG_TRACE_ANIM       1
 
 #endif  /*LV_USE_LOG*/
 

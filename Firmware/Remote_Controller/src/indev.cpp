@@ -1,6 +1,6 @@
 #include "indev.h"
 
-FocalTech_Class touch = FocalTech_Class(FT6236_SDA, FT6236_SCL);
+CST816D_Class touch = CST816D_Class(CST816D_SDA, CST816D_SCL);
 lv_indev_t * indev_touchpad;
 
 static void touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
@@ -49,8 +49,8 @@ static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y)
         if (t_y >= MY_DISP_VER_RES) {
             t_y = MY_DISP_VER_RES;
         }
-        (*x) = MY_DISP_HOR_RES - t_x;
-        (*y) = MY_DISP_VER_RES - t_y;
+        (*x) = t_x;
+        (*y) = t_y;
     }
     else
     {
@@ -65,7 +65,6 @@ void Indev::init(void)
     static lv_indev_drv_t indev_drv;
 
     touch.begin();
-    Serial.printf("VID: 0x%x\n", touch.getVendorID());
 
     /*Register a touchpad input device*/
     lv_indev_drv_init(&indev_drv);
