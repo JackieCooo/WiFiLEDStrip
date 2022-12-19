@@ -1,20 +1,19 @@
 #include <Arduino.h>
+#include <StripController.h>
 
-#include "strip.h"
-
-Strip strip;
+StripController helper;
 
 void setup() {
   Serial.begin(115200);
 
-  strip.init();
-  strip.setMode(MODE_BREATHING);
-  strip.setBreathingPeriod(1000);
-  strip.setColor(255, 0, 0);
-  strip.begin();
+  helper.setMode(MODE_BREATHING);
+  helper.BreathingFeature::setColor(0, 0, 255);
+  helper.BreathingFeature::setDuration(2000);
+  helper.BreathingFeature::setInterval(1000);
+  helper.BreathingFeature::setEase(NeoEase::Linear);
+  helper.begin();
 }
 
 void loop() {
-  strip.routine(5);
-  delay(5);
+  helper.routine();
 }
