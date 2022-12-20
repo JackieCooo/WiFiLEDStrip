@@ -1,19 +1,32 @@
 #include <Arduino.h>
-#include <StripController.h>
+#include <StripHelper.h>
 
-StripController helper;
+StripHelper helper;
+
+NeoPixelAnimator anim(1);
 
 void setup() {
   Serial.begin(115200);
 
-  helper.setMode(MODE_BREATHING);
-  helper.BreathingFeature::setColor(0, 0, 255);
-  helper.BreathingFeature::setDuration(2000);
-  helper.BreathingFeature::setInterval(1000);
-  helper.BreathingFeature::setEase(NeoEase::Linear);
-  helper.begin();
+  // helper.begin();
+  // helper.setMode(MODE_LIGHTBEAM);
+
+  strip.SetPixelColor(0, RgbColor(0, 0, 255));
+  strip.SetPixelColor(1, RgbColor(0, 255, 0));
+  strip.SetPixelColor(2, RgbColor(255, 0, 0));
+
+  AnimUpdateCallback cb = [](const AnimationParam& param) {
+    if (param.state == AnimationState_Completed) {
+      anim.RestartAnimation(param.index);
+      strip.RotateRight(1);
+    }
+  };
+
+  anim.StartAnimation(0, 500, cb);
 }
 
 void loop() {
-  helper.routine();
+  // helper.routine();
+  anim.UpdateAnimations();
+  strip.Show();
 }

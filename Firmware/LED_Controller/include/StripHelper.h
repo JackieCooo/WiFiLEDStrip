@@ -1,26 +1,31 @@
 #pragma once
 
+#include <Arduino.h>
 #include <NeoPixelBus.h>
 #include <BreathingFeature.h>
+#include <NormalFeature.h>
+#include <LightbeamFeature.h>
 
 #include "global_conf.h"
 
 typedef enum {
     MODE_NORMAL,
     MODE_BREATHING,
-    MODE_INTERVAL,
-    MODE_RAINBOW
+    MODE_LIGHTBEAM,
+    MODE_RAINBOW,
+    MODE_NUM
 } strip_mode_t;
 
-class StripController : public BreathingFeature {
+class StripHelper : public BreathingFeature, public NormalFeature, public LightbeamFeature {
 public:
-    StripController();
     void begin(void);
     void routine(void);
     void pause(void);
     void clear(void);
     void setMode(strip_mode_t mode);
     strip_mode_t getMode(void);
+
+    void setColor(uint8_t r, uint8_t g, uint8_t b) override;
 
 private:
     strip_mode_t _mode;
