@@ -3,24 +3,28 @@
 #include <Arduino.h>
 #include <NeoPixelBus.h>
 #include <NeoPixelAnimator.h>
+
 #include "global_conf.h"
+
+#define STAGE_NUM 4
+
+using namespace std;
 
 class BreathingFeature {
 public:
     BreathingFeature();
     void process(void);
     virtual void setColor(uint8_t r, uint8_t g, uint8_t b);
-    void setDuration(uint32_t duration);
-    void setInterval(uint32_t interval);
+    void setDuration(uint16_t duration);
+    virtual void setInterval(uint16_t interval);
     void setEase(AnimEaseFunction ease);
 
 private:
-    const uint8_t _anim_num = 4;
     RgbColor _color;
-    uint32_t _duration;
-    uint32_t _interval;
+    uint16_t _duration;
+    uint16_t _interval;
     AnimEaseFunction _ease;
-    NeoPixelAnimator _animations = NeoPixelAnimator(_anim_num);
+    NeoPixelAnimator _animations = NeoPixelAnimator(STAGE_NUM);
     AnimUpdateCallback _cb;
     uint8_t _stage;
 

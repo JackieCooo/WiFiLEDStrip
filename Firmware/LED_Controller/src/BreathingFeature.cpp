@@ -1,7 +1,7 @@
 #include "BreathingFeature.h"
 
 BreathingFeature::BreathingFeature() {
-    _cb = std::bind(&BreathingFeature::_animUpdateFunc, this, std::placeholders::_1);
+    _cb = bind(&BreathingFeature::_animUpdateFunc, this, placeholders::_1);
     _stage = 0;
 }
 
@@ -20,13 +20,13 @@ void BreathingFeature::_animUpdateFunc(const AnimationParam& param) {
         for (uint16_t pixel = 0; pixel < strip.PixelCount(); pixel++) {
             strip.SetPixelColor(pixel, updatedColor);
         }
+        strip.Show();
     }
 }
 
 void BreathingFeature::process(void) {
     if (_animations.IsAnimating()) {
         _animations.UpdateAnimations();
-        strip.Show();
     }
     else {
         switch (_stage)
@@ -46,7 +46,7 @@ void BreathingFeature::process(void) {
             default:
                 break;
         }
-        _stage = (_stage + 1) % _anim_num;
+        _stage = (_stage + 1) % STAGE_NUM;
     }
 }
 
@@ -54,11 +54,11 @@ void BreathingFeature::setColor(uint8_t r, uint8_t g, uint8_t b) {
     _color = RgbColor(r, g, b);
 }
 
-void BreathingFeature::setDuration(uint32_t duration) {
+void BreathingFeature::setDuration(uint16_t duration) {
     _duration = duration;
 }
 
-void BreathingFeature::setInterval(uint32_t interval) {
+void BreathingFeature::setInterval(uint16_t interval) {
     _interval = interval;
 }
 

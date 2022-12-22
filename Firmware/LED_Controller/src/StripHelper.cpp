@@ -26,6 +26,9 @@ void StripHelper::routine(void) {
     else if (_mode == MODE_LIGHTBEAM) {
         LightbeamFeature::process();
     }
+    else if (_mode == MODE_RAINBOW) {
+        RainbowFeature::process();
+    }
 }
 
 void StripHelper::clear(void) {
@@ -51,5 +54,26 @@ void StripHelper::setColor(uint8_t r, uint8_t g, uint8_t b) {
     }
     else if (_mode == MODE_BREATHING) {
         BreathingFeature::setColor(r, g, b);
+    }
+    else if (_mode == MODE_LIGHTBEAM) {
+        LightbeamFeature::setColor(r, g, b);
+    }
+}
+
+void StripHelper::setInterval(uint16_t interval) {
+    if (_mode == MODE_BREATHING) {
+        BreathingFeature::setInterval(interval);
+    }
+    else if (_mode == MODE_LIGHTBEAM) {
+        LightbeamFeature::setInterval(interval);
+    }
+}
+
+void StripHelper::setSpeed(uint16_t speed) {
+    if (_mode == MODE_LIGHTBEAM) {
+        LightbeamFeature::setSpeed(speed);
+    }
+    else if (_mode == MODE_RAINBOW) {
+        RainbowFeature::setSpeed(speed);
     }
 }

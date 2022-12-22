@@ -65,16 +65,43 @@ void LightbeamFeature::_refreshPattern(void) {
     _pattern.resize(psize);
     
     uint16_t i = 0;
+    NeoGamma<NeoGammaTableMethod> colorGamma;
     if ((_faded_end & FADED_HEAD) && _dir == MOVE_LEFT) {
-        for (uint16_t j = 0; j < _head_len; i++) {
-            
+        HslColor hsl(_color);
+        float offset = hsl.L / (_head_len + 1);
+        hsl.L = 0;
+        for (uint16_t j = 0; j < _head_len; j++) {
+            hsl.L += offset;
+            _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
         }
     }
     else if ((_faded_end & FADED_TAIL) && _dir == MOVE_RIGHT) {
-
+        HslColor hsl(_color);
+        float offset = hsl.L / (_tail_len + 1);
+        hsl.L = 0;
+        for (uint16_t j = 0; j < _tail_len; j++) {
+            hsl.L += offset;
+            _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
+        }
     }
     for (uint16_t j = 0; j < _len; ++j) {
         _pattern[i++] = _color;
+    }
+    if ((_faded_end & FADED_HEAD) && _dir == MOVE_RIGHT) {
+        HslColor hsl(_color);
+        float offset = hsl.L / (_head_len + 1);
+        for (uint16_t j = 0; j < _head_len; j++) {
+            hsl.L -= offset;
+            _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
+        }
+    }
+    else if ((_faded_end & FADED_TAIL) && _dir == MOVE_LEFT) {
+        HslColor hsl(_color);
+        float offset = hsl.L / (_tail_len + 1);
+        for (uint16_t j = 0; j < _tail_len; j++) {
+            hsl.L -= offset;
+            _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
+        }
     }
     for (uint16_t j = 0; j < _interval; ++j) {
         _pattern[i++] = RgbColor(0);

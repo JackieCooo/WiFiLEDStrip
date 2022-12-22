@@ -24,11 +24,11 @@ class LightbeamFeature {
 public:
     LightbeamFeature();
     void process(void);
-    void setColor(uint8_t r, uint8_t g, uint8_t b);
+    virtual void setColor(uint8_t r, uint8_t g, uint8_t b);
     void setLen(uint16_t len);
-    void setInterval(uint16_t interval);
+    virtual void setInterval(uint16_t interval);
     void setDirection(dir_t dir);
-    void setSpeed(uint16_t speed);
+    virtual void setSpeed(uint16_t speed);
     void setFadedEnd(faded_end_t faded_end);
     void setTailLen(uint16_t len);
     void setHeadLen(uint16_t len);
