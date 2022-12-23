@@ -34,3 +34,5 @@ private:
     strip_mode_t _mode;
     bool _displayed;
 };
+
+extern StripHelper stripHandler;

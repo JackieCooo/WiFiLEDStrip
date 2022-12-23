@@ -32,6 +32,14 @@ public:
     void setFadedEnd(faded_end_t faded_end);
     void setTailLen(uint16_t len);
     void setHeadLen(uint16_t len);
+    virtual RgbColor& getColor(void);
+    uint16_t& getLen(void);
+    virtual uint16_t& getInterval(void);
+    dir_t& getDirection(void);
+    virtual uint16_t& getSpeed(void);
+    faded_end_t& getFadedEnd(void);
+    uint16_t& getTailLen(void);
+    uint16_t& getHeadLen(void);
 
 private:
     RgbColor _color;

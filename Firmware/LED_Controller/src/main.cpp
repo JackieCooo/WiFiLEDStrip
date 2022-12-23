@@ -1,16 +1,17 @@
 #include <Arduino.h>
 #include <StripHelper.h>
+#include <ConnectHandler.h>
 
-StripHelper helper;
+#include "global_conf.h"
 
 void setup() {
   Serial.begin(115200);
 
-  helper.begin();
-  helper.setMode(MODE_RAINBOW);
-  helper.setSpeed(8);
+  // stripHandler.begin();
+  connHandler.begin();
 }
 
 void loop() {
-  helper.routine();
+  // stripHandler.routine();
+  connHandler.process();
 }

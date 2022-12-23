@@ -18,6 +18,10 @@ public:
     void setDuration(uint16_t duration);
     virtual void setInterval(uint16_t interval);
     void setEase(AnimEaseFunction ease);
+    virtual RgbColor& getColor(void);
+    uint16_t& getDuartion(void);
+    virtual uint16_t& getInterval(void);
+    AnimEaseFunction getEase(void);
 
 private:
     RgbColor _color;

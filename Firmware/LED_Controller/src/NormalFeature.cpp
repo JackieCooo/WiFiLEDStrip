@@ -12,3 +12,7 @@ void NormalFeature::setColor(uint8_t r, uint8_t g, uint8_t b) {
     }
     strip.Show();
 }
+
+RgbColor& NormalFeature::getColor(void) {
+    return _color;
+}

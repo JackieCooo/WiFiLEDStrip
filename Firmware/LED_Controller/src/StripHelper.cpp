@@ -77,3 +77,5 @@ void StripHelper::setSpeed(uint16_t speed) {
         RainbowFeature::setSpeed(speed);
     }
 }
+
+StripHelper stripHandler;

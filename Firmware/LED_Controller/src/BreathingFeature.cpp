@@ -54,14 +54,30 @@ void BreathingFeature::setColor(uint8_t r, uint8_t g, uint8_t b) {
     _color = RgbColor(r, g, b);
 }
 
+RgbColor& BreathingFeature::getColor(void) {
+    return _color;
+}
+
 void BreathingFeature::setDuration(uint16_t duration) {
     _duration = duration;
+}
+
+uint16_t& BreathingFeature::getDuartion(void) {
+    return _duration;
 }
 
 void BreathingFeature::setInterval(uint16_t interval) {
     _interval = interval;
 }
 
+uint16_t& BreathingFeature::getInterval(void) {
+    return _interval;
+}
+
 void BreathingFeature::setEase(AnimEaseFunction ease) {
     _ease = ease;
+}
+
+AnimEaseFunction BreathingFeature::getEase(void) {
+    return _ease;
 }
