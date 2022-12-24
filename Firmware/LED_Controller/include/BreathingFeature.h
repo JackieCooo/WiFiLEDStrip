@@ -8,6 +8,13 @@
 
 #define STAGE_NUM 4
 
+typedef struct {
+    RgbColor color;
+    uint16_t duration;
+    uint16_t interval;
+    AnimEaseFunction ease;
+} breathing_data_t;
+
 using namespace std;
 
 class BreathingFeature {
@@ -18,10 +25,11 @@ public:
     void setDuration(uint16_t duration);
     virtual void setInterval(uint16_t interval);
     void setEase(AnimEaseFunction ease);
-    virtual RgbColor& getColor(void);
-    uint16_t& getDuartion(void);
-    virtual uint16_t& getInterval(void);
+    virtual RgbColor getColor(void);
+    uint16_t getDuartion(void);
+    virtual uint16_t getInterval(void);
     AnimEaseFunction getEase(void);
+    void setData(breathing_data_t& data);
 
 private:
     RgbColor _color;

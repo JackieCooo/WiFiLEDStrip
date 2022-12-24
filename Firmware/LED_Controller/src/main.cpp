@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <StripHelper.h>
+#include <StripHandler.h>
 #include <ConnectHandler.h>
 
 #include "global_conf.h"
@@ -7,11 +7,11 @@
 void setup() {
   Serial.begin(115200);
 
-  // stripHandler.begin();
+  stripHandler.begin();
   connHandler.begin();
 }
 
 void loop() {
-  // stripHandler.routine();
+  stripHandler.routine();
   connHandler.process();
 }

@@ -26,9 +26,17 @@ void LightbeamFeature::setColor(uint8_t r, uint8_t g, uint8_t b) {
     _refreshPattern();
 }
 
+RgbColor LightbeamFeature::getColor(void) {
+    return _color;
+}
+
 void LightbeamFeature::setLen(uint16_t len) {
     _len = len;
     _refreshPattern();
+}
+
+uint16_t LightbeamFeature::getLen(void) {
+    return _len;
 }
 
 void LightbeamFeature::setInterval(uint16_t interval) {
@@ -36,12 +44,24 @@ void LightbeamFeature::setInterval(uint16_t interval) {
     _refreshPattern();
 }
 
+uint16_t LightbeamFeature::getInterval(void) {
+    return _interval;
+}
+
 void LightbeamFeature::setDirection(dir_t dir) {
     _dir = dir;
 }
 
+dir_t LightbeamFeature::getDirection(void) {
+    return _dir;
+}
+
 void LightbeamFeature::setSpeed(uint16_t speed) {
     _speed = _translateSpeed(speed);
+}
+
+uint16_t LightbeamFeature::getSpeed(void) {
+    return _speed;
 }
 
 void LightbeamFeature::setFadedEnd(faded_end_t faded_end) {
@@ -49,13 +69,37 @@ void LightbeamFeature::setFadedEnd(faded_end_t faded_end) {
     _refreshPattern();
 }
 
+faded_end_t LightbeamFeature::getFadedEnd(void) {
+    return _faded_end;
+}
+
 void LightbeamFeature::setTailLen(uint16_t len) {
     _tail_len = len;
     _refreshPattern();
 }
 
+uint16_t LightbeamFeature::getTailLen(void) {
+    return _tail_len;
+}
+
 void LightbeamFeature::setHeadLen(uint16_t len) {
     _head_len = len;
+    _refreshPattern();
+}
+
+uint16_t LightbeamFeature::getHeadLen(void) {
+    return _head_len;
+}
+
+void LightbeamFeature::setData(lightbeam_data_t& data) {
+    _color = data.color;
+    _len = data.len;
+    _interval = data.interval;
+    _dir = data.dir;
+    _faded_end = data.faded_end;
+    _tail_len = data.tail_len;
+    _head_len = data.head_len;
+    _speed = data.speed;
     _refreshPattern();
 }
 

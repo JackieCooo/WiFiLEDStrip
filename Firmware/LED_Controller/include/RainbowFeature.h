@@ -9,6 +9,10 @@
 
 #define COLOR_GAP 16
 
+typedef struct {
+    uint16_t speed;
+} rainbow_data_t;
+
 using namespace std;
 
 class RainbowFeature {
@@ -16,9 +20,10 @@ public:
     RainbowFeature();
     void process(void);
     virtual void setSpeed(uint16_t speed);
+    virtual uint16_t getSpeed(void);
+    void setData(rainbow_data_t& data);
 
 private:
-    RgbColor _color;
     uint16_t _speed;
     vector<RgbColor> _pattern;
     uint16_t _ref;  // the first pixel's referance to the pattern

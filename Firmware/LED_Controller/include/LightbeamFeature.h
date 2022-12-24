@@ -20,6 +20,17 @@ typedef enum {
     MOVE_LEFT
 } dir_t;
 
+typedef struct {
+    RgbColor color;
+    uint16_t len;
+    uint16_t interval;
+    uint16_t head_len;
+    uint16_t tail_len;
+    faded_end_t faded_end;
+    dir_t dir;
+    uint16_t speed;
+} lightbeam_data_t;
+
 class LightbeamFeature {
 public:
     LightbeamFeature();
@@ -32,14 +43,15 @@ public:
     void setFadedEnd(faded_end_t faded_end);
     void setTailLen(uint16_t len);
     void setHeadLen(uint16_t len);
-    virtual RgbColor& getColor(void);
-    uint16_t& getLen(void);
-    virtual uint16_t& getInterval(void);
-    dir_t& getDirection(void);
-    virtual uint16_t& getSpeed(void);
-    faded_end_t& getFadedEnd(void);
-    uint16_t& getTailLen(void);
-    uint16_t& getHeadLen(void);
+    void setData(lightbeam_data_t& data);
+    virtual RgbColor getColor(void);
+    uint16_t getLen(void);
+    virtual uint16_t getInterval(void);
+    dir_t getDirection(void);
+    virtual uint16_t getSpeed(void);
+    faded_end_t getFadedEnd(void);
+    uint16_t getTailLen(void);
+    uint16_t getHeadLen(void);
 
 private:
     RgbColor _color;

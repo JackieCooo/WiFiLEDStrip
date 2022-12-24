@@ -3,7 +3,6 @@
 RainbowFeature::RainbowFeature() {
     _cb = bind(&RainbowFeature::_animUpdateFunc, this, placeholders::_1);
     _initPattern();
-    _color = RgbColor(0);
     _speed = 0;
 }
 
@@ -18,6 +17,14 @@ void RainbowFeature::process(void) {
 
 void RainbowFeature::setSpeed(uint16_t speed) {
     _speed = _translateSpeed(speed);
+}
+
+uint16_t RainbowFeature::getSpeed(void) {
+    return _speed;
+}
+
+void RainbowFeature::setData(rainbow_data_t& data) {
+    _speed = data.speed;
 }
 
 void RainbowFeature::_animUpdateFunc(const AnimationParam& param) {

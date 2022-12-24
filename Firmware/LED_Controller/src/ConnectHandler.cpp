@@ -36,13 +36,37 @@ void ConnectHandler::_handleRequest(void) {
         Serial.println("Write setting cmd");
         if (p.data.mode == PKG_MODE_NORMAL) {
             Serial.println("Mode: normal");
-            
+            stripHandler.setMode(MODE_NORMAL);
+            normal_data_t data;
+            uint32_t rgb888 = Package::RGB565toRGB888(p.data.settings.normal_setting.color);
+            data.color = (RGB888_R(rgb888), RGB888_G(rgb888), RGB888_B(rgb888));
+            stripHandler.NormalFeature::setData(data);
         }
         else if (p.data.mode == PKG_MODE_BREATHING) {
             Serial.println("Mode: breathing");
+            stripHandler.setMode(MODE_BREATHING);
+            breathing_data_t data;
+            uint32_t rgb888 = Package::RGB565toRGB888(p.data.settings.breathing_setting.color);
+            data.color = RgbColor(RGB888_R(rgb888), RGB888_G(rgb888), RGB888_B(rgb888));
+            data.duration = p.data.settings.breathing_setting.duration;
+            data.interval = p.data.settings.breathing_setting.interval;
+            data.ease = Package::translateEase(p.data.settings.breathing_setting.ease);
+            stripHandler.BreathingFeature::setData(data);
         }
         else if (p.data.mode == PKG_MODE_LIGHTBEAM) {
             Serial.println("Mode: lightbeam");
+            stripHandler.setMode(MODE_LIGHTBEAM);
+            lightbeam_data_t data;
+            uint32_t rgb888 = Package::RGB565toRGB888(p.data.settings.lightbeam_setting.color);
+            data.color = RgbColor(RGB888_R(rgb888), RGB888_G(rgb888), RGB888_B(rgb888));
+            data.interval = p.data.settings.lightbeam_setting.interval;
+            data.len = p.data.settings.lightbeam_setting.len;
+            data.speed = p.data.settings.lightbeam_setting.speed;
+            data.tail_len = p.data.settings.lightbeam_setting.tail_len;
+            data.head_len = p.data.settings.lightbeam_setting.head_len;
+            data.faded_end = p.data.settings.lightbeam_setting.faded_end;
+            data.dir = Package::translateDirection(p.data.settings.lightbeam_setting.dir);
+            stripHandler.LightbeamFeature::setData(data);
         }
         else if (p.data.mode == PKG_MODE_RAINBOW) {
             Serial.println("Mode: rainbow");

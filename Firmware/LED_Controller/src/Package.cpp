@@ -96,7 +96,7 @@ bool Package::parse(uint8_t* buf, uint8_t size) {
     return false;
 }
 
-bool Package::pack(uint8_t* buf, uint8_t size) {
+void Package::pack(uint8_t* buf, uint8_t size) {
     uint8_t i = 0;
 
     buf[i++] = 0xAB;
@@ -168,4 +168,126 @@ uint8_t Package::_calPackSize(void) {
 
     }
     return size;
+}
+
+uint32_t Package::RGB565toRGB888(uint16_t& rgb565) {
+    uint32_t rgb888;
+    uint8_t r = (RGB565_R(rgb565) << 3) + (uint8_t)((rgb565 >> 11) & 0x07);
+    uint8_t g = (RGB565_G(rgb565) << 2) + (uint8_t)((rgb565 >> 5) & 0x03);
+    uint8_t b = (RGB565_B(rgb565) << 3) + (uint8_t)(rgb565 & 0x07);
+    return rgb888 = CONCAT_RGB888(r, g, b);
+}
+
+AnimEaseFunction Package::translateEase(uint8_t& ease) {
+    switch (ease)
+    {
+        case PKG_EASE_LINEAR:
+            return NeoEase::Linear;
+            break;
+        case PKG_EASE_QUADRATIC_IN:
+            return NeoEase::QuarticIn;
+            break;
+        case PKG_EASE_QUADRATIC_OUT:
+            return NeoEase::QuarticOut;
+            break;
+        case PKG_EASE_QUADRATIC_IN_OUT:
+            return NeoEase::QuarticInOut;
+            break;
+        case PKG_EASE_QUADRATIC_CENTER:
+            return NeoEase::QuarticCenter;
+            break;
+        case PKG_EASE_CUBIC_IN:
+            return NeoEase::CubicIn;
+            break;
+        case PKG_EASE_CUBIC_OUT:
+            return NeoEase::CubicOut;
+            break;
+        case PKG_EASE_CUBIC_IN_OUT:
+            return NeoEase::CubicInOut;
+            break;
+        case PKG_EASE_CUBIC_CENTER:
+            return NeoEase::CubicCenter;
+            break;
+        case PKG_EASE_QUARTIC_IN:
+            return NeoEase::QuarticIn;
+            break;
+        case PKG_EASE_QUARTIC_OUT:
+            return NeoEase::QuarticOut;
+            break;
+        case PKG_EASE_QUARTIC_IN_OUT:
+            return NeoEase::QuarticInOut;
+            break;
+        case PKG_EASE_QUARTIC_CENTER:
+            return NeoEase::QuarticCenter;
+            break;
+        case PKG_EASE_QUINTIC_IN:
+            return NeoEase::QuinticIn;
+            break;
+        case PKG_EASE_QUINTIC_OUT:
+            return NeoEase::QuinticOut;
+            break;
+        case PKG_EASE_QUINTIC_IN_OUT:
+            return NeoEase::QuinticInOut;
+            break;
+        case PKG_EASE_QUINTIC_CENTER:
+            return NeoEase::QuinticCenter;
+            break;
+        case PKG_EASE_SINUSOIDAL_IN:
+            return NeoEase::SinusoidalIn;
+            break;
+        case PKG_EASE_SINUSOIDAL_OUT:
+            return NeoEase::SinusoidalOut;
+            break;
+        case PKG_EASE_SINUSOIDAL_IN_OUT:
+            return NeoEase::SinusoidalInOut;
+            break;
+        case PKG_EASE_SINUSOIDAL_CENTER:
+            return NeoEase::SinusoidalCenter;
+            break;
+        case PKG_EASE_EXPONENTIAL_IN:
+            return NeoEase::ExponentialIn;
+            break;
+        case PKG_EASE_EXPONENTIAL_OUT:
+            return NeoEase::ExponentialOut;
+            break;
+        case PKG_EASE_EXPONENTIAL_IN_OUT:
+            return NeoEase::ExponentialInOut;
+            break;
+        case PKG_EASE_EXPONENTIAL_CENTER:
+            return NeoEase::ExponentialCenter;
+            break;
+        case PKG_EASE_CIRCULAR_IN:
+            return NeoEase::CircularIn;
+            break;
+        case PKG_EASE_CIRCULAR_OUT:
+            return NeoEase::CircularOut;
+            break;
+        case PKG_EASE_CIRCULAR_IN_OUT:
+            return NeoEase::CircularInOut;
+            break;
+        case PKG_EASE_CIRCULAR_CENTER:
+            return NeoEase::CircularCenter;
+            break;
+        case PKG_EASE_GAMMA:
+            return NeoEase::Gamma;
+            break;
+        default:
+            break;
+    }
+    return NeoEase::Linear;
+}
+
+dir_t Package::translateDirection(uint8_t& dir) {
+    switch (dir)
+    {
+        case PKG_MOVE_LEFT:
+            return MOVE_LEFT;
+            break;
+        case PKG_MOVE_RIGHT:
+            return MOVE_RIGHT;
+            break;
+        default:
+            break;
+    }
+    return MOVE_LEFT;
 }

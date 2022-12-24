@@ -5,11 +5,17 @@
 
 #include "global_conf.h"
 
+typedef struct {
+    RgbColor color;
+} normal_data_t;
+
 class NormalFeature {
 public:
+    NormalFeature();
     void process(void);
     virtual void setColor(uint8_t r, uint8_t g, uint8_t b);
-    virtual RgbColor& getColor(void);
+    virtual RgbColor getColor(void);
+    void setData(normal_data_t& data);
 
 private:
     RgbColor _color;

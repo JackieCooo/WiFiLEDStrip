@@ -17,7 +17,7 @@ typedef enum {
     MODE_NUM
 } strip_mode_t;
 
-class StripHelper : public BreathingFeature, public NormalFeature, public LightbeamFeature, public RainbowFeature {
+class StripHandler : public BreathingFeature, public NormalFeature, public LightbeamFeature, public RainbowFeature {
 public:
     void begin(void);
     void routine(void);
@@ -29,10 +29,13 @@ public:
     void setColor(uint8_t r, uint8_t g, uint8_t b) override;
     void setInterval(uint16_t interval) override;
     void setSpeed(uint16_t speed) override;
+    RgbColor getColor(void) override;
+    uint16_t getInterval(void) override;
+    uint16_t getSpeed(void) override;
 
 private:
     strip_mode_t _mode;
     bool _displayed;
 };
 
-extern StripHelper stripHandler;
+extern StripHandler stripHandler;
