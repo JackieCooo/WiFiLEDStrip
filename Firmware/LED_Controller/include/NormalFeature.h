@@ -16,6 +16,7 @@ public:
     virtual void setColor(uint8_t r, uint8_t g, uint8_t b);
     virtual RgbColor getColor(void);
     void setData(normal_data_t& data);
+    normal_data_t getData(void);
 
 private:
     RgbColor _color;

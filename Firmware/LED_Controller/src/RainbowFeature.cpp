@@ -24,7 +24,15 @@ uint16_t RainbowFeature::getSpeed(void) {
 }
 
 void RainbowFeature::setData(rainbow_data_t& data) {
-    _speed = data.speed;
+    _speed = _translateSpeed(data.speed);
+}
+
+rainbow_data_t RainbowFeature::getData(void) {
+    rainbow_data_t data;
+
+    data.speed = _speed;
+
+    return data;
 }
 
 void RainbowFeature::_animUpdateFunc(const AnimationParam& param) {

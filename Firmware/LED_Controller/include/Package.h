@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <utility>
 #include <NeoPixelBus.h>
 #include <NeoPixelAnimator.h>
 #include <NormalFeature.h>
@@ -101,14 +102,25 @@ typedef struct {
     } data;
 } package_t;
 
+class NeoEaseComparator {
+public:
+    explicit NeoEaseComparator(AnimEaseFunction func);
+    bool operator==(AnimEaseFunction func);
+
+private:
+    AnimEaseFunction _func;
+};
+
 class Package {
 public:
     bool parse(uint8_t* buf, uint8_t size);
     void pack(uint8_t* buf, uint8_t size);
     package_t& getPackage(void);
     static uint32_t RGB565toRGB888(uint16_t& rgb565);
-    static AnimEaseFunction translateEase(uint8_t& ease);
-    static dir_t translateDirection(uint8_t& dir);
+    static AnimEaseFunction packEase(uint8_t& ease);
+    static uint8_t parseEase(AnimEaseFunction ease);
+    static dir_t packDirection(uint8_t& dir);
+    static uint8_t parseDirection(dir_t& dir);
 
 private:
     package_t _package;

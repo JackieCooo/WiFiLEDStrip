@@ -22,6 +22,7 @@ public:
     virtual void setSpeed(uint16_t speed);
     virtual uint16_t getSpeed(void);
     void setData(rainbow_data_t& data);
+    rainbow_data_t getData(void);
 
 private:
     uint16_t _speed;

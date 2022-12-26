@@ -88,3 +88,14 @@ void BreathingFeature::setData(breathing_data_t& data) {
     _interval = data.interval;
     _ease = data.ease;
 }
+
+breathing_data_t BreathingFeature::getData(void) {
+    breathing_data_t data;
+
+    data.color = _color;
+    data.duration = _duration;
+    data.interval = _interval;
+    data.ease = _ease;
+
+    return data;
+}

@@ -99,8 +99,23 @@ void LightbeamFeature::setData(lightbeam_data_t& data) {
     _faded_end = data.faded_end;
     _tail_len = data.tail_len;
     _head_len = data.head_len;
-    _speed = data.speed;
+    _speed = _translateSpeed(data.speed);
     _refreshPattern();
+}
+
+lightbeam_data_t LightbeamFeature::getData(void) {
+    lightbeam_data_t data;
+
+    data.color = _color;
+    data.len = _len;
+    data.interval = _interval;
+    data.dir = _dir;
+    data.faded_end = _faded_end;
+    data.tail_len = _tail_len;
+    data.head_len = _head_len;
+    data.speed = _speed;
+
+    return data;
 }
 
 void LightbeamFeature::_refreshPattern(void) {

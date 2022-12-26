@@ -30,6 +30,7 @@ public:
     virtual uint16_t getInterval(void);
     AnimEaseFunction getEase(void);
     void setData(breathing_data_t& data);
+    breathing_data_t getData(void);
 
 private:
     RgbColor _color;

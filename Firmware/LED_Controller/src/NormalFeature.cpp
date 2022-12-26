@@ -29,3 +29,11 @@ void NormalFeature::setData(normal_data_t& data) {
     }
     strip.Show();
 }
+
+normal_data_t NormalFeature::getData(void) {
+    normal_data_t data;
+
+    data.color = _color;
+
+    return data;
+}

@@ -1,5 +1,11 @@
 #include <Package.h>
 
+NeoEaseComparator::NeoEaseComparator(AnimEaseFunction func) : _func(std::move(func)) {}
+
+bool NeoEaseComparator::operator==(AnimEaseFunction func) {
+    return *(_func.target<int(*)(int)>()) == *(func.target<int(*)(int)>());
+}
+
 bool Package::parse(uint8_t* buf, uint8_t size) {
     uint8_t stage = 0;
     uint8_t i = 0;
@@ -78,7 +84,7 @@ bool Package::parse(uint8_t* buf, uint8_t size) {
                 stage = 99;
                 break;
             case 26:  // write rainbow mode setting
-                _package.data.settings.rainbow_setting.speed = buf[i++];
+                _package.data.settings.rainbow_setting.speed = PKG_CONCAT(buf[i++], buf[i++]);
                 stage = 99;
                 break;
             case 99:  // frame tail 1
@@ -178,7 +184,7 @@ uint32_t Package::RGB565toRGB888(uint16_t& rgb565) {
     return rgb888 = CONCAT_RGB888(r, g, b);
 }
 
-AnimEaseFunction Package::translateEase(uint8_t& ease) {
+AnimEaseFunction Package::packEase(uint8_t& ease) {
     switch (ease)
     {
         case PKG_EASE_LINEAR:
@@ -277,7 +283,105 @@ AnimEaseFunction Package::translateEase(uint8_t& ease) {
     return NeoEase::Linear;
 }
 
-dir_t Package::translateDirection(uint8_t& dir) {
+uint8_t Package::parseEase(AnimEaseFunction ease) {
+    NeoEaseComparator tar(ease);
+    if (tar == NeoEase::Linear) {
+        return PKG_EASE_LINEAR;
+    }
+    else if (tar == NeoEase::QuadraticIn) {
+        return PKG_EASE_QUADRATIC_IN;
+    }
+    else if (tar == NeoEase::QuadraticIn) {
+        return PKG_EASE_QUADRATIC_IN;
+    }
+    else if (tar == NeoEase::QuadraticOut) {
+        return PKG_EASE_QUADRATIC_OUT;
+    }
+    else if (tar == NeoEase::QuadraticInOut) {
+        return PKG_EASE_QUADRATIC_IN_OUT;
+    }
+    else if (tar == NeoEase::QuadraticCenter) {
+        return PKG_EASE_QUADRATIC_CENTER;
+    }
+    else if (tar == NeoEase::CubicIn) {
+        return PKG_EASE_CUBIC_IN;
+    }
+    else if (tar == NeoEase::CubicOut) {
+        return PKG_EASE_CUBIC_OUT;
+    }
+    else if (tar == NeoEase::CubicInOut) {
+        return PKG_EASE_QUADRATIC_IN_OUT;
+    }
+    else if (tar == NeoEase::CubicCenter) {
+        return PKG_EASE_CUBIC_CENTER;
+    }
+    else if (tar == NeoEase::QuarticIn) {
+        return PKG_EASE_QUARTIC_IN;
+    }
+    else if (tar == NeoEase::QuarticOut) {
+        return PKG_EASE_QUARTIC_OUT;
+    }
+    else if (tar == NeoEase::QuarticInOut) {
+        return PKG_EASE_QUARTIC_IN_OUT;
+    }
+    else if (tar == NeoEase::QuarticCenter) {
+        return PKG_EASE_QUARTIC_CENTER;
+    }
+    else if (tar == NeoEase::QuinticIn) {
+        return PKG_EASE_QUINTIC_IN;
+    }
+    else if (tar == NeoEase::QuinticOut) {
+        return PKG_EASE_QUINTIC_OUT;
+    }
+    else if (tar == NeoEase::QuinticInOut) {
+        return PKG_EASE_QUINTIC_IN_OUT;
+    }
+    else if (tar == NeoEase::QuinticCenter) {
+        return PKG_EASE_QUINTIC_CENTER;
+    }
+    else if (tar == NeoEase::SinusoidalIn) {
+        return PKG_EASE_SINUSOIDAL_IN;
+    }
+    else if (tar == NeoEase::SinusoidalOut) {
+        return PKG_EASE_SINUSOIDAL_OUT;
+    }
+    else if (tar == NeoEase::SinusoidalInOut) {
+        return PKG_EASE_SINUSOIDAL_IN_OUT;
+    }
+    else if (tar == NeoEase::SinusoidalCenter) {
+        return PKG_EASE_SINUSOIDAL_CENTER;
+    }
+    else if (tar == NeoEase::ExponentialIn) {
+        return PKG_EASE_EXPONENTIAL_IN;
+    }
+    else if (tar == NeoEase::ExponentialOut) {
+        return PKG_EASE_EXPONENTIAL_OUT;
+    }
+    else if (tar == NeoEase::ExponentialInOut) {
+        return PKG_EASE_EXPONENTIAL_IN_OUT;
+    }
+    else if (tar == NeoEase::ExponentialCenter) {
+        return PKG_EASE_EXPONENTIAL_CENTER;
+    }
+    else if (tar == NeoEase::CircularIn) {
+        return PKG_EASE_CIRCULAR_IN;
+    }
+    else if (tar == NeoEase::CircularOut) {
+        return PKG_EASE_CIRCULAR_OUT;
+    }
+    else if (tar == NeoEase::CircularInOut) {
+        return PKG_EASE_CIRCULAR_IN_OUT;
+    }
+    else if (tar == NeoEase::CircularCenter) {
+        return PKG_EASE_CIRCULAR_CENTER;
+    }
+    else if (tar == NeoEase::Gamma) {
+        return PKG_EASE_GAMMA;
+    }
+    return PKG_EASE_LINEAR;
+}
+
+dir_t Package::packDirection(uint8_t& dir) {
     switch (dir)
     {
         case PKG_MOVE_LEFT:
@@ -290,4 +394,19 @@ dir_t Package::translateDirection(uint8_t& dir) {
             break;
     }
     return MOVE_LEFT;
+}
+
+uint8_t Package::parseDirection(dir_t& dir) {
+    switch (dir)
+    {
+        case MOVE_LEFT:
+            return PKG_MOVE_LEFT;
+            break;
+        case MOVE_RIGHT:
+            return PKG_MOVE_RIGHT;
+            break;
+        default:
+            break;
+    }
+    return 0;
 }

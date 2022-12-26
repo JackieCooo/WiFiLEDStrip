@@ -52,6 +52,7 @@ public:
     faded_end_t getFadedEnd(void);
     uint16_t getTailLen(void);
     uint16_t getHeadLen(void);
+    lightbeam_data_t getData(void);
 
 private:
     RgbColor _color;
