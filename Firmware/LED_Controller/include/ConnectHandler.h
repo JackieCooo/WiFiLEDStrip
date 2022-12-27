@@ -21,7 +21,7 @@ private:
     WiFiServer _server;
     Package _package;
 
-    void _handleRequest(void);
+    void _handleRequest(WiFiClient& client);
 };
 
 extern ConnectHandler connHandler;

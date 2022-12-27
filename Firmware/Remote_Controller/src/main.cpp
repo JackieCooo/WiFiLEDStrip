@@ -4,6 +4,7 @@
 #include "display.h"
 #include "indev.h"
 #include "main_gui.h"
+#include "ConnectHandler.h"
 
 Display display;
 Indev indev;
@@ -26,10 +27,13 @@ void setup(void) {
   Serial.println("gui init");
   create_main_gui();
   Serial.println("gui init done");
+
+  connHandler.begin();
 }
 
 void loop(void) {
   lv_task_handler();
   lv_tick_inc(5);
+  connHandler.process();
   delay(5);
 }

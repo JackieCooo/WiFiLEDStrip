@@ -1,21 +1,20 @@
 #pragma once
 
 #include <Arduino.h>
-#include <utility>
-#include <NeoPixelBus.h>
-#include <NeoPixelAnimator.h>
-#include <NormalFeature.h>
-#include <BreathingFeature.h>
-#include <LightbeamFeature.h>
-#include <RainbowFeature.h>
 
 #define PKG_BUF_MAX_LEN                     (32)
+
+#define PKG_FRAME_HEAD1                     (0xAA)
+#define PKG_FRAME_HEAD2                     (0xBB)
+#define PKG_FRAME_TAIL1                     (0xEE)
+#define PKG_FRAME_TAIL2                     (0xFF)
 
 #define PKG_CMD_READ_SETTING                (0x01)
 #define PKG_CMD_WRITE_SETTING               (0x02)
 #define PKG_CMD_ACK                         (0x03)
 #define PKG_CMD_READ_REPLY                  (0x04)
 #define PKG_CMD_WRITE_REPLY                 (0x05)
+#define PKG_CMD_ACK_REPLY                   (0x06)
 
 #define PKG_REPLY_OK                        (0x00)
 #define PKG_REPLY_FAIL                      (0x01)
@@ -90,48 +89,54 @@
 #define RGB888_B(x)                         ((uint8_t)((x & 0x0000FF) >> 0))
 #define CONCAT_RGB888(r, g, b)              (((uint32_t)r << 16) + ((uint32_t)g << 8) + (uint32_t)b)
 
+#define INADDR_1(x)                         ((uint8_t)((x & 0xFF000000) >> 24))
+#define INADDR_2(x)                         ((uint8_t)((x & 0x00FF0000) >> 16))
+#define INADDR_3(x)                         ((uint8_t)((x & 0x0000FF00) >> 8))
+#define INADDR_4(x)                         ((uint8_t)((x & 0x000000FF) >> 0))
+#define CONCAT_INADDR(a, b, c, d)           (((uint32_t)a << 24) + ((uint32_t)b << 16) + ((uint32_t)c << 8) + (uint32_t)d)
+
 typedef struct {
     uint8_t size;
     uint8_t cmd;
-    struct {
-        uint8_t mode;
-        union {
-            struct {
-                uint16_t color;
-            } normal_setting;
-            struct {
-                uint16_t color;
-                uint16_t duration;
-                uint16_t interval;
-                uint8_t ease;
-            } breathing_setting;
-            struct {
-                uint16_t color;
-                uint16_t len;
-                uint16_t interval;
-                uint16_t head_len;
-                uint16_t tail_len;
-                uint16_t speed;
-                uint8_t faded_end;
-                uint8_t dir;
-            } lightbeam_setting;
-            struct {
-                uint16_t speed;
-            } rainbow_setting;
-        } settings;
+    union {
+        struct {
+            uint8_t mode;
+            union {
+                struct {
+                    uint16_t color;
+                } normal;
+                struct {
+                    uint16_t color;
+                    uint16_t duration;
+                    uint16_t interval;
+                    uint8_t ease;
+                } breathing;
+                struct {
+                    uint16_t color;
+                    uint16_t len;
+                    uint16_t interval;
+                    uint16_t head_len;
+                    uint16_t tail_len;
+                    uint16_t speed;
+                    uint8_t faded_end;
+                    uint8_t dir;
+                } lightbeam;
+                struct {
+                    uint16_t speed;
+                } rainbow;
+            } setting;
+        } strip;
+        struct {
+            uint8_t resp;
+        } resp;
+        struct {
+            uint8_t a;
+            uint8_t b;
+            uint8_t c;
+            uint8_t d;
+        } ip;
     } data;
 } package_t;
-
-/*
-class NeoEaseComparator {
-public:
-    explicit NeoEaseComparator(AnimEaseFunction func);
-    bool operator==(AnimEaseFunction func);
-
-private:
-    AnimEaseFunction _func;
-};
-*/
 
 class Package {
 public:
@@ -140,10 +145,6 @@ public:
     package_t& getPackage(void);
     static uint32_t RGB565toRGB888(uint16_t& rgb565);
     static uint16_t RGB888toRGB565(uint32_t& rgb888);
-    static AnimEaseFunction packEase(uint8_t& ease);
-    static uint8_t parseEase(AnimEaseFunction ease);
-    static dir_t packDirection(uint8_t& dir);
-    static uint8_t parseDirection(dir_t& dir);
     static void dumpBuf(uint8_t* buf, uint8_t size);
 
 private:

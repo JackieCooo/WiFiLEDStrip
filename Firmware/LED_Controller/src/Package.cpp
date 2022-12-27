@@ -1,10 +1,12 @@
 #include <Package.h>
 
+/*
 NeoEaseComparator::NeoEaseComparator(AnimEaseFunction func) : _func(std::move(func)) {}
 
 bool NeoEaseComparator::operator==(AnimEaseFunction func) {
-    return *(_func.target<int(*)(int)>()) == *(func.target<int(*)(int)>());
+    return *(_func.target<float(*)(float)>()) == *(func.target<float(*)(float)>());
 }
+*/
 
 bool Package::parse(uint8_t* buf, uint8_t size) {
     uint8_t stage = 0;
@@ -34,7 +36,7 @@ bool Package::parse(uint8_t* buf, uint8_t size) {
                     stage = 4;
                 }
                 else if (_package.cmd == PKG_CMD_READ_SETTING) {
-                    stage = 5;
+                    stage = 99;
                 }
                 else if (_package.cmd == PKG_CMD_ACK) {
                     stage = 6;
@@ -109,7 +111,7 @@ void Package::pack(uint8_t* buf, uint8_t size) {
     buf[i++] = 0xCD;
     buf[i++] = _calPackSize();
     if (_package.cmd == PKG_CMD_READ_SETTING) {
-        buf[i++] = PKG_CMD_READ_SETTING;
+        buf[i++] = PKG_CMD_READ_REPLY;
         buf[i++] = _package.data.mode;
         if (_package.data.mode == PKG_MODE_NORMAL) {
             buf[i++] = PKG_HIGH(_package.data.settings.normal_setting.color);
@@ -182,6 +184,14 @@ uint32_t Package::RGB565toRGB888(uint16_t& rgb565) {
     uint8_t g = (RGB565_G(rgb565) << 2) + (uint8_t)((rgb565 >> 5) & 0x03);
     uint8_t b = (RGB565_B(rgb565) << 3) + (uint8_t)(rgb565 & 0x07);
     return rgb888 = CONCAT_RGB888(r, g, b);
+}
+
+uint16_t Package::RGB888toRGB565(uint32_t& rgb888) {
+    uint16_t rgb565;
+    uint8_t r = RGB888_R(rgb888) >> 3;
+    uint8_t g = RGB888_G(rgb888) >> 2;
+    uint8_t b = RGB888_B(rgb888) >> 3;
+    return rgb565 = CONCAT_RGB565(r, g, b);
 }
 
 AnimEaseFunction Package::packEase(uint8_t& ease) {
@@ -284,6 +294,7 @@ AnimEaseFunction Package::packEase(uint8_t& ease) {
 }
 
 uint8_t Package::parseEase(AnimEaseFunction ease) {
+/*
     NeoEaseComparator tar(ease);
     if (tar == NeoEase::Linear) {
         return PKG_EASE_LINEAR;
@@ -378,6 +389,7 @@ uint8_t Package::parseEase(AnimEaseFunction ease) {
     else if (tar == NeoEase::Gamma) {
         return PKG_EASE_GAMMA;
     }
+*/
     return PKG_EASE_LINEAR;
 }
 
@@ -409,4 +421,12 @@ uint8_t Package::parseDirection(dir_t& dir) {
             break;
     }
     return 0;
+}
+
+void Package::dumpBuf(uint8_t* buf, uint8_t size) {
+    Serial.print("buf: ");
+    for (uint8_t i = 0; i < size; ++i) {
+        Serial.printf("%02x ", buf[i]);
+    }
+    Serial.println();
 }
