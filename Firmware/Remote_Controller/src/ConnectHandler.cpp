@@ -26,20 +26,7 @@ void ConnectHandler::process(void) {
     }
 }
 
-void ConnectHandler::pushMsg(msg_struct_t msg) {
-    _msgQueue.push(msg);
-}
-
 void ConnectHandler::_handleRequest(void) {
-    if (!_msgQueue.empty()) {
-        msg_struct_t data = _msgQueue.front();
-        if (data.msg == MSG_MODE_CHANGED) {
-
-        }
-        else if (data.msg == MSG_COLOR_CHANGED) {
-            
-        }
-    }
 }
 
 void ConnectHandler::_match(void) {
@@ -58,9 +45,8 @@ void ConnectHandler::_match(void) {
     uint8_t tx_buf[PKG_BUF_MAX_LEN];
     memset(tx_buf, 0x00, sizeof(tx_buf));
     _package.pack(tx_buf, sizeof(tx_buf));
-    sender.write(tx_buf, tx_buf[2] + 4);
+    sender.write(tx_buf, BUF_SIZE(tx_buf));
     sender.endPacket();
-    sender.stop();
 
     while (!_connected && timeout--) {
         if (receiver.parsePacket()) {

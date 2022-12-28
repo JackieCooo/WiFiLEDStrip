@@ -166,7 +166,7 @@ package_t& Package::getPackage(void) {
 }
 
 uint8_t Package::_calPackSize(void) {
-    uint8_t size = 2;
+    uint8_t size = 6;  // frame head + frame tail + cmd + size
     if (_package.cmd == PKG_CMD_WRITE_SETTING) {
         size += 1;
         if (_package.data.strip.mode == PKG_MODE_NORMAL) {

@@ -1,18 +1,5 @@
 #include "main_gui.h"
 
-/* User defines */
-#define COLOR_CHANGE_MSG 1
-
-/* Enums define */
-
-typedef enum {
-    MODE_NORMAL,
-    MODE_BREATHING,
-    MODE_INTERVAL,
-    MODE_RAINBOW
-} led_mode_t;
-
-
 /* Static variables define */
 
 static lv_obj_t* container;
@@ -45,48 +32,26 @@ static void mode_select_cb(lv_event_t* e);
 
 static void btn_set_text(lv_obj_t* btn, const char* text);
 
+static uint8_t parseMode(led_mode_t mode);
+static led_mode_t packMode(uint8_t mode);
+
 
 /* Static structs define */
-
-typedef struct {
-    lv_fragment_t base;
-    lv_obj_t* pwr_btn;
-    lv_obj_t* color_btn;
-    lv_obj_t* mode_btn;
-    lv_obj_t* about_btn;
-} main_gui_fragment_t;
 
 static const lv_fragment_class_t main_gui_cls = {
     .create_obj_cb = main_gui_create_cb,
     .instance_size = sizeof(main_gui_fragment_t)
 };
 
-typedef struct {
-    lv_fragment_t base;
-    lv_obj_t* color_selector;
-} color_select_fragment_t;
-
 static const lv_fragment_class_t color_select_cls = {
     .create_obj_cb = color_select_create_cb,
     .instance_size = sizeof(color_select_fragment_t)
 };
 
-typedef struct {
-    lv_fragment_t base;
-    lv_obj_t* normal_mode;
-    lv_obj_t* breathing_mode;
-    lv_obj_t* interval_mode;
-    lv_obj_t* rainbow_mode;
-} mode_select_fragment_t;
-
 static const lv_fragment_class_t mode_select_cls = {
     .create_obj_cb = mode_select_create_cb,
     .instance_size = sizeof(mode_select_fragment_t)
 };
-
-typedef struct {
-    lv_fragment_t base;
-} about_page_fragment_t;
 
 static const lv_fragment_class_t about_page_cls = {
     .create_obj_cb = about_page_create_cb,
@@ -196,7 +161,7 @@ static lv_obj_t * mode_select_create_cb(lv_fragment_t* self, lv_obj_t* parent)
         case MODE_BREATHING:
             lv_obj_set_style_bg_color(fragment->breathing_mode, lv_palette_main(LV_PALETTE_RED), 0);
             break;
-        case MODE_INTERVAL:
+        case MODE_LIGHTBEAM:
             lv_obj_set_style_bg_color(fragment->interval_mode, lv_palette_main(LV_PALETTE_RED), 0);
             break;
         case MODE_RAINBOW:
@@ -286,7 +251,21 @@ static void color_changed_cb(lv_event_t* e)
         lv_obj_t* color_wheel = (lv_obj_t*) lv_event_get_target(e);
 
         cur_color = lv_colorwheel_get_rgb(color_wheel);
-        printf("color: 0x%x\n", lv_color_to16(cur_color));
+        printf("color: #%04x\n", lv_color_to16(cur_color));
+
+        msg_struct_t data;
+        data.msg = MSG_COLOR_CHANGED;
+        data.mode = parseMode(cur_mode);
+        if (cur_mode == MODE_NORMAL) {
+            data.setting.normal.color = lv_color_to16(cur_color);
+        }
+        else if (cur_mode == MODE_BREATHING) {
+            data.setting.breathing.color = lv_color_to16(cur_color);
+        }
+        else if (cur_mode == MODE_LIGHTBEAM) {
+            data.setting.lightbeam.color = lv_color_to16(cur_color);
+        }
+        queue_push(data);
     }
 }
 
@@ -312,7 +291,7 @@ static void mode_select_cb(lv_event_t* e) {
             tar_mode = MODE_BREATHING;
         }
         else if (btn == fragment->interval_mode) {
-            tar_mode = MODE_INTERVAL;
+            tar_mode = MODE_LIGHTBEAM;
         }
         else if (btn == fragment->rainbow_mode) {
             tar_mode = MODE_RAINBOW;
@@ -328,7 +307,7 @@ static void mode_select_cb(lv_event_t* e) {
             case MODE_BREATHING:
                 lv_obj_set_style_bg_color(fragment->breathing_mode, lv_palette_main(LV_PALETTE_BLUE), 0);
                 break;
-            case MODE_INTERVAL:
+            case MODE_LIGHTBEAM:
                 lv_obj_set_style_bg_color(fragment->interval_mode, lv_palette_main(LV_PALETTE_BLUE), 0);
                 break;
             case MODE_RAINBOW:
@@ -342,7 +321,7 @@ static void mode_select_cb(lv_event_t* e) {
             case MODE_BREATHING:
                 lv_obj_set_style_bg_color(fragment->breathing_mode, lv_palette_main(LV_PALETTE_RED), 0);
                 break;
-            case MODE_INTERVAL:
+            case MODE_LIGHTBEAM:
                 lv_obj_set_style_bg_color(fragment->interval_mode, lv_palette_main(LV_PALETTE_RED), 0);
                 break;
             case MODE_RAINBOW:
@@ -363,6 +342,51 @@ static void btn_set_text(lv_obj_t* btn, const char* text)
 
     lv_obj_set_size(btn, 120, 50);
     lv_obj_center(btn);
+}
+
+
+/* Utility functions */
+
+static uint8_t parseMode(led_mode_t mode) {
+    switch (mode)
+    {
+        case MODE_NORMAL:
+            return PKG_MODE_NORMAL;
+            break;
+        case MODE_BREATHING:
+            return PKG_MODE_BREATHING;
+            break;
+        case MODE_LIGHTBEAM:
+            return PKG_MODE_LIGHTBEAM;
+            break;
+        case MODE_RAINBOW:
+            return PKG_MODE_RAINBOW;
+            break;
+        default:
+            break;
+    }
+    return 0;
+}
+
+static led_mode_t packMode(uint8_t mode) {
+    switch (mode)
+    {
+        case PKG_MODE_NORMAL:
+            return MODE_NORMAL;
+            break;
+        case PKG_MODE_BREATHING:
+            return MODE_BREATHING;
+            break;
+        case PKG_MODE_LIGHTBEAM:
+            return MODE_LIGHTBEAM;
+            break;
+        case PKG_MODE_RAINBOW:
+            return MODE_RAINBOW;
+            break;
+        default:
+            break;
+    }
+    return 0;
 }
 
 
