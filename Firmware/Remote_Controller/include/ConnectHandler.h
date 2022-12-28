@@ -6,6 +6,8 @@
 
 #include "Package.h"
 #include "message_handler.h"
+#include "lvgl.h"
+#include "global.h"
 
 #define WIFI_SSID                   "TP-LINK_B596"
 #define WIFI_PWR                    "chen1370292520"
@@ -14,6 +16,7 @@
 #define MATCH_PORT                  20002
 
 #define MATCH_MAX_TIME              5000
+#define TIMEOUT_TIME                5000
 
 #define BUF_SIZE(x)                 (x[2])
 
@@ -26,13 +29,13 @@ public:
     void process(void);
 
 private:
-    WiFiClient _client;
     Package _package;
     bool _connected;
-    IPAddress _stripIP;
+    IPAddress _hostIp;
 
-    void _handleRequest(void);
+    void _handle(void);
     void _match(void);
+    bool _transmit(uint8_t* buf, uint8_t size);
 };
 
 extern ConnectHandler connHandler;

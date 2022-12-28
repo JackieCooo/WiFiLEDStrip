@@ -8,10 +8,7 @@ extern "C" {
 #include <stdio.h>
 #include "lvgl.h"
 #include "message_handler.h"
-#include "Package.h"
-
-/* User defines */
-#define COLOR_CHANGE_MSG 1
+#include "global.h"
 
 /* Enums define */
 

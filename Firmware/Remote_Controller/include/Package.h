@@ -100,6 +100,7 @@ typedef struct {
     uint8_t cmd;
     union {
         struct {
+            uint8_t subcmd;
             uint8_t mode;
             union {
                 struct {

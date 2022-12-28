@@ -54,6 +54,11 @@ typedef struct {
 } msg_struct_t;
 
 typedef struct {
+    msg_t msg;
+    bool resp;
+} msg_reply_t;
+
+typedef struct {
     msg_struct_t _queue[MAX_QUEUE_SIZE];
     uint8_t _size;
 } queue_t;

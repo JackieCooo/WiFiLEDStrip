@@ -17,10 +17,10 @@ static led_mode_t cur_mode = MODE_NORMAL;
 
 /* Static functions define */
 
-static lv_obj_t * main_gui_create_cb(lv_fragment_t* self, lv_obj_t* parent);
-static lv_obj_t * color_select_create_cb(lv_fragment_t* self, lv_obj_t* parent);
-static lv_obj_t * mode_select_create_cb(lv_fragment_t* self, lv_obj_t* parent);
-static lv_obj_t * about_page_create_cb(lv_fragment_t* self, lv_obj_t* parent);
+static lv_obj_t* main_gui_create_cb(lv_fragment_t* self, lv_obj_t* parent);
+static lv_obj_t* color_select_create_cb(lv_fragment_t* self, lv_obj_t* parent);
+static lv_obj_t* mode_select_create_cb(lv_fragment_t* self, lv_obj_t* parent);
+static lv_obj_t* about_page_create_cb(lv_fragment_t* self, lv_obj_t* parent);
 static void container_del_cb(lv_event_t* e);
 static void pwr_btn_event_cb(lv_event_t* e);
 static void color_btn_event_cb(lv_event_t* e);
@@ -31,9 +31,6 @@ static void return_gesture_cb(lv_event_t* e);
 static void mode_select_cb(lv_event_t* e);
 
 static void btn_set_text(lv_obj_t* btn, const char* text);
-
-static uint8_t parseMode(led_mode_t mode);
-static led_mode_t packMode(uint8_t mode);
 
 
 /* Static structs define */
@@ -89,7 +86,7 @@ static lv_obj_t * main_gui_create_cb(lv_fragment_t* self, lv_obj_t* parent)
     lv_obj_set_style_bg_color(fragment->color_btn, cur_color, 0);
     lv_obj_add_event_cb(fragment->color_btn, color_btn_event_cb, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(fragment->color_btn, color_btn_event_cb, LV_EVENT_MSG_RECEIVED, NULL);
-    lv_msg_subsribe_obj(COLOR_CHANGE_MSG, fragment->color_btn, NULL);
+    lv_msg_subsribe_obj(MSG_REPLY, fragment->color_btn, NULL);
 
     fragment->mode_btn = lv_btn_create(list);
     btn_set_text(fragment->mode_btn, "MODE");
@@ -147,7 +144,7 @@ static lv_obj_t * mode_select_create_cb(lv_fragment_t* self, lv_obj_t* parent)
     lv_obj_add_event_cb(fragment->breathing_mode, mode_select_cb, LV_EVENT_CLICKED, fragment);
 
     fragment->interval_mode = lv_btn_create(list);
-    btn_set_text(fragment->interval_mode, "Interval");
+    btn_set_text(fragment->interval_mode, "Lightbeam");
     lv_obj_add_event_cb(fragment->interval_mode, mode_select_cb, LV_EVENT_CLICKED, fragment);
 
     fragment->rainbow_mode = lv_btn_create(list);
@@ -220,10 +217,15 @@ static void color_btn_event_cb(lv_event_t* e)
     }
     else if (e->code == LV_EVENT_MSG_RECEIVED)
     {
-        lv_obj_t * btn = lv_event_get_target(e);
-        lv_msg_t * m = lv_event_get_msg(e);
-        const uint16_t * c = lv_msg_get_payload(m);
-        lv_obj_set_style_bg_color(btn, lv_color_hex(*c), 0);
+        lv_obj_t* btn = lv_event_get_target(e);
+        lv_msg_t* m = lv_event_get_msg(e);
+        uint32_t id = lv_msg_get_id(m);
+        if (id == MSG_REPLY) {
+            const msg_reply_t* reply = lv_msg_get_payload(m);
+            if (reply->resp) {
+                lv_obj_set_style_bg_color(btn, cur_color, 0);
+            }
+        }
     }
 }
 
@@ -251,11 +253,11 @@ static void color_changed_cb(lv_event_t* e)
         lv_obj_t* color_wheel = (lv_obj_t*) lv_event_get_target(e);
 
         cur_color = lv_colorwheel_get_rgb(color_wheel);
-        printf("color: #%04x\n", lv_color_to16(cur_color));
+        printf("color selected: #%04x\n", lv_color_to16(cur_color));
 
         msg_struct_t data;
         data.msg = MSG_COLOR_CHANGED;
-        data.mode = parseMode(cur_mode);
+        data.mode = cur_mode;
         if (cur_mode == MODE_NORMAL) {
             data.setting.normal.color = lv_color_to16(cur_color);
         }
@@ -342,51 +344,6 @@ static void btn_set_text(lv_obj_t* btn, const char* text)
 
     lv_obj_set_size(btn, 120, 50);
     lv_obj_center(btn);
-}
-
-
-/* Utility functions */
-
-static uint8_t parseMode(led_mode_t mode) {
-    switch (mode)
-    {
-        case MODE_NORMAL:
-            return PKG_MODE_NORMAL;
-            break;
-        case MODE_BREATHING:
-            return PKG_MODE_BREATHING;
-            break;
-        case MODE_LIGHTBEAM:
-            return PKG_MODE_LIGHTBEAM;
-            break;
-        case MODE_RAINBOW:
-            return PKG_MODE_RAINBOW;
-            break;
-        default:
-            break;
-    }
-    return 0;
-}
-
-static led_mode_t packMode(uint8_t mode) {
-    switch (mode)
-    {
-        case PKG_MODE_NORMAL:
-            return MODE_NORMAL;
-            break;
-        case PKG_MODE_BREATHING:
-            return MODE_BREATHING;
-            break;
-        case PKG_MODE_LIGHTBEAM:
-            return MODE_LIGHTBEAM;
-            break;
-        case PKG_MODE_RAINBOW:
-            return MODE_RAINBOW;
-            break;
-        default:
-            break;
-    }
-    return 0;
 }
 
 

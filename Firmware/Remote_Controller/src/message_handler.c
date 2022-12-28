@@ -3,7 +3,7 @@
 static queue_t queue;
 
 bool queue_empty(void) {
-    return queue._size;
+    return !queue._size;
 }
 
 void queue_push(msg_struct_t tar) {
