@@ -176,9 +176,9 @@ package_t& Package::getPackage(void) {
 }
 
 uint8_t Package::_calPackSize(void) {
-    uint8_t size = 6;  // frame head + frame tail + cmd + size
+    uint8_t size = 6;  // frame head(2) + frame tail(2) + cmd(1) + size(1)
     if (_package.cmd == PKG_CMD_WRITE_SETTING) {
-        size += 1;
+        size += 2;  // subcmd(1) + mode(1)
         if (_package.data.strip.mode == PKG_MODE_NORMAL) {
             size += 2;
         }
@@ -214,12 +214,4 @@ uint16_t Package::RGB888toRGB565(uint32_t& rgb888) {
     uint8_t g = RGB888_G(rgb888) >> 2;
     uint8_t b = RGB888_B(rgb888) >> 3;
     return rgb565 = CONCAT_RGB565(r, g, b);
-}
-
-void Package::dumpBuf(uint8_t* buf, uint8_t size) {
-    Serial.print("buf: ");
-    for (uint8_t i = 0; i < size; ++i) {
-        Serial.printf("%02x ", buf[i]);
-    }
-    Serial.println();
 }

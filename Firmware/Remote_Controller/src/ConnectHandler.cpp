@@ -2,6 +2,7 @@
 
 ConnectHandler::ConnectHandler() {
     _connected = true;
+    _hostIp = IPAddress(192, 168, 0, 107);
 }
 
 void ConnectHandler::begin(void) {
@@ -31,6 +32,7 @@ void ConnectHandler::_handle(void) {
         msg_struct_t data = queue_front();
         package_t& p = _package.getPackage();
 
+        p.cmd = PKG_CMD_WRITE_SETTING;
         if (data.msg == MSG_MODE_CHANGED) {
             Serial.println("Mode changed message");
             p.data.strip.subcmd = PKG_DATA_ALL;
@@ -63,6 +65,7 @@ void ConnectHandler::_handle(void) {
         }
         else if (data.msg == MSG_COLOR_CHANGED) {
             Serial.println("Color changed message");
+            p.data.strip.subcmd = PKG_DATA_COLOR;
             if (data.mode == PKG_MODE_NORMAL) {
                 p.data.strip.mode = PKG_MODE_NORMAL;
                 p.data.strip.setting.normal.color = data.setting.normal.color;
@@ -79,11 +82,16 @@ void ConnectHandler::_handle(void) {
 
         uint8_t tx_buf[PKG_BUF_MAX_LEN];
         _package.pack(tx_buf, sizeof(tx_buf));
-        _transmit(tx_buf, BUF_SIZE(tx_buf));
         msg_reply_t reply;
         reply.msg = data.msg;
-        reply.resp = p.data.resp.resp;
-        lv_msg_send(MSG_REPLY, &reply);
+        if (_transmit(tx_buf, BUF_SIZE(tx_buf))) {
+            reply.resp = true;
+        }
+        else {
+            reply.resp = false;
+        }
+        Serial.printf("Send result: %d to GUI\n", reply.resp);
+        lv_msg_send(MSG_COLOR_CHANGED, &reply);
 
         queue_pop();
     }
@@ -103,7 +111,6 @@ void ConnectHandler::_match(void) {
     p.data.ip.c = ip[2];
     p.data.ip.d = ip[3];
     uint8_t tx_buf[PKG_BUF_MAX_LEN];
-    memset(tx_buf, 0x00, sizeof(tx_buf));
     _package.pack(tx_buf, sizeof(tx_buf));
     sender.write(tx_buf, BUF_SIZE(tx_buf));
     sender.endPacket();
@@ -128,7 +135,7 @@ void ConnectHandler::_match(void) {
 bool ConnectHandler::_transmit(uint8_t* buf, uint8_t size) {
     WiFiClient client;
     bool res = false;
-    uint32_t timeout = TIMEOUT_TIME;
+    uint32_t timeout = TIMEOUT_MS;
     if (client.connect(_hostIp, SERVER_PORT)) {
         client.write(buf, size);
         Serial.println("Sent data to host");
@@ -142,9 +149,9 @@ bool ConnectHandler::_transmit(uint8_t* buf, uint8_t size) {
                     package_t& p = _package.getPackage();
                     if (p.cmd == PKG_CMD_WRITE_REPLY && p.data.resp.resp == PKG_REPLY_OK) {
                         res = true;
-                        break;
                     }
                 }
+                break;
             }
             delay(1);
         }

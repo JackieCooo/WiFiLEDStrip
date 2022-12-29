@@ -16,7 +16,7 @@
 #define MATCH_PORT                  20002
 
 #define MATCH_MAX_TIME              5000
-#define TIMEOUT_TIME                5000
+#define TIMEOUT_MS                  2000
 
 #define BUF_SIZE(x)                 (x[2])
 

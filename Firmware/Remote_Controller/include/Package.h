@@ -16,8 +16,8 @@
 #define PKG_CMD_WRITE_REPLY                 (0x05)
 #define PKG_CMD_ACK_REPLY                   (0x06)
 
-#define PKG_REPLY_OK                        (0x00)
-#define PKG_REPLY_FAIL                      (0x01)
+#define PKG_REPLY_FAIL                      (0x00)
+#define PKG_REPLY_OK                        (0x01)
 
 #define PKG_MODE_NORMAL                     (0x00)
 #define PKG_MODE_BREATHING                  (0x01)
@@ -146,7 +146,6 @@ public:
     package_t& getPackage(void);
     static uint32_t RGB565toRGB888(uint16_t& rgb565);
     static uint16_t RGB888toRGB565(uint32_t& rgb888);
-    static void dumpBuf(uint8_t* buf, uint8_t size);
 
 private:
     package_t _package;

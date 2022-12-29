@@ -10,6 +10,7 @@ static lv_fragment_t* mode_select_fragment;
 static lv_fragment_t* about_page_fragment;
 
 static uint8_t pwr = 0;
+static lv_color_t pre_color;
 static lv_color_t cur_color;
 static led_mode_t pre_mode = MODE_NORMAL;
 static led_mode_t cur_mode = MODE_NORMAL;
@@ -86,7 +87,7 @@ static lv_obj_t * main_gui_create_cb(lv_fragment_t* self, lv_obj_t* parent)
     lv_obj_set_style_bg_color(fragment->color_btn, cur_color, 0);
     lv_obj_add_event_cb(fragment->color_btn, color_btn_event_cb, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(fragment->color_btn, color_btn_event_cb, LV_EVENT_MSG_RECEIVED, NULL);
-    lv_msg_subsribe_obj(MSG_REPLY, fragment->color_btn, NULL);
+    lv_msg_subsribe_obj(MSG_COLOR_CHANGED, fragment->color_btn, NULL);
 
     fragment->mode_btn = lv_btn_create(list);
     btn_set_text(fragment->mode_btn, "MODE");
@@ -217,13 +218,18 @@ static void color_btn_event_cb(lv_event_t* e)
     }
     else if (e->code == LV_EVENT_MSG_RECEIVED)
     {
-        lv_obj_t* btn = lv_event_get_target(e);
+        lv_obj_t* btn = (lv_obj_t*) lv_event_get_target(e);
         lv_msg_t* m = lv_event_get_msg(e);
         uint32_t id = lv_msg_get_id(m);
-        if (id == MSG_REPLY) {
+        printf("Received message\n");
+        if (id == MSG_COLOR_CHANGED) {
             const msg_reply_t* reply = lv_msg_get_payload(m);
             if (reply->resp) {
                 lv_obj_set_style_bg_color(btn, cur_color, 0);
+                printf("Color btn style changed\n");
+            }
+            else {
+                cur_color = pre_color;
             }
         }
     }
@@ -252,8 +258,9 @@ static void color_changed_cb(lv_event_t* e)
     {
         lv_obj_t* color_wheel = (lv_obj_t*) lv_event_get_target(e);
 
+        pre_color = cur_color;
         cur_color = lv_colorwheel_get_rgb(color_wheel);
-        printf("color selected: #%04x\n", lv_color_to16(cur_color));
+        printf("Color selected: #%04x\n", lv_color_to16(cur_color));
 
         msg_struct_t data;
         data.msg = MSG_COLOR_CHANGED;
