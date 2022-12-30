@@ -6,38 +6,23 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+
 #include "lvgl.h"
-#include "message_handler.h"
+#include "btn_group.h"
 #include "global.h"
-
-/* Enums define */
-
-typedef enum {
-    MODE_NORMAL,
-    MODE_BREATHING,
-    MODE_LIGHTBEAM,
-    MODE_RAINBOW
-} led_mode_t;
+#include "message_handler.h"
 
 typedef struct {
     lv_fragment_t base;
-    lv_obj_t* pwr_btn;
-    lv_obj_t* color_btn;
-    lv_obj_t* mode_btn;
-    lv_obj_t* about_btn;
+    uint8_t power;
 } main_gui_fragment_t;
 
 typedef struct {
     lv_fragment_t base;
-    lv_obj_t* color_selector;
 } color_select_fragment_t;
 
 typedef struct {
     lv_fragment_t base;
-    lv_obj_t* normal_mode;
-    lv_obj_t* breathing_mode;
-    lv_obj_t* interval_mode;
-    lv_obj_t* rainbow_mode;
 } mode_select_fragment_t;
 
 typedef struct {
@@ -45,6 +30,7 @@ typedef struct {
 } about_page_fragment_t;
 
 void create_main_gui(void);
+void refresh_main_gui(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

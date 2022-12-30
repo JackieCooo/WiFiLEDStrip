@@ -160,6 +160,10 @@ void Package::pack(uint8_t* buf, uint8_t size) {
             buf[i++] = PKG_LOW(_package.data.strip.setting.rainbow.speed);
         }
     }
+    else if (_package.cmd == PKG_CMD_READ_SETTING) {
+        buf[i++] = _package.cmd;
+        buf[i++] = _package.data.strip.subcmd;
+    }
     else if (_package.cmd == PKG_CMD_ACK) {
         buf[i++] = _package.cmd;
         buf[i++] = _package.data.ip.a;
@@ -194,8 +198,11 @@ uint8_t Package::_calPackSize(void) {
             size += 2;
         }
     }
+    else if (_package.cmd == PKG_CMD_READ_SETTING) {
+        size += 1;  // subcmd(1)
+    }
     else if (_package.cmd == PKG_CMD_ACK) {
-        size += 4;
+        size += 4;  // ip(4)
     }
     return size;
 }

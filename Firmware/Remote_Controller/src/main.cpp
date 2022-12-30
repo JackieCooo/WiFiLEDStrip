@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include <lvgl.h>
 
+#include "lvgl.h"
 #include "display.h"
 #include "indev.h"
 #include "main_gui.h"

@@ -1,19 +1,12 @@
 #include "main_gui.h"
 
+configuration_t configuration;
+
+
 /* Static variables define */
 
 static lv_obj_t* container;
 static lv_fragment_manager_t* manager;
-static lv_fragment_t* main_gui_fragment;
-static lv_fragment_t* color_select_fragment;
-static lv_fragment_t* mode_select_fragment;
-static lv_fragment_t* about_page_fragment;
-
-static uint8_t pwr = 0;
-static lv_color_t pre_color;
-static lv_color_t cur_color;
-static led_mode_t pre_mode = MODE_NORMAL;
-static led_mode_t cur_mode = MODE_NORMAL;
 
 
 /* Static functions define */
@@ -22,14 +15,17 @@ static lv_obj_t* main_gui_create_cb(lv_fragment_t* self, lv_obj_t* parent);
 static lv_obj_t* color_select_create_cb(lv_fragment_t* self, lv_obj_t* parent);
 static lv_obj_t* mode_select_create_cb(lv_fragment_t* self, lv_obj_t* parent);
 static lv_obj_t* about_page_create_cb(lv_fragment_t* self, lv_obj_t* parent);
+static void main_gui_constructor_cb(lv_fragment_t* self, void* args);
+static void color_select_construct_cb(lv_fragment_t* self, void* args);
 static void container_del_cb(lv_event_t* e);
 static void pwr_btn_event_cb(lv_event_t* e);
 static void color_btn_event_cb(lv_event_t* e);
 static void mode_btn_event_cb(lv_event_t* e);
 static void about_btn_event_cb(lv_event_t* e);
-static void color_changed_cb(lv_event_t* e);
+static void color_selector_event_cb(lv_event_t* e);
 static void return_gesture_cb(lv_event_t* e);
-static void mode_select_cb(lv_event_t* e);
+static void mode_changed_cb(lv_event_t* e);
+static void message_received_cb(void* s, lv_msg_t* m);
 
 static void btn_set_text(lv_obj_t* btn, const char* text);
 
@@ -38,11 +34,13 @@ static void btn_set_text(lv_obj_t* btn, const char* text);
 
 static const lv_fragment_class_t main_gui_cls = {
     .create_obj_cb = main_gui_create_cb,
+    .constructor_cb = main_gui_constructor_cb,
     .instance_size = sizeof(main_gui_fragment_t)
 };
 
 static const lv_fragment_class_t color_select_cls = {
     .create_obj_cb = color_select_create_cb,
+    .constructor_cb = color_select_construct_cb,
     .instance_size = sizeof(color_select_fragment_t)
 };
 
@@ -77,25 +75,22 @@ static lv_obj_t * main_gui_create_cb(lv_fragment_t* self, lv_obj_t* parent)
     lv_obj_set_style_border_opa(list, 0, 0);
     lv_obj_set_style_bg_opa(list, 0, 0);
 
-    fragment->pwr_btn = lv_btn_create(list);
-    btn_set_text(fragment->pwr_btn, "OFF");
-    lv_obj_set_style_bg_color(fragment->pwr_btn, lv_palette_main(LV_PALETTE_RED), 0);
-    lv_obj_add_event_cb(fragment->pwr_btn, pwr_btn_event_cb, LV_EVENT_CLICKED, fragment);
+    lv_obj_t* pwr_btn = lv_btn_create(list);
+    btn_set_text(pwr_btn, "OFF");
+    lv_obj_set_style_bg_color(pwr_btn, lv_palette_main(LV_PALETTE_RED), 0);
+    lv_obj_add_event_cb(pwr_btn, pwr_btn_event_cb, LV_EVENT_CLICKED, &fragment->power);
 
-    fragment->color_btn = lv_btn_create(list);
-    btn_set_text(fragment->color_btn, "COLOR");
-    lv_obj_set_style_bg_color(fragment->color_btn, cur_color, 0);
-    lv_obj_add_event_cb(fragment->color_btn, color_btn_event_cb, LV_EVENT_CLICKED, NULL);
-    lv_obj_add_event_cb(fragment->color_btn, color_btn_event_cb, LV_EVENT_MSG_RECEIVED, NULL);
-    lv_msg_subsribe_obj(MSG_COLOR_CHANGED, fragment->color_btn, NULL);
+    lv_obj_t* color_btn = lv_btn_create(list);
+    btn_set_text(color_btn, "COLOR");
+    lv_obj_add_event_cb(color_btn, color_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
-    fragment->mode_btn = lv_btn_create(list);
-    btn_set_text(fragment->mode_btn, "MODE");
-    lv_obj_add_event_cb(fragment->mode_btn, mode_btn_event_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_t* mode_btn = lv_btn_create(list);
+    btn_set_text(mode_btn, "MODE");
+    lv_obj_add_event_cb(mode_btn, mode_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
-    fragment->about_btn = lv_btn_create(list);
-    btn_set_text(fragment->about_btn, "ABOUT");
-    lv_obj_add_event_cb(fragment->about_btn, about_btn_event_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_t* about_btn = lv_btn_create(list);
+    btn_set_text(about_btn, "ABOUT");
+    lv_obj_add_event_cb(about_btn, about_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
     return content;
 }
@@ -108,18 +103,21 @@ static lv_obj_t * color_select_create_cb(lv_fragment_t* self, lv_obj_t* parent)
     lv_obj_remove_style_all(content);
     lv_obj_set_size(content, lv_pct(100), lv_pct(100));
 
-    fragment->color_selector = lv_colorwheel_create(content, true);
-    lv_colorwheel_set_mode(fragment->color_selector, LV_COLORWHEEL_MODE_HUE);
-    lv_colorwheel_set_mode_fixed(fragment->color_selector, true);
-    lv_colorwheel_set_rgb(fragment->color_selector, cur_color);
-    lv_obj_set_size(fragment->color_selector, lv_pct(75), lv_pct(75));
-    lv_obj_center(fragment->color_selector);
-    lv_obj_add_event_cb(fragment->color_selector, color_changed_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_t* color_selector = lv_colorwheel_create(content, true);
+    lv_colorwheel_set_mode(color_selector, LV_COLORWHEEL_MODE_HUE);
+    lv_colorwheel_set_mode_fixed(color_selector, true);
+    // if (configuration.mode == MODE_NORMAL) lv_colorwheel_set_rgb(color_selector, configuration.setting.normal.color);
+    // else if (configuration.mode == MODE_BREATHING) lv_colorwheel_set_rgb(color_selector, configuration.setting.breathing.color);
+    // else if (configuration.mode == MODE_LIGHTBEAM) lv_colorwheel_set_rgb(color_selector, configuration.setting.lightbeam.color);
+    lv_obj_set_size(color_selector, lv_pct(75), lv_pct(75));
+    lv_obj_center(color_selector);
+    lv_obj_add_event_cb(color_selector, color_selector_event_cb, LV_EVENT_VALUE_CHANGED, fragment);
+    lv_msg_subscribe(RES_COLOR_CHANGED, message_received_cb, fragment);
 
     return content;
 }
 
-static lv_obj_t * mode_select_create_cb(lv_fragment_t* self, lv_obj_t* parent)
+static lv_obj_t* mode_select_create_cb(lv_fragment_t* self, lv_obj_t* parent)
 {
     mode_select_fragment_t* fragment = (mode_select_fragment_t*) self;
 
@@ -136,36 +134,26 @@ static lv_obj_t * mode_select_create_cb(lv_fragment_t* self, lv_obj_t* parent)
     lv_obj_set_style_border_opa(list, 0, 0);
     lv_obj_set_style_bg_opa(list, 0, 0);
 
-    fragment->normal_mode = lv_btn_create(list);
-    btn_set_text(fragment->normal_mode, "Normal");
-    lv_obj_add_event_cb(fragment->normal_mode, mode_select_cb, LV_EVENT_CLICKED, fragment);
+    lv_obj_t* btngroup = btngroup_create();
 
-    fragment->breathing_mode = lv_btn_create(list);
-    btn_set_text(fragment->breathing_mode, "Breathing");
-    lv_obj_add_event_cb(fragment->breathing_mode, mode_select_cb, LV_EVENT_CLICKED, fragment);
+    lv_obj_t* normal_btn = lv_btn_create(list);
+    btn_set_text(normal_btn, "Normal");
+    btngroup_add_btn(btngroup, normal_btn);
+    btngroup_set_checked(btngroup, 0);
 
-    fragment->interval_mode = lv_btn_create(list);
-    btn_set_text(fragment->interval_mode, "Lightbeam");
-    lv_obj_add_event_cb(fragment->interval_mode, mode_select_cb, LV_EVENT_CLICKED, fragment);
+    lv_obj_t* breathing_btn = lv_btn_create(list);
+    btn_set_text(breathing_btn, "Breathing");
+    btngroup_add_btn(btngroup, breathing_btn);
 
-    fragment->rainbow_mode = lv_btn_create(list);
-    btn_set_text(fragment->rainbow_mode, "Rainbow");
-    lv_obj_add_event_cb(fragment->rainbow_mode, mode_select_cb, LV_EVENT_CLICKED, fragment);
+    lv_obj_t* lightbeam_btn = lv_btn_create(list);
+    btn_set_text(lightbeam_btn, "Lightbeam");
+    btngroup_add_btn(btngroup, lightbeam_btn);
 
-    switch (cur_mode) {
-        case MODE_NORMAL:
-            lv_obj_set_style_bg_color(fragment->normal_mode, lv_palette_main(LV_PALETTE_RED), 0);
-            break;
-        case MODE_BREATHING:
-            lv_obj_set_style_bg_color(fragment->breathing_mode, lv_palette_main(LV_PALETTE_RED), 0);
-            break;
-        case MODE_LIGHTBEAM:
-            lv_obj_set_style_bg_color(fragment->interval_mode, lv_palette_main(LV_PALETTE_RED), 0);
-            break;
-        case MODE_RAINBOW:
-            lv_obj_set_style_bg_color(fragment->rainbow_mode, lv_palette_main(LV_PALETTE_RED), 0);
-            break;
-    }
+    lv_obj_t* rainbow_btn = lv_btn_create(list);
+    btn_set_text(rainbow_btn, "Rainbow");
+    btngroup_add_btn(btngroup, rainbow_btn);
+
+    lv_obj_add_event_cb(btngroup, mode_changed_cb, EVENT_SELECTED_CHANGED, NULL);
 
     return content;
 }
@@ -180,6 +168,16 @@ static lv_obj_t * about_page_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
     return content;
 }
 
+static void main_gui_constructor_cb(lv_fragment_t* self, void* args) {
+    LV_UNUSED(args);
+    main_gui_fragment_t* fragment = (main_gui_fragment_t*) self;
+    fragment->power = 0;
+}
+
+static void color_select_construct_cb(lv_fragment_t* self, void* args) {
+    LV_UNUSED(args);
+}
+
 static void container_del_cb(lv_event_t* e)
 {
     if (e->code == LV_EVENT_DELETE)
@@ -192,18 +190,19 @@ static void pwr_btn_event_cb(lv_event_t* e)
 {
     if (e->code == LV_EVENT_CLICKED)
     {
-        main_gui_fragment_t* fragment = (main_gui_fragment_t*) lv_event_get_user_data(e);
-        pwr = ~pwr;
-        if (pwr)
+        lv_obj_t* btn = (lv_obj_t*) lv_event_get_target(e);
+        uint8_t* pwr = (uint8_t*) lv_event_get_user_data(e);
+        *(pwr) = ~(*pwr);
+        if (*pwr)
         {
-            lv_obj_set_style_bg_color(fragment->pwr_btn, lv_palette_main(LV_PALETTE_GREEN), 0);
-            lv_obj_t* label = lv_obj_get_child(fragment->pwr_btn, 0);
+            lv_obj_set_style_bg_color(btn, lv_palette_main(LV_PALETTE_GREEN), 0);
+            lv_obj_t* label = lv_obj_get_child(btn, 0);
             lv_label_set_text(label, "ON");
         }
         else
         {
-            lv_obj_set_style_bg_color(fragment->pwr_btn, lv_palette_main(LV_PALETTE_RED), 0);
-            lv_obj_t* label = lv_obj_get_child(fragment->pwr_btn, 0);
+            lv_obj_set_style_bg_color(btn, lv_palette_main(LV_PALETTE_RED), 0);
+            lv_obj_t* label = lv_obj_get_child(btn, 0);
             lv_label_set_text(label, "OFF");
         }
     }
@@ -213,25 +212,9 @@ static void color_btn_event_cb(lv_event_t* e)
 {
     if (e->code == LV_EVENT_CLICKED)
     {
-        color_select_fragment = lv_fragment_create(&color_select_cls, NULL);
+        lv_obj_t* obj = lv_event_get_target(e);
+        lv_fragment_t* color_select_fragment = lv_fragment_create(&color_select_cls, obj);
         lv_fragment_manager_push(manager, color_select_fragment, &container);
-    }
-    else if (e->code == LV_EVENT_MSG_RECEIVED)
-    {
-        lv_obj_t* btn = (lv_obj_t*) lv_event_get_target(e);
-        lv_msg_t* m = lv_event_get_msg(e);
-        uint32_t id = lv_msg_get_id(m);
-        printf("Received message\n");
-        if (id == MSG_COLOR_CHANGED) {
-            const msg_reply_t* reply = lv_msg_get_payload(m);
-            if (reply->resp) {
-                lv_obj_set_style_bg_color(btn, cur_color, 0);
-                printf("Color btn style changed\n");
-            }
-            else {
-                cur_color = pre_color;
-            }
-        }
     }
 }
 
@@ -239,7 +222,7 @@ static void mode_btn_event_cb(lv_event_t* e)
 {
     if (e->code == LV_EVENT_CLICKED)
     {
-        mode_select_fragment = lv_fragment_create(&mode_select_cls, NULL);
+        lv_fragment_t* mode_select_fragment = lv_fragment_create(&mode_select_cls, NULL);
         lv_fragment_manager_push(manager, mode_select_fragment, &container);
     }
 }
@@ -247,34 +230,22 @@ static void mode_btn_event_cb(lv_event_t* e)
 static void about_btn_event_cb(lv_event_t* e)
 {
     if (e->code == LV_EVENT_CLICKED) {
-        about_page_fragment = lv_fragment_create(&about_page_cls, NULL);
+        lv_fragment_t* about_page_fragment = lv_fragment_create(&about_page_cls, NULL);
         lv_fragment_manager_push(manager, about_page_fragment, &container);
     }
 }
 
-static void color_changed_cb(lv_event_t* e)
+static void color_selector_event_cb(lv_event_t* e)
 {
     if (e->code == LV_EVENT_VALUE_CHANGED)
     {
-        lv_obj_t* color_wheel = (lv_obj_t*) lv_event_get_target(e);
+        lv_obj_t* color_wheel = lv_event_get_target(e);
+        color_select_fragment_t* fragment = (color_select_fragment_t*) lv_event_get_user_data(e);
 
-        pre_color = cur_color;
-        cur_color = lv_colorwheel_get_rgb(color_wheel);
-        printf("Color selected: #%04x\n", lv_color_to16(cur_color));
+        lv_color_t color = lv_colorwheel_get_rgb(color_wheel);
+        printf("color: #%04x\n", lv_color_to16(color));
 
-        msg_struct_t data;
-        data.msg = MSG_COLOR_CHANGED;
-        data.mode = cur_mode;
-        if (cur_mode == MODE_NORMAL) {
-            data.setting.normal.color = lv_color_to16(cur_color);
-        }
-        else if (cur_mode == MODE_BREATHING) {
-            data.setting.breathing.color = lv_color_to16(cur_color);
-        }
-        else if (cur_mode == MODE_LIGHTBEAM) {
-            data.setting.lightbeam.color = lv_color_to16(cur_color);
-        }
-        queue_push(data);
+        msg_send(MSG_COLOR_CHANGED, &color);
     }
 }
 
@@ -287,56 +258,28 @@ static void return_gesture_cb(lv_event_t* e) {
     }
 }
 
-static void mode_select_cb(lv_event_t* e) {
-    if (e->code == LV_EVENT_CLICKED) {
-        lv_obj_t* btn = lv_event_get_target(e);
-        mode_select_fragment_t* fragment = (mode_select_fragment_t*) lv_event_get_user_data(e);
+static void mode_changed_cb(lv_event_t* e) {
+    if (e->code == EVENT_SELECTED_CHANGED) {
+        btngroup_t* tar = lv_event_get_param(e);
+        printf("pre_sel: %d, cur_sel: %d", tar->pre_sel, tar->cur_sel);
+    }
+}
 
-        led_mode_t tar_mode = MODE_NORMAL;
-        if (btn == fragment->normal_mode) {
-            tar_mode = MODE_NORMAL;
+static void message_received_cb(void* s, lv_msg_t* m) {
+    LV_UNUSED(s);
+    uint32_t id = lv_msg_get_id(m);
+    const msg_reply_t* reply = lv_msg_get_payload(m);
+    if (id == RES_COLOR_CHANGED) {
+        printf("GUI received message, id: %d, result: %d\n", id, reply->resp);
+        if (reply->resp) {
+            if (configuration.mode == MODE_NORMAL) {
+                configuration.setting.normal.color = 
+            }
         }
-        else if (btn == fragment->breathing_mode) {
-            tar_mode = MODE_BREATHING;
-        }
-        else if (btn == fragment->interval_mode) {
-            tar_mode = MODE_LIGHTBEAM;
-        }
-        else if (btn == fragment->rainbow_mode) {
-            tar_mode = MODE_RAINBOW;
-        }
-
-        if (tar_mode == cur_mode) return;
-        pre_mode = cur_mode;
-        cur_mode = tar_mode;
-        switch (pre_mode) {
-            case MODE_NORMAL:
-                lv_obj_set_style_bg_color(fragment->normal_mode, lv_palette_main(LV_PALETTE_BLUE), 0);
-                break;
-            case MODE_BREATHING:
-                lv_obj_set_style_bg_color(fragment->breathing_mode, lv_palette_main(LV_PALETTE_BLUE), 0);
-                break;
-            case MODE_LIGHTBEAM:
-                lv_obj_set_style_bg_color(fragment->interval_mode, lv_palette_main(LV_PALETTE_BLUE), 0);
-                break;
-            case MODE_RAINBOW:
-                lv_obj_set_style_bg_color(fragment->rainbow_mode, lv_palette_main(LV_PALETTE_BLUE), 0);
-                break;
-        }
-        switch (cur_mode) {
-            case MODE_NORMAL:
-                lv_obj_set_style_bg_color(fragment->normal_mode, lv_palette_main(LV_PALETTE_RED), 0);
-                break;
-            case MODE_BREATHING:
-                lv_obj_set_style_bg_color(fragment->breathing_mode, lv_palette_main(LV_PALETTE_RED), 0);
-                break;
-            case MODE_LIGHTBEAM:
-                lv_obj_set_style_bg_color(fragment->interval_mode, lv_palette_main(LV_PALETTE_RED), 0);
-                break;
-            case MODE_RAINBOW:
-                lv_obj_set_style_bg_color(fragment->rainbow_mode, lv_palette_main(LV_PALETTE_RED), 0);
-                break;
-        }
+    }
+    else if (id == RES_CONFIG_UPDATED) {
+        printf("GUI received message, id: %d\nGUI refreshed", id);
+        refresh_main_gui();
     }
 }
 
@@ -354,12 +297,10 @@ static void btn_set_text(lv_obj_t* btn, const char* text)
 }
 
 
-/* Main function */
+/* Global function */
 
 void create_main_gui(void)
 {
-    cur_color = lv_palette_main(LV_PALETTE_BLUE);
-
     container = lv_obj_create(lv_scr_act());
     lv_obj_set_size(container, lv_pct(100), lv_pct(100));
     lv_obj_set_style_pad_all(container, 0, 0);
@@ -369,6 +310,10 @@ void create_main_gui(void)
     manager = lv_fragment_manager_create(NULL);
     lv_obj_add_event_cb(container, container_del_cb, LV_EVENT_DELETE, NULL);
 
-    main_gui_fragment = lv_fragment_create(&main_gui_cls, NULL);
+    lv_fragment_t* main_gui_fragment = lv_fragment_create(&main_gui_cls, NULL);
     lv_fragment_manager_push(manager, main_gui_fragment, &container);
+}
+
+void refresh_main_gui(void) {
+
 }

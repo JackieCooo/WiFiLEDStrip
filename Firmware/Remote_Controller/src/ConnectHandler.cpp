@@ -16,100 +16,48 @@ void ConnectHandler::begin(void) {
 }
 
 void ConnectHandler::process(void) {
-    if (_connected) {
-        _handle();
+    if (!_connected) {
+        msg_send(MSG_MATCH, NULL);
     }
-    else {
-        Serial.println("Matching strip...");
-        _match();
-        if (_connected) Serial.println("Matched");
-        else Serial.println("Match failed");
-    }
+    _handle();
 }
 
 void ConnectHandler::_handle(void) {
-    if (!queue_empty()) {
-        msg_struct_t data = queue_front();
-        package_t& p = _package.getPackage();
+    if (msg_aviliable()) {
+        msg_struct_t req_data = msg_receive();
+        _pack(req_data);
 
-        p.cmd = PKG_CMD_WRITE_SETTING;
-        if (data.msg == MSG_MODE_CHANGED) {
-            Serial.println("Mode changed message");
-            p.data.strip.subcmd = PKG_DATA_ALL;
-            if (data.mode == PKG_MODE_NORMAL) {
-                p.data.strip.mode = PKG_MODE_NORMAL;
-                p.data.strip.setting.normal.color = data.setting.normal.color;
+        msg_reply_t res_data;
+        res_data.data = req_data;
+        if (req_data.msg == MSG_MATCH) {
+            if (_match()) {
+                res_data.resp = true;
             }
-            else if (data.mode == PKG_MODE_BREATHING) {
-                p.data.strip.mode = PKG_MODE_BREATHING;
-                p.data.strip.setting.breathing.color = data.setting.breathing.color;
-                p.data.strip.setting.breathing.duration = data.setting.breathing.duration;
-                p.data.strip.setting.breathing.ease = data.setting.breathing.ease;
-                p.data.strip.setting.breathing.interval = data.setting.breathing.interval;
+            else {
+                res_data.resp = false;
             }
-            else if (data.mode == PKG_MODE_LIGHTBEAM) {
-                p.data.strip.mode = PKG_MODE_LIGHTBEAM;
-                p.data.strip.setting.lightbeam.color = data.setting.lightbeam.color;
-                p.data.strip.setting.lightbeam.dir = data.setting.lightbeam.dir;
-                p.data.strip.setting.lightbeam.faded_end = data.setting.lightbeam.faded_end;
-                p.data.strip.setting.lightbeam.head_len = data.setting.lightbeam.head_len;
-                p.data.strip.setting.lightbeam.interval = data.setting.lightbeam.interval;
-                p.data.strip.setting.lightbeam.len = data.setting.lightbeam.len;
-                p.data.strip.setting.lightbeam.speed = data.setting.lightbeam.speed;
-                p.data.strip.setting.lightbeam.tail_len = data.setting.lightbeam.tail_len;
-            }
-            else if (data.mode == PKG_MODE_RAINBOW) {
-                p.data.strip.mode = PKG_MODE_RAINBOW;
-                p.data.strip.setting.rainbow.speed = data.setting.rainbow.speed;
-            }
-        }
-        else if (data.msg == MSG_COLOR_CHANGED) {
-            Serial.println("Color changed message");
-            p.data.strip.subcmd = PKG_DATA_COLOR;
-            if (data.mode == PKG_MODE_NORMAL) {
-                p.data.strip.mode = PKG_MODE_NORMAL;
-                p.data.strip.setting.normal.color = data.setting.normal.color;
-            }
-            else if (data.mode == PKG_MODE_BREATHING) {
-                p.data.strip.mode = PKG_MODE_BREATHING;
-                p.data.strip.setting.breathing.color = data.setting.breathing.color;
-            }
-            else if (data.mode == PKG_MODE_LIGHTBEAM) {
-                p.data.strip.mode = PKG_MODE_LIGHTBEAM;
-                p.data.strip.setting.lightbeam.color = data.setting.lightbeam.color;
-            }
-        }
-
-        uint8_t tx_buf[PKG_BUF_MAX_LEN];
-        _package.pack(tx_buf, sizeof(tx_buf));
-        msg_reply_t reply;
-        reply.msg = data.msg;
-        if (_transmit(tx_buf, BUF_SIZE(tx_buf))) {
-            reply.resp = true;
         }
         else {
-            reply.resp = false;
+            if (_transmit()) {
+                res_data.resp = true;
+            }
+            else {
+                res_data.resp = false;
+            }
         }
-        Serial.printf("Send result: %d to GUI\n", reply.resp);
-        lv_msg_send(MSG_COLOR_CHANGED, &reply);
-
-        queue_pop();
+        _parse(res_data);
     }
 }
 
-void ConnectHandler::_match(void) {
+bool ConnectHandler::_match(void) {
+    Serial.println("Matching...");
     WiFiUDP receiver, sender;
-    uint32_t timeout = MATCH_MAX_TIME;
+    bool res = false;
+    uint32_t timeout = MATCH_TIMEOUT_MS;
     package_t& p = _package.getPackage();
 
     receiver.begin(MATCH_PORT);
     sender.beginPacket(IPAddress(255, 255, 255, 255), MATCH_PORT);
-    IPAddress ip = WiFi.localIP();
-    p.cmd = PKG_CMD_ACK;
-    p.data.ip.a = ip[0];
-    p.data.ip.b = ip[1];
-    p.data.ip.c = ip[2];
-    p.data.ip.d = ip[3];
     uint8_t tx_buf[PKG_BUF_MAX_LEN];
     _package.pack(tx_buf, sizeof(tx_buf));
     sender.write(tx_buf, BUF_SIZE(tx_buf));
@@ -121,23 +69,25 @@ void ConnectHandler::_match(void) {
             memset(rx_buf, 0x00, sizeof(rx_buf));
             receiver.read(rx_buf, sizeof(rx_buf));
             if (_package.parse(rx_buf, sizeof(rx_buf))) {
-                _hostIp = IPAddress(p.data.ip.a, p.data.ip.b, p.data.ip.c, p.data.ip.d);
-                Serial.printf("Strip IP: %s\n", _hostIp.toString().c_str());
-                _connected = true;
+                res = true;
             }
         }
         delay(1);
     }
 
     receiver.stop();
+
+    return res;
 }
 
-bool ConnectHandler::_transmit(uint8_t* buf, uint8_t size) {
+bool ConnectHandler::_transmit(void) {
     WiFiClient client;
     bool res = false;
     uint32_t timeout = TIMEOUT_MS;
     if (client.connect(_hostIp, SERVER_PORT)) {
-        client.write(buf, size);
+        uint8_t tx_buf[PKG_BUF_MAX_LEN];
+        _package.pack(tx_buf, sizeof(tx_buf));
+        client.write(tx_buf, BUF_SIZE(tx_buf));
         Serial.println("Sent data to host");
         while (client.connected() && timeout--) {
             if (client.available()) {
@@ -146,10 +96,7 @@ bool ConnectHandler::_transmit(uint8_t* buf, uint8_t size) {
                 client.read(rx_buf, sizeof(rx_buf));
                 Serial.println("Received host reply");
                 if (_package.parse(rx_buf, sizeof(rx_buf))) {
-                    package_t& p = _package.getPackage();
-                    if (p.cmd == PKG_CMD_WRITE_REPLY && p.data.resp.resp == PKG_REPLY_OK) {
-                        res = true;
-                    }
+                    res = true;
                 }
                 break;
             }
@@ -158,6 +105,207 @@ bool ConnectHandler::_transmit(uint8_t* buf, uint8_t size) {
         client.stop();
     }
     return res;
+}
+
+void ConnectHandler::_pack(msg_struct_t& msg) {
+    package_t& p = _package.getPackage();
+
+    if (msg.msg == MSG_MODE_CHANGED) {
+        Serial.println("Mode changed message");
+        p.cmd = PKG_CMD_WRITE_SETTING;
+        p.data.strip.subcmd = PKG_DATA_ALL;
+        if (configuration.mode == MODE_NORMAL) {
+            p.data.strip.mode = PKG_MODE_NORMAL;
+            p.data.strip.setting.normal.color = lv_color_to16(configuration.setting.normal.color);
+        }
+        else if (configuration.mode == MODE_BREATHING) {
+            p.data.strip.mode = PKG_MODE_BREATHING;
+            p.data.strip.setting.breathing.color = lv_color_to16(configuration.setting.breathing.color);
+            p.data.strip.setting.breathing.duration = configuration.setting.breathing.duration;
+            p.data.strip.setting.breathing.ease = configuration.setting.breathing.ease;
+            p.data.strip.setting.breathing.interval = configuration.setting.breathing.interval;
+        }
+        else if (configuration.mode == MODE_LIGHTBEAM) {
+            p.data.strip.mode = PKG_MODE_LIGHTBEAM;
+            p.data.strip.setting.lightbeam.color = lv_color_to16(configuration.setting.lightbeam.color);
+            p.data.strip.setting.lightbeam.dir = configuration.setting.lightbeam.dir;
+            p.data.strip.setting.lightbeam.faded_end = configuration.setting.lightbeam.faded_end;
+            p.data.strip.setting.lightbeam.head_len = configuration.setting.lightbeam.head_len;
+            p.data.strip.setting.lightbeam.interval = configuration.setting.lightbeam.interval;
+            p.data.strip.setting.lightbeam.len = configuration.setting.lightbeam.len;
+            p.data.strip.setting.lightbeam.speed = configuration.setting.lightbeam.speed;
+            p.data.strip.setting.lightbeam.tail_len = configuration.setting.lightbeam.tail_len;
+        }
+        else if (configuration.mode == MODE_RAINBOW) {
+            p.data.strip.mode = PKG_MODE_RAINBOW;
+            p.data.strip.setting.rainbow.speed = configuration.setting.rainbow.speed;
+        }
+    }
+    else if (msg.msg == MSG_COLOR_CHANGED) {
+        Serial.println("Color changed message");
+        lv_color_t* color = (lv_color_t*) msg.user_data;
+        p.cmd = PKG_CMD_WRITE_SETTING;
+        p.data.strip.subcmd = PKG_DATA_COLOR;
+        if (configuration.mode == PKG_MODE_NORMAL) {
+            p.data.strip.mode = MODE_NORMAL;
+            p.data.strip.setting.normal.color = lv_color_to16(*color);
+        }
+        else if (configuration.mode == MODE_BREATHING) {
+            p.data.strip.mode = PKG_MODE_BREATHING;
+            p.data.strip.setting.breathing.color = lv_color_to16(*color);
+        }
+        else if (configuration.mode == MODE_LIGHTBEAM) {
+            p.data.strip.mode = PKG_MODE_LIGHTBEAM;
+            p.data.strip.setting.lightbeam.color = lv_color_to16(*color);
+        }
+    }
+    else if (msg.msg == MSG_UPDATE_CONFIG) {
+        Serial.println("Update config message");
+        p.cmd = PKG_CMD_READ_SETTING;
+        p.data.strip.subcmd = PKG_DATA_ALL;
+    }
+    else if (msg.msg == MSG_MATCH) {
+        Serial.println("Ack message");
+        IPAddress ip = WiFi.localIP();
+        p.cmd = PKG_CMD_ACK;
+        p.data.ip.a = ip[0];
+        p.data.ip.b = ip[1];
+        p.data.ip.c = ip[2];
+        p.data.ip.d = ip[3];
+    }
+}
+
+void ConnectHandler::_parse(msg_reply_t& reply) {
+    package_t& p = _package.getPackage();
+    if (p.cmd == PKG_CMD_WRITE_REPLY) {
+        if (reply.resp) {
+            if (reply.data.msg == MSG_COLOR_CHANGED) {
+                lv_color_t* color = (lv_color_t*) reply.data.user_data;
+                if (configuration.mode == MODE_NORMAL) {
+                    configuration.setting.normal.color = *color;
+                }
+                else if (configuration.mode == MODE_BREATHING) {
+                    configuration.setting.breathing.color = *color;
+                }
+                else if (configuration.mode == MODE_LIGHTBEAM) {
+                    configuration.setting.lightbeam.color = *color;
+                }
+            }
+            else if (reply.data.msg == MSG_MODE_CHANGED) {
+                configuration_t* data = (configuration_t*) reply.data.user_data;
+                memcpy(&configuration, data, sizeof(data));
+            }
+        }
+
+        if (reply.data.msg == MSG_COLOR_CHANGED) {
+            lv_msg_send(RES_COLOR_CHANGED, &reply);
+        }
+        else if (reply.data.msg == MSG_MODE_CHANGED) {
+            lv_msg_send(RES_MODE_CHANGED, &reply);
+        }
+    }
+    else if (p.cmd == PKG_CMD_READ_REPLY) {
+        if (reply.resp) {
+            if (p.data.strip.subcmd == PKG_DATA_ALL) {
+                configuration.mode = ConnectHandler::packMode(p.data.strip.mode);
+                if (p.data.strip.mode == PKG_MODE_NORMAL) {
+                    configuration.setting.normal.color = lv_color_hex(p.data.strip.setting.normal.color);
+                }
+                else if (p.data.strip.mode == PKG_MODE_BREATHING) {
+                    configuration.setting.breathing.color = lv_color_hex(p.data.strip.setting.breathing.color);
+                    configuration.setting.breathing.duration = p.data.strip.setting.breathing.duration;
+                    configuration.setting.breathing.ease = ConnectHandler::packEase(p.data.strip.setting.breathing.ease);
+                    configuration.setting.breathing.interval = p.data.strip.setting.breathing.interval;
+                }
+                else if (p.data.strip.mode == PKG_MODE_LIGHTBEAM) {
+                    configuration.setting.lightbeam.color = lv_color_hex(p.data.strip.setting.lightbeam.color);
+                    configuration.setting.lightbeam.dir = ConnectHandler::packDirection(p.data.strip.setting.lightbeam.dir);
+                    configuration.setting.lightbeam.faded_end = ConnectHandler::packFadedEnd(p.data.strip.setting.lightbeam.faded_end);
+                    configuration.setting.lightbeam.head_len = p.data.strip.setting.lightbeam.head_len;
+                    configuration.setting.lightbeam.interval = p.data.strip.setting.lightbeam.interval;
+                    configuration.setting.lightbeam.len = p.data.strip.setting.lightbeam.len;
+                    configuration.setting.lightbeam.speed = p.data.strip.setting.lightbeam.speed;
+                    configuration.setting.lightbeam.tail_len = p.data.strip.setting.lightbeam.tail_len;
+                }
+                else if (p.data.strip.mode == PKG_MODE_RAINBOW) {
+                    configuration.setting.rainbow.speed = p.data.strip.setting.rainbow.speed;
+                }
+            }
+            else if (p.data.strip.subcmd == PKG_DATA_COLOR) {
+                configuration.mode = ConnectHandler::packMode(p.data.strip.mode);
+                if (p.data.strip.mode == PKG_MODE_NORMAL) {
+                    configuration.setting.normal.color = lv_color_hex(p.data.strip.setting.normal.color);
+                }
+                else if (p.data.strip.mode == PKG_MODE_BREATHING) {
+                    configuration.setting.breathing.color = lv_color_hex(p.data.strip.setting.breathing.color);
+                }
+                else if (p.data.strip.mode == PKG_MODE_LIGHTBEAM) {
+                    configuration.setting.lightbeam.color = lv_color_hex(p.data.strip.setting.lightbeam.color);
+                }
+            }
+        }
+        lv_msg_send(RES_CONFIG_UPDATED, &reply);
+    }
+    else if (p.cmd == PKG_CMD_ACK_REPLY) {
+        if (reply.resp) {
+            _hostIp = IPAddress(p.data.ip.a, p.data.ip.b, p.data.ip.c, p.data.ip.d);
+            Serial.printf("Host IP: %s\n", _hostIp.toString().c_str());
+            _connected = true;
+            Serial.println("Matched");
+            msg_send(MSG_UPDATE_CONFIG, NULL);
+        }
+        lv_msg_send(RES_MATCH, &reply);
+    }
+}
+
+led_mode_t ConnectHandler::packMode(uint8_t mode) {
+    switch (mode)
+    {
+        case PKG_MODE_NORMAL:
+            return MODE_NORMAL;
+            break;
+        case PKG_MODE_BREATHING:
+            return MODE_BREATHING;
+            break;
+        case PKG_MODE_LIGHTBEAM:
+            return MODE_LIGHTBEAM;
+            break;
+        case PKG_MODE_RAINBOW:
+            return MODE_RAINBOW;
+            break;
+        default:
+            break;
+    }
+    return MODE_NORMAL;
+}
+
+ease_t ConnectHandler::packEase(uint8_t ease) {
+    return EASE_LINEAR;
+}
+
+faded_end_t ConnectHandler::packFadedEnd(uint8_t faded_end) {
+    if (faded_end & PKG_FADED_HEAD) {
+        return FADED_HEAD;
+    }
+    else if (faded_end & PKG_FADED_TAIL) {
+        return FADED_TAIL;
+    }
+    return FADED_DISABLE;
+}
+
+dir_t ConnectHandler::packDirection(uint8_t dir) {
+    switch (dir)
+    {
+        case PKG_MOVE_RIGHT:
+            return MOVE_RIGHT;
+            break;
+        case PKG_MOVE_LEFT:
+            return MOVE_LEFT;
+            break;
+        default:
+            break;
+    }
+    return MOVE_RIGHT;
 }
 
 ConnectHandler connHandler;
