@@ -2,12 +2,10 @@
 #define LVGL_BTN_GROUP_H
 
 #include "lvgl.h"
-
-#define BTNGROUP_MAX_SIZE           4
+#include "list.h"
 
 typedef struct {
-    lv_obj_t* group[BTNGROUP_MAX_SIZE];
-    uint8_t size;
+    list_t* group;
     uint8_t cur_sel;
     uint8_t pre_sel;
     lv_color_t def_color;

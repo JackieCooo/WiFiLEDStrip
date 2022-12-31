@@ -40,8 +40,8 @@ private:
     void _handle(void);
     bool _match(void);
     bool _transmit(void);
-    void _pack(msg_struct_t& msg);
-    void _parse(msg_reply_t& reply);
+    void _construct_transaction_data(msg_request_t& msg);
+    void _handle_reply(msg_reply_t& reply);
 };
 
 extern ConnectHandler connHandler;

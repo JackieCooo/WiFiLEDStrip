@@ -10,7 +10,7 @@ lv_obj_t* btngroup_create(void) {
     lv_obj_set_user_data(obj, tar);
     EVENT_SELECTED_CHANGED = lv_event_register_id();
 
-    tar->size = 0;
+    tar->group = list_create();
     tar->cur_sel = 0;
     tar->pre_sel = 0;
     tar->def_color = lv_palette_main(LV_PALETTE_BLUE);
@@ -21,32 +21,31 @@ lv_obj_t* btngroup_create(void) {
 
 void btngroup_add_btn(lv_obj_t* obj, lv_obj_t* btn) {
     btngroup_t* tar = (btngroup_t*) lv_obj_get_user_data(obj);
-    if (tar->size >= BTNGROUP_MAX_SIZE) return;
 
     lv_obj_add_event_cb(btn, btngroup_value_changed_cb, LV_EVENT_CLICKED, obj);
-    tar->group[tar->size++] = btn;
+    list_push_back(tar->group, btn);
 }
 
 void btngroup_set_checked(lv_obj_t* obj, uint8_t index) {
     btngroup_t* tar = (btngroup_t*) lv_obj_get_user_data(obj);
-    if (index >= tar->size) return;
+    if (tar->group->size <= index) return;
 
     tar->pre_sel = tar->cur_sel;
     tar->cur_sel = index;
-    lv_obj_set_style_bg_color(tar->group[tar->pre_sel], tar->def_color, 0);
-    lv_obj_set_style_bg_color(tar->group[tar->cur_sel], tar->sel_color, 0);
+    lv_obj_set_style_bg_color((lv_obj_t*) list_get(tar->group, tar->pre_sel), tar->def_color, 0);
+    lv_obj_set_style_bg_color((lv_obj_t*) list_get(tar->group, tar->cur_sel), tar->sel_color, 0);
 
     lv_event_send(obj, EVENT_SELECTED_CHANGED, tar);
 }
 
 uint8_t btngroup_get_index(lv_obj_t* obj, lv_obj_t* btn) {
     btngroup_t* tar = (btngroup_t*) lv_obj_get_user_data(obj);
-    for (uint8_t i = 0; i < tar->size; ++i) {
-        if (tar->group[i] == btn) {
+    for (uint8_t i = 0; i < tar->group->size; ++i) {
+        if (list_get(tar->group, i) == btn) {
             return i;
         }
     }
-    return tar->size;
+    return tar->group->size;
 }
 
 static void btngroup_value_changed_cb(lv_event_t* e) {

@@ -64,19 +64,6 @@
 #define PKG_EASE_CIRCULAR_CENTER            (0x1C)
 #define PKG_EASE_GAMMA                      (0x1D)
 
-#define PKG_DATA_ALL                        (0x00)
-#define PKG_DATA_COLOR                      (0x01)
-#define PKG_DATA_DURATION                   (0x02)
-#define PKG_DATA_INTERVAL                   (0x03)
-#define PKG_DATA_SPEED                      (0x04)
-#define PKG_DATA_LEN                        (0x05)
-#define PKG_DATA_FADED_END                  (0x06)
-#define PKG_DATA_TAIL_LEN                   (0x07)
-#define PKG_DATA_HEAD_LEN                   (0x08)
-#define PKG_DATA_DIRECTION                  (0x09)
-#define PKG_DATA_EASE                       (0x0A)
-#define PKG_DATA_MODE                       (0x0B)
-
 #define PKG_HIGH(x)                         ((uint8_t)(x >> 8))
 #define PKG_LOW(x)                          ((uint8_t)x)
 #define PKG_CONCAT(x, y)                    (((uint16_t)x) << 8 | y)
@@ -102,7 +89,7 @@ typedef struct {
     uint8_t cmd;
     union {
         struct {
-            uint8_t subcmd;
+            uint8_t power;
             uint8_t mode;
             setting_data_t setting;
         } strip;

@@ -14,25 +14,25 @@ extern "C" {
 #include "queue.h"
 
 typedef enum {
-    MSG_MODE_CHANGED,
-    MSG_COLOR_CHANGED,
-    MSG_UPDATE_CONFIG,
+    MSG_READ_CONFIG,
+    MSG_WRITE_CONFIG,
     MSG_MATCH,
 } msg_t;
 
 typedef struct {
     msg_t msg;
     void* user_data;
-} msg_struct_t;
+} msg_request_t;
 
 typedef struct {
-    msg_struct_t data;
+    msg_request_t data;
     bool resp;
 } msg_reply_t;
 
+void msg_init(void);
 bool msg_aviliable(void);
 void msg_send(msg_t type, void* user_data);
-msg_struct_t msg_receive(void);
+msg_request_t msg_receive(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

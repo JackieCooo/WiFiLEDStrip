@@ -9,10 +9,8 @@ extern "C" {
 
 #include "lvgl.h"
 
-#define RES_COLOR_CHANGED               1
-#define RES_CONFIG_UPDATED              2
-#define RES_MODE_CHANGED                3
-#define RES_MATCH                       4
+#define RES_CONFIG_UPDATED              1
+#define RES_MATCH                       2
 
 typedef struct {
     uint16_t color;
@@ -98,7 +96,22 @@ typedef enum {
     MOVE_LEFT
 } dir_t;
 
+typedef enum {
+    DATA_ALL,
+    DATA_COLOR,
+    DATA_DURATION,
+    DATA_EASE,
+    DATA_INTERVAL,
+    DATA_LEN,
+    DATA_FADED_END,
+    DATA_HEAD_LEN,
+    DATA_TAIL_LEN,
+    DATA_SPEED,
+    DATA_DIR,
+} data_type_t;
+
 typedef struct {
+    bool power;
     led_mode_t mode;
     union {
         struct {

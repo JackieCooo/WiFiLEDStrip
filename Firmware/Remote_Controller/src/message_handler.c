@@ -1,22 +1,28 @@
 #include "message_handler.h"
 
+static queue_t* queue;
+
+void msg_init(void) {
+    queue = queue_create();
+}
+
 bool msg_aviliable(void) {
-    return !queue_empty();
+    return !queue_empty(queue);
 }
 
 void msg_send(msg_t type, void* user_data) {
-    msg_struct_t* data = (msg_struct_t*) heap_caps_malloc(sizeof(msg_struct_t), MALLOC_CAP_DEFAULT);
+    msg_request_t* data = (msg_request_t*) heap_caps_malloc(sizeof(msg_request_t), MALLOC_CAP_DEFAULT);
     data->msg = type;
-    memcpy(data->user_data, user_data, sizeof(user_data));
-    queue_push((void*) data);
+    data->user_data = user_data;
+    queue_push(queue, data);
 }
 
-msg_struct_t msg_receive(void) {
-    msg_struct_t res;
+msg_request_t msg_receive(void) {
+    msg_request_t res;
 
-    msg_struct_t* data = (msg_struct_t*) queue_front();
-    memcpy(&res, data, sizeof(data));
-    queue_pop();
+    msg_request_t* data = (msg_request_t*) queue_front(queue);
+    memcpy(&res, data, sizeof(msg_request_t));
+    queue_pop(queue);
     heap_caps_free(data);
     data = NULL;
 

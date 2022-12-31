@@ -28,6 +28,7 @@ static void mode_changed_cb(lv_event_t* e);
 static void message_received_cb(void* s, lv_msg_t* m);
 
 static void btn_set_text(lv_obj_t* btn, const char* text);
+static void* init_message_package(void);
 
 
 /* Static structs define */
@@ -112,7 +113,7 @@ static lv_obj_t * color_select_create_cb(lv_fragment_t* self, lv_obj_t* parent)
     lv_obj_set_size(color_selector, lv_pct(75), lv_pct(75));
     lv_obj_center(color_selector);
     lv_obj_add_event_cb(color_selector, color_selector_event_cb, LV_EVENT_VALUE_CHANGED, fragment);
-    lv_msg_subscribe(RES_COLOR_CHANGED, message_received_cb, fragment);
+    lv_msg_subscribe(RES_CONFIG_UPDATED, message_received_cb, fragment);
 
     return content;
 }
@@ -244,8 +245,12 @@ static void color_selector_event_cb(lv_event_t* e)
 
         lv_color_t color = lv_colorwheel_get_rgb(color_wheel);
         printf("color: #%04x\n", lv_color_to16(color));
+        if (configuration.mode == MODE_NORMAL) configuration.setting.normal.color = color;
+        else if (configuration.mode == MODE_BREATHING) configuration.setting.breathing.color = color;
+        else if (configuration.mode == MODE_LIGHTBEAM) configuration.setting.lightbeam.color = color;
 
-        msg_send(MSG_COLOR_CHANGED, &color);
+        void* data = init_message_package();
+        msg_send(MSG_WRITE_CONFIG, data);
     }
 }
 
@@ -269,22 +274,17 @@ static void message_received_cb(void* s, lv_msg_t* m) {
     LV_UNUSED(s);
     uint32_t id = lv_msg_get_id(m);
     const msg_reply_t* reply = lv_msg_get_payload(m);
-    if (id == RES_COLOR_CHANGED) {
+    if (id == RES_CONFIG_UPDATED) {
         printf("GUI received message, id: %d, result: %d\n", id, reply->resp);
         if (reply->resp) {
-            if (configuration.mode == MODE_NORMAL) {
-                configuration.setting.normal.color = 
-            }
+            refresh_main_gui();
+            printf("GUI refreshed\n");
         }
-    }
-    else if (id == RES_CONFIG_UPDATED) {
-        printf("GUI received message, id: %d\nGUI refreshed", id);
-        refresh_main_gui();
     }
 }
 
 
-/* Style functions */
+/* Utility functions */
 
 static void btn_set_text(lv_obj_t* btn, const char* text)
 {
@@ -294,6 +294,12 @@ static void btn_set_text(lv_obj_t* btn, const char* text)
 
     lv_obj_set_size(btn, 120, 50);
     lv_obj_center(btn);
+}
+
+static void* init_message_package(void) {
+    configuration_t* data = (configuration_t*) heap_caps_malloc(sizeof(configuration_t), MALLOC_CAP_DEFAULT);
+    memcpy(data, &configuration, sizeof(configuration_t));
+    return data;
 }
 
 

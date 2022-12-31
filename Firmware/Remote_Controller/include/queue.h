@@ -7,18 +7,17 @@ extern "C" {
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <esp_heap_caps.h>
 
-#define MAX_QUEUE_SIZE              3
+#include "list.h"
 
-typedef struct {
-    void* queue[MAX_QUEUE_SIZE];
-    uint8_t size;
-} queue_t;
+typedef list_t queue_t;
 
-bool queue_empty(void);
-void queue_push(void* tar);
-void queue_pop(void);
-void* queue_front(void);
+queue_t* queue_create(void);
+bool queue_empty(queue_t* queue);
+void queue_push(queue_t* queue, void* data);
+void queue_pop(queue_t* queue);
+void* queue_front(queue_t* queue);
 
 #ifdef __cplusplus
 } /* extern "C" */
