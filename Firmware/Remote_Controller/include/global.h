@@ -12,6 +12,19 @@ extern "C" {
 #define RES_CONFIG_UPDATED              1
 #define RES_MATCH                       2
 
+#define DEFAULT_POWER                   false
+#define DEFAULT_MODE                    MODE_NORMAL
+#define DEFAULT_COLOR                   lv_color_hex(0x001f)
+#define DEFAULT_DURATION                2000
+#define DEFAULT_INTERVAL                1000
+#define DEFAULT_EASE                    EASE_LINEAR
+#define DEFAULT_LEN                     5
+#define DEFAULT_SPEED                   8
+#define DEFAULT_FADED_END               FADED_DISABLE
+#define DEFAULT_HEAD_LEN                4
+#define DEFAULT_TAIL_LEN                4
+#define DEFAULT_DIRECTION               MOVE_RIGHT
+
 typedef struct {
     uint16_t color;
 } normal_data_t;
@@ -95,20 +108,6 @@ typedef enum {
     MOVE_RIGHT,
     MOVE_LEFT
 } dir_t;
-
-typedef enum {
-    DATA_ALL,
-    DATA_COLOR,
-    DATA_DURATION,
-    DATA_EASE,
-    DATA_INTERVAL,
-    DATA_LEN,
-    DATA_FADED_END,
-    DATA_HEAD_LEN,
-    DATA_TAIL_LEN,
-    DATA_SPEED,
-    DATA_DIR,
-} data_type_t;
 
 typedef struct {
     bool power;

@@ -3,7 +3,7 @@
 #include "lvgl.h"
 #include "display.h"
 #include "indev.h"
-#include "main_gui.h"
+#include "gui.h"
 #include "ConnectHandler.h"
 
 Display display;
@@ -25,7 +25,7 @@ void setup(void) {
   Serial.println("touch init done");
 
   Serial.println("gui init");
-  create_main_gui();
+  create_gui();
   Serial.println("gui init done");
 
   connHandler.begin();
