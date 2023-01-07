@@ -11,8 +11,9 @@ extern "C" {
 #include "checked_group.h"
 #include "animation_handler.h"
 #include "global.h"
-#include "styled_slider.h"
 #include "message_handler.h"
+#include "styled_spinbox.h"
+#include "confirm_panel.h"
 
 /* User defines */
 #define BTN_HOR_RES 120

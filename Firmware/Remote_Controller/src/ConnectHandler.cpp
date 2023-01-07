@@ -132,7 +132,7 @@ void ConnectHandler::_construct_transaction_data(msg_request_t& msg) {
             p.data.strip.setting.lightbeam.dir = configuration.setting.lightbeam.dir;
             p.data.strip.setting.lightbeam.faded_end = configuration.setting.lightbeam.faded_end;
             p.data.strip.setting.lightbeam.head_len = configuration.setting.lightbeam.head_len;
-            p.data.strip.setting.lightbeam.interval = configuration.setting.lightbeam.interval;
+            p.data.strip.setting.lightbeam.gap = configuration.setting.lightbeam.gap;
             p.data.strip.setting.lightbeam.len = configuration.setting.lightbeam.len;
             p.data.strip.setting.lightbeam.speed = configuration.setting.lightbeam.speed;
             p.data.strip.setting.lightbeam.tail_len = configuration.setting.lightbeam.tail_len;
@@ -183,9 +183,9 @@ void ConnectHandler::_handle_reply(msg_reply_t& reply) {
             else if (p.data.strip.mode == PKG_MODE_LIGHTBEAM) {
                 configuration.setting.lightbeam.color = lv_color_hex(p.data.strip.setting.lightbeam.color);
                 configuration.setting.lightbeam.dir = ConnectHandler::packDirection(p.data.strip.setting.lightbeam.dir);
-                configuration.setting.lightbeam.faded_end = ConnectHandler::packFadedEnd(p.data.strip.setting.lightbeam.faded_end);
+                configuration.setting.lightbeam.faded_end = p.data.strip.setting.lightbeam.faded_end;
                 configuration.setting.lightbeam.head_len = p.data.strip.setting.lightbeam.head_len;
-                configuration.setting.lightbeam.interval = p.data.strip.setting.lightbeam.interval;
+                configuration.setting.lightbeam.gap = p.data.strip.setting.lightbeam.gap;
                 configuration.setting.lightbeam.len = p.data.strip.setting.lightbeam.len;
                 configuration.setting.lightbeam.speed = p.data.strip.setting.lightbeam.speed;
                 configuration.setting.lightbeam.tail_len = p.data.strip.setting.lightbeam.tail_len;
@@ -232,16 +232,6 @@ led_mode_t ConnectHandler::packMode(uint8_t mode) {
 
 ease_t ConnectHandler::packEase(uint8_t ease) {
     return EASE_LINEAR;
-}
-
-faded_end_t ConnectHandler::packFadedEnd(uint8_t faded_end) {
-    if (faded_end & PKG_FADED_HEAD) {
-        return FADED_HEAD;
-    }
-    else if (faded_end & PKG_FADED_TAIL) {
-        return FADED_TAIL;
-    }
-    return FADED_DISABLE;
 }
 
 dir_t ConnectHandler::packDirection(uint8_t dir) {

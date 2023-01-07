@@ -29,8 +29,7 @@ static void color_selector_event_cb(lv_event_t* e);
 static void gesture_event_cb(lv_event_t* e);
 static void mode_changed_cb(lv_event_t* e);
 static void setting_btn_event_cb(lv_event_t* e);
-static void direction_selector_event_cb(lv_event_t* e);
-static void faded_end_selector_event_cb(lv_event_t* e);
+static void confirm_panel_event_cb(lv_event_t* e);
 static void message_received_cb(void* s, lv_msg_t* m);
 
 static void stylish_default_btn(lv_obj_t* btn, const char* text);
@@ -204,14 +203,20 @@ static lv_obj_t* breathing_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     lv_obj_t* duration_label = lv_label_create(content);
     lv_label_set_text(duration_label, "Duration:");
 
-    lv_obj_t* duration_selector = create_styled_slider(content);
-    styled_slider_set_range(duration_selector, 0, 5000);
+    lv_obj_t* duration_selector = create_styled_spinbox(content);
+    styled_spinbox_set_range(duration_selector, 0, 5000);
+    styled_spinbox_set_step(duration_selector, 500);
 
     lv_obj_t* interval_label = lv_label_create(content);
     lv_label_set_text(interval_label, "Interval:");
 
-    lv_obj_t* interval_selector = create_styled_slider(content);
-    styled_slider_set_range(interval_selector, 0, 5000);
+    lv_obj_t* interval_selector = create_styled_spinbox(content);
+    styled_spinbox_set_range(interval_selector, 0, 5000);
+    styled_spinbox_set_step(interval_selector, 500);
+
+    lv_obj_t* confirm_panel = create_confirm_panel(content);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRMED, NULL);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_APPLIED, NULL);
 
     return content;
 }
@@ -234,20 +239,23 @@ static lv_obj_t* lightbeam_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     lv_obj_t* len_label = lv_label_create(content);
     lv_label_set_text(len_label, "Len:");
 
-    lv_obj_t* len_selector = create_styled_slider(content);
-    styled_slider_set_range(len_selector, 0, 50);
+    lv_obj_t* len_selector = create_styled_spinbox(content);
+    styled_spinbox_set_range(len_selector, 0, 50);
+    styled_spinbox_set_step(len_selector, 1);
 
-    lv_obj_t* interval_label = lv_label_create(content);
-    lv_label_set_text(interval_label, "Interval:");
+    lv_obj_t* gap_label = lv_label_create(content);
+    lv_label_set_text(gap_label, "Interval:");
 
-    lv_obj_t* interval_selector = create_styled_slider(content);
-    styled_slider_set_range(interval_selector, 0, 50);
+    lv_obj_t* gap_selector = create_styled_spinbox(content);
+    styled_spinbox_set_range(gap_selector, 0, 50);
+    styled_spinbox_set_step(gap_selector, 1);
 
     lv_obj_t* speed_label = lv_label_create(content);
     lv_label_set_text(speed_label, "Speed:");
 
-    lv_obj_t* speed_selector = create_styled_slider(content);
-    styled_slider_set_range(speed_selector, 0, 100);
+    lv_obj_t* speed_selector = create_styled_spinbox(content);
+    styled_spinbox_set_range(speed_selector, 0, 100);
+    styled_spinbox_set_step(speed_selector, 1);
 
     lv_obj_t* direction_label = lv_label_create(content);
     lv_label_set_text(direction_label, "Direction:");
@@ -259,7 +267,6 @@ static lv_obj_t* lightbeam_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     lv_btnmatrix_set_one_checked(direction_selector, true);
     lv_btnmatrix_set_btn_ctrl(direction_selector, 0, LV_BTNMATRIX_CTRL_CHECKED);
     lv_obj_set_size(direction_selector, 120, 50);
-    lv_obj_add_event_cb(direction_selector, direction_selector_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_set_style_pad_all(direction_selector, 0, 0);
 
     lv_obj_t* faded_end_label = lv_label_create(content);
@@ -270,20 +277,25 @@ static lv_obj_t* lightbeam_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     lv_btnmatrix_set_map(faded_end_selector, faded_end_map);
     lv_btnmatrix_set_btn_ctrl_all(faded_end_selector, LV_BTNMATRIX_CTRL_CHECKABLE);
     lv_obj_set_size(faded_end_selector, 120, 50);
-    lv_obj_add_event_cb(faded_end_selector, faded_end_selector_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_set_style_pad_all(faded_end_selector, 0, 0);
 
     lv_obj_t* head_len_label = lv_label_create(content);
     lv_label_set_text(head_len_label, "Head len:");
 
-    lv_obj_t* head_len_selector = create_styled_slider(content);
-    styled_slider_set_range(head_len_selector, 0, 50);
+    lv_obj_t* head_len_selector = create_styled_spinbox(content);
+    styled_spinbox_set_range(head_len_selector, 0, 50);
+    styled_spinbox_set_step(head_len_selector, 1);
 
     lv_obj_t* tail_len_label = lv_label_create(content);
     lv_label_set_text(tail_len_label, "Head len:");
 
-    lv_obj_t* tail_len_selector = create_styled_slider(content);
-    styled_slider_set_range(tail_len_selector, 0, 50);
+    lv_obj_t* tail_len_selector = create_styled_spinbox(content);
+    styled_spinbox_set_range(tail_len_selector, 0, 50);
+    styled_spinbox_set_step(tail_len_selector, 1);
+
+    lv_obj_t* confirm_panel = create_confirm_panel(content);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRMED, NULL);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_APPLIED, NULL);
 
     return content;
 }
@@ -306,8 +318,13 @@ static lv_obj_t* rainbow_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t* p
     lv_obj_t* speed_label = lv_label_create(content);
     lv_label_set_text(speed_label, "Speed:");
 
-    lv_obj_t* speed_selector = create_styled_slider(content);
-    styled_slider_set_range(speed_selector, 0, 100);
+    lv_obj_t* speed_selector = create_styled_spinbox(content);
+    styled_spinbox_set_range(speed_selector, 0, 100);
+    styled_spinbox_set_step(speed_selector, 1);
+
+    lv_obj_t* confirm_panel = create_confirm_panel(content);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRMED, NULL);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_APPLIED, NULL);
 
     return content;
 }
@@ -370,11 +387,12 @@ static void color_selector_event_cb(lv_event_t* e)
         printf("color: #%04x\n", lv_color_to16(color));
 
         void* data = init_message_package();
-        msg_send(MSG_WRITE_CONFIG, data);
 
         if (configuration.mode == MODE_NORMAL) configuration.setting.normal.color = color;
         else if (configuration.mode == MODE_BREATHING) configuration.setting.breathing.color = color;
         else if (configuration.mode == MODE_LIGHTBEAM) configuration.setting.lightbeam.color = color;
+
+        msg_send(MSG_WRITE_CONFIG, data);
     }
 }
 
@@ -390,10 +408,9 @@ static void gesture_event_cb(lv_event_t* e) {
 static void mode_changed_cb(lv_event_t* e) {
     if (e->code == EVENT_SELECTED_CHANGED) {
         uint8_t* cur_sel = (uint8_t*) lv_event_get_param(e);
-        printf("cur_sel: %d", *cur_sel);
+        printf("cur_sel: %d\n", *cur_sel);
 
         void* data = init_message_package();
-        msg_send(MSG_WRITE_CONFIG, data);
 
         if (*cur_sel == MODE_NORMAL)
         {
@@ -414,7 +431,7 @@ static void mode_changed_cb(lv_event_t* e) {
             configuration.setting.lightbeam.dir = DEFAULT_DIRECTION;
             configuration.setting.lightbeam.faded_end = DEFAULT_FADED_END;
             configuration.setting.lightbeam.head_len = DEFAULT_HEAD_LEN;
-            configuration.setting.lightbeam.interval = DEFAULT_INTERVAL;
+            configuration.setting.lightbeam.gap = DEFAULT_GAP;
             configuration.setting.lightbeam.len = DEFAULT_LEN;
             configuration.setting.lightbeam.speed = DEFAULT_SPEED;
             configuration.setting.lightbeam.tail_len = DEFAULT_TAIL_LEN;
@@ -423,6 +440,17 @@ static void mode_changed_cb(lv_event_t* e) {
             configuration.mode = MODE_RAINBOW;
             configuration.setting.rainbow.speed = DEFAULT_SPEED;
         }
+
+        msg_send(MSG_WRITE_CONFIG, data);
+    }
+}
+
+static void confirm_panel_event_cb(lv_event_t* e) {
+    if (e->code == EVENT_CONFIRMED) {
+
+    }
+    else if (e->code == EVENT_APPLIED) {
+
     }
 }
 
@@ -442,18 +470,6 @@ static void setting_btn_event_cb(lv_event_t* e) {
             fragment = lv_fragment_create(&rainbow_setting_cls, NULL);
         }
         if (fragment) lv_fragment_manager_push(manager, fragment, &container);
-    }
-}
-
-static void direction_selector_event_cb(lv_event_t* e) {
-    if (e->code == LV_EVENT_VALUE_CHANGED) {
-
-    }
-}
-
-static void faded_end_selector_event_cb(lv_event_t* e) {
-    if (e->code == LV_EVENT_VALUE_CHANGED) {
-
     }
 }
 
@@ -520,6 +536,10 @@ static void* init_message_package(void) {
 
 void create_gui(void)
 {
+    EVENT_SELECTED_CHANGED = lv_event_register_id();
+    EVENT_CONFIRMED = lv_event_register_id();
+    EVENT_APPLIED = lv_event_register_id();
+
     container = lv_obj_create(lv_scr_act());
     lv_obj_remove_style_all(container);
     lv_obj_set_size(container, lv_pct(100), lv_pct(100));

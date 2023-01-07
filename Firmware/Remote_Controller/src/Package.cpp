@@ -81,7 +81,7 @@ bool Package::parse(uint8_t* buf, uint8_t size) {
             case 25:  // read lightbeam mode setting
                 _package.data.strip.setting.lightbeam.color = PKG_CONCAT(buf[i++], buf[i++]);
                 _package.data.strip.setting.lightbeam.len = PKG_CONCAT(buf[i++], buf[i++]);
-                _package.data.strip.setting.lightbeam.interval = PKG_CONCAT(buf[i++], buf[i++]);
+                _package.data.strip.setting.lightbeam.gap = PKG_CONCAT(buf[i++], buf[i++]);
                 _package.data.strip.setting.lightbeam.head_len = PKG_CONCAT(buf[i++], buf[i++]);
                 _package.data.strip.setting.lightbeam.tail_len = PKG_CONCAT(buf[i++], buf[i++]);
                 _package.data.strip.setting.lightbeam.speed = PKG_CONCAT(buf[i++], buf[i++]);
@@ -136,8 +136,8 @@ void Package::pack(uint8_t* buf, uint8_t size) {
             buf[i++] = PKG_LOW(_package.data.strip.setting.lightbeam.color);
             buf[i++] = PKG_HIGH(_package.data.strip.setting.lightbeam.len);
             buf[i++] = PKG_LOW(_package.data.strip.setting.lightbeam.len);
-            buf[i++] = PKG_HIGH(_package.data.strip.setting.lightbeam.interval);
-            buf[i++] = PKG_LOW(_package.data.strip.setting.lightbeam.interval);
+            buf[i++] = PKG_HIGH(_package.data.strip.setting.lightbeam.gap);
+            buf[i++] = PKG_LOW(_package.data.strip.setting.lightbeam.gap);
             buf[i++] = PKG_HIGH(_package.data.strip.setting.lightbeam.head_len);
             buf[i++] = PKG_LOW(_package.data.strip.setting.lightbeam.head_len);
             buf[i++] = PKG_HIGH(_package.data.strip.setting.lightbeam.tail_len);

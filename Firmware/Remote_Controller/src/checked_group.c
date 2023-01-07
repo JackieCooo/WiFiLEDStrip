@@ -8,7 +8,6 @@ lv_obj_t* checkedgroup_create(void) {
     lv_obj_t* obj = lv_obj_create(NULL);
     checkedgroup_t* tar = (checkedgroup_t*) lv_mem_alloc(sizeof(checkedgroup_t));
     lv_obj_set_user_data(obj, tar);
-    EVENT_SELECTED_CHANGED = lv_event_register_id();
 
     tar->group = list_create();
     tar->cur_sel = 0;

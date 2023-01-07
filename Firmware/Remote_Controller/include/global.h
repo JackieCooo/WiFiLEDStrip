@@ -18,12 +18,13 @@ extern "C" {
 #define DEFAULT_DURATION                2000
 #define DEFAULT_INTERVAL                1000
 #define DEFAULT_EASE                    EASE_LINEAR
-#define DEFAULT_LEN                     5
+#define DEFAULT_LEN                     3
 #define DEFAULT_SPEED                   8
 #define DEFAULT_FADED_END               FADED_DISABLE
 #define DEFAULT_HEAD_LEN                4
 #define DEFAULT_TAIL_LEN                4
 #define DEFAULT_DIRECTION               MOVE_RIGHT
+#define DEFAULT_GAP                     2
 
 typedef struct {
     uint16_t color;
@@ -39,7 +40,7 @@ typedef struct {
 typedef struct {
     uint16_t color;
     uint16_t len;
-    uint16_t interval;
+    uint16_t gap;
     uint16_t head_len;
     uint16_t tail_len;
     uint16_t speed;
@@ -98,11 +99,11 @@ typedef enum {
     EASE_GAMMA
 } ease_t;
 
-typedef enum {
-    FADED_DISABLE = 0,
-    FADED_HEAD = 1,
-    FADED_TAIL = 2,
-} faded_end_t;
+typedef uint8_t faded_end_t;
+
+#define FADED_DISABLE               (0)
+#define FADED_HEAD                  (1 << 0)
+#define FADED_TAIL                  (1 << 1)
 
 typedef enum {
     MOVE_RIGHT,
@@ -125,7 +126,7 @@ typedef struct {
         struct {
             lv_color_t color;
             uint16_t len;
-            uint16_t interval;
+            uint16_t gap;
             uint16_t head_len;
             uint16_t tail_len;
             uint16_t speed;
