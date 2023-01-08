@@ -30,8 +30,8 @@
 #define PKG_FADED_HEAD                      (1 << 0)
 #define PKG_FADED_TAIL                      (1 << 1)
 
-#define PKG_MOVE_RIGHT                      (0x00)
-#define PKG_MOVE_LEFT                       (0x01)
+#define PKG_MOVE_LEFT                       (0x00)
+#define PKG_MOVE_RIGHT                      (0x01)
 
 #define PKG_EASE_LINEAR                     (0x00)
 #define PKG_EASE_QUADRATIC_IN               (0x01)

@@ -106,8 +106,8 @@ typedef uint8_t faded_end_t;
 #define FADED_TAIL                  (1 << 1)
 
 typedef enum {
-    MOVE_RIGHT,
-    MOVE_LEFT
+    MOVE_LEFT,
+    MOVE_RIGHT
 } dir_t;
 
 typedef struct {
