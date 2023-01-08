@@ -47,6 +47,13 @@ uint32_t styled_spinbox_get_value(lv_obj_t* obj) {
     return atoi(text);
 }
 
+void styled_spinbox_set_value(lv_obj_t* obj, uint32_t value) {
+    lv_obj_t* spinbox = lv_obj_get_child(obj, 1);
+    char text[8];
+    itoa(value, text, 10);
+    lv_textarea_set_text(spinbox, text);
+}
+
 static void styled_spinbox_decrease_event_cb(lv_event_t* e) {
     if (e->code == LV_EVENT_CLICKED) {
         lv_obj_t* obj = (lv_obj_t*) lv_event_get_user_data(e);

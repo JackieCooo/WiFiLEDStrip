@@ -35,6 +35,7 @@ static void message_received_cb(void* s, lv_msg_t* m);
 static void stylish_default_btn(lv_obj_t* btn, const char* text);
 static lv_obj_t* create_mode_select_item(lv_obj_t* parent, const char* text);
 static void stylish_setting_btn(lv_obj_t* btn);
+static void power_btn_set_state(lv_obj_t* btn, bool state);
 
 static void* init_message_package(void);
 
@@ -96,8 +97,8 @@ static lv_obj_t* home_create_cb(lv_fragment_t* self, lv_obj_t* parent)
 
     lv_obj_t* pwr_btn = lv_btn_create(content);
     lv_obj_add_flag(pwr_btn, LV_OBJ_FLAG_CHECKABLE);
-    stylish_default_btn(pwr_btn, "OFF");
-    lv_obj_set_style_bg_color(pwr_btn, lv_palette_main(LV_PALETTE_RED), 0);
+    stylish_default_btn(pwr_btn, "");
+    power_btn_set_state(pwr_btn, configuration.power);
     lv_obj_add_event_cb(pwr_btn, pwr_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
     lv_obj_t* color_btn = lv_btn_create(content);
@@ -156,7 +157,6 @@ static lv_obj_t* mode_select_create_cb(lv_fragment_t* self, lv_obj_t* parent)
     lv_obj_t* normal_btn = create_mode_select_item(content, "Normal");
     checkedgroup_add_item(checked_group, normal_btn);
     checkedgroup_set_right_btn_event_cb(checked_group, 0, setting_btn_event_cb);
-    checkedgroup_set_checked(checked_group, 0);
 
     lv_obj_t* breathing_btn = create_mode_select_item(content, "Breathing");
     checkedgroup_add_item(checked_group, breathing_btn);
@@ -170,6 +170,8 @@ static lv_obj_t* mode_select_create_cb(lv_fragment_t* self, lv_obj_t* parent)
     checkedgroup_add_item(checked_group, rainbow_btn);
     checkedgroup_set_right_btn_event_cb(checked_group, 3, setting_btn_event_cb);
 
+    checkedgroup_set_checked(checked_group, configuration.mode);
+
     lv_obj_add_event_cb(checked_group, mode_changed_cb, EVENT_SELECTED_CHANGED, NULL);
 
     return content;
@@ -179,8 +181,34 @@ static lv_obj_t* about_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
     about_fragment_t* fragment = (about_fragment_t*) self;
 
     lv_obj_t* content = lv_btn_create(parent);
-    lv_obj_remove_style_all(content);
+    lv_obj_set_flex_flow(content, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(content, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_scroll_dir(content, LV_DIR_VER);
+    lv_obj_set_scrollbar_mode(content, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_size(content, lv_pct(100), lv_pct(100));
+    lv_obj_set_style_pad_row(content, 15, 0);
+    lv_obj_set_style_pad_top(content, 10, 0);
+    lv_obj_set_style_pad_bottom(content, 10, 0);
+    lv_obj_set_style_border_opa(content, 0, 0);
+    lv_obj_set_style_bg_opa(content, 0, 0);
+
+    lv_obj_t* product_name_label = lv_label_create(content);
+    lv_label_set_text(product_name_label, "Product name:");
+
+    lv_obj_t* product_name = lv_label_create(content);
+    lv_label_set_text(product_name, "SmartLight Remote Controller");
+
+    lv_obj_t* firmware_version_label = lv_label_create(content);
+    lv_label_set_text(firmware_version_label, "Firmware version:");
+
+    lv_obj_t* firmware_version = lv_label_create(content);
+    lv_label_set_text(firmware_version, "v0.1");
+
+    lv_obj_t* author_label = lv_label_create(content);
+    lv_label_set_text(author_label, "Author:");
+
+    lv_obj_t* author_name = lv_label_create(content);
+    lv_label_set_text(author_name, "Jackie");
 
     return content;
 }
@@ -206,6 +234,7 @@ static lv_obj_t* breathing_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     fragment->duration_selector = create_styled_spinbox(content);
     styled_spinbox_set_range(fragment->duration_selector, 0, 5000);
     styled_spinbox_set_step(fragment->duration_selector, 500);
+    styled_spinbox_set_value(fragment->duration_selector, configuration.setting.breathing.duration);
 
     lv_obj_t* interval_label = lv_label_create(content);
     lv_label_set_text(interval_label, "Interval:");
@@ -213,8 +242,9 @@ static lv_obj_t* breathing_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     fragment->interval_selector = create_styled_spinbox(content);
     styled_spinbox_set_range(fragment->interval_selector, 0, 5000);
     styled_spinbox_set_step(fragment->interval_selector, 500);
+    styled_spinbox_set_value(fragment->interval_selector, configuration.setting.breathing.interval);
 
-    const static led_mode_t breathing_mode_tag = MODE_BREATHING;
+    static led_mode_t breathing_mode_tag = MODE_BREATHING;
     lv_obj_t* confirm_panel = create_confirm_panel(content);
     lv_obj_set_user_data(confirm_panel, &breathing_mode_tag);
     lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRMED, fragment);
@@ -244,6 +274,7 @@ static lv_obj_t* lightbeam_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     fragment->len_selector = create_styled_spinbox(content);
     styled_spinbox_set_range(fragment->len_selector, 0, 50);
     styled_spinbox_set_step(fragment->len_selector, 1);
+    styled_spinbox_set_value(fragment->len_selector, configuration.setting.lightbeam.len);
 
     lv_obj_t* gap_label = lv_label_create(content);
     lv_label_set_text(gap_label, "Interval:");
@@ -251,6 +282,7 @@ static lv_obj_t* lightbeam_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     fragment->gap_selector = create_styled_spinbox(content);
     styled_spinbox_set_range(fragment->gap_selector, 0, 50);
     styled_spinbox_set_step(fragment->gap_selector, 1);
+    styled_spinbox_set_value(fragment->gap_selector, configuration.setting.lightbeam.gap);
 
     lv_obj_t* speed_label = lv_label_create(content);
     lv_label_set_text(speed_label, "Speed:");
@@ -258,6 +290,7 @@ static lv_obj_t* lightbeam_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     fragment->speed_selector = create_styled_spinbox(content);
     styled_spinbox_set_range(fragment->speed_selector, 0, 100);
     styled_spinbox_set_step(fragment->speed_selector, 1);
+    styled_spinbox_set_value(fragment->speed_selector, configuration.setting.lightbeam.speed);
 
     lv_obj_t* direction_label = lv_label_create(content);
     lv_label_set_text(direction_label, "Direction:");
@@ -270,6 +303,7 @@ static lv_obj_t* lightbeam_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     lv_btnmatrix_set_btn_ctrl(fragment->direction_selector, 0, LV_BTNMATRIX_CTRL_CHECKED);
     lv_obj_set_size(fragment->direction_selector, 120, 50);
     lv_obj_set_style_pad_all(fragment->direction_selector, 0, 0);
+    lv_btnmatrix_set_btn_ctrl(fragment->direction_selector, configuration.setting.lightbeam.dir, LV_BTNMATRIX_CTRL_CHECKED);
 
     lv_obj_t* faded_end_label = lv_label_create(content);
     lv_label_set_text(faded_end_label, "Faded end:");
@@ -280,6 +314,10 @@ static lv_obj_t* lightbeam_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     lv_btnmatrix_set_btn_ctrl_all(fragment->faded_end_selector, LV_BTNMATRIX_CTRL_CHECKABLE);
     lv_obj_set_size(fragment->faded_end_selector, 120, 50);
     lv_obj_set_style_pad_all(fragment->faded_end_selector, 0, 0);
+    if (configuration.setting.lightbeam.faded_end & FADED_HEAD)
+        lv_btnmatrix_set_btn_ctrl(fragment->faded_end_selector, 0, LV_BTNMATRIX_CTRL_CHECKED);
+    if (configuration.setting.lightbeam.faded_end & FADED_TAIL)
+        lv_btnmatrix_set_btn_ctrl(fragment->faded_end_selector, 1, LV_BTNMATRIX_CTRL_CHECKED);
 
     lv_obj_t* head_len_label = lv_label_create(content);
     lv_label_set_text(head_len_label, "Head len:");
@@ -287,6 +325,7 @@ static lv_obj_t* lightbeam_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     fragment->head_len_selector = create_styled_spinbox(content);
     styled_spinbox_set_range(fragment->head_len_selector, 0, 50);
     styled_spinbox_set_step(fragment->head_len_selector, 1);
+    styled_spinbox_set_value(fragment->head_len_selector, configuration.setting.lightbeam.head_len);
 
     lv_obj_t* tail_len_label = lv_label_create(content);
     lv_label_set_text(tail_len_label, "Head len:");
@@ -294,12 +333,13 @@ static lv_obj_t* lightbeam_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     fragment->tail_len_selector = create_styled_spinbox(content);
     styled_spinbox_set_range(fragment->tail_len_selector, 0, 50);
     styled_spinbox_set_step(fragment->tail_len_selector, 1);
+    styled_spinbox_set_value(fragment->tail_len_selector, configuration.setting.lightbeam.tail_len);
 
-    const static led_mode_t lightbeam_mode_tag = MODE_LIGHTBEAM;
+    static led_mode_t lightbeam_mode_tag = MODE_LIGHTBEAM;
     lv_obj_t* confirm_panel = create_confirm_panel(content);
     lv_obj_set_user_data(confirm_panel, &lightbeam_mode_tag);
-    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRMED, NULL);
-    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_APPLIED, NULL);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRMED, fragment);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_APPLIED, fragment);
 
     return content;
 }
@@ -325,12 +365,13 @@ static lv_obj_t* rainbow_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t* p
     fragment->speed_selector = create_styled_spinbox(content);
     styled_spinbox_set_range(fragment->speed_selector, 0, 100);
     styled_spinbox_set_step(fragment->speed_selector, 1);
+    styled_spinbox_set_value(fragment->speed_selector, configuration.setting.rainbow.speed);
 
-    const static led_mode_t rainbow_mode_tag = MODE_RAINBOW;
+    static led_mode_t rainbow_mode_tag = MODE_RAINBOW;
     lv_obj_t* confirm_panel = create_confirm_panel(content);
     lv_obj_set_user_data(confirm_panel, &rainbow_mode_tag);
-    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRMED, NULL);
-    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_APPLIED, NULL);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRMED, fragment);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_APPLIED, fragment);
 
     return content;
 }
@@ -456,13 +497,13 @@ static void confirm_panel_event_cb(lv_event_t* e) {
         lv_obj_t* obj = lv_event_get_target(e);
         led_mode_t* mode = (led_mode_t*) lv_obj_get_user_data(obj);
         void* data = init_message_package();
-        if (mode == MODE_BREATHING) {
+        if (*mode == MODE_BREATHING) {
             breathing_setting_fragment_t* fragment = (breathing_setting_fragment_t*) lv_event_get_user_data(e);
 
             configuration.setting.breathing.duration = styled_spinbox_get_value(fragment->duration_selector);
             configuration.setting.breathing.interval = styled_spinbox_get_value(fragment->interval_selector);
         }
-        else if (mode == MODE_LIGHTBEAM) {
+        else if (*mode == MODE_LIGHTBEAM) {
             lightbeam_setting_fragment_t* fragment = (lightbeam_setting_fragment_t*) lv_event_get_user_data(e);
 
             configuration.setting.lightbeam.len = styled_spinbox_get_value(fragment->len_selector);
@@ -478,7 +519,7 @@ static void confirm_panel_event_cb(lv_event_t* e) {
             if (lv_btnmatrix_has_btn_ctrl(fragment->faded_end_selector, 1, LV_BTNMATRIX_CTRL_CHECKED)) faded_end |= FADED_TAIL;
             configuration.setting.lightbeam.faded_end = faded_end;
         }
-        else if (mode == MODE_RAINBOW) {
+        else if (*mode == MODE_RAINBOW) {
             rainbow_setting_fragment_t* fragment = (rainbow_setting_fragment_t*) lv_event_get_user_data(e);
 
             configuration.setting.rainbow.speed = styled_spinbox_get_value(fragment->speed_selector);
@@ -565,6 +606,18 @@ static void* init_message_package(void) {
     configuration_t* data = (configuration_t*) heap_caps_malloc(sizeof(configuration_t), MALLOC_CAP_DEFAULT);
     memcpy(data, &configuration, sizeof(configuration_t));
     return data;
+}
+
+static void power_btn_set_state(lv_obj_t* btn, bool state) {
+    lv_obj_t* label = lv_obj_get_child(btn, 0);
+    if (state) {
+        lv_obj_set_style_bg_color(btn, lv_palette_main(LV_PALETTE_GREEN), 0);
+        lv_label_set_text(label, "ON");
+    }
+    else {
+        lv_obj_set_style_bg_color(btn, lv_palette_main(LV_PALETTE_RED), 0);
+        lv_label_set_text(label, "OFF");
+    }
 }
 
 
