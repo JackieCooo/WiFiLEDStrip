@@ -4,7 +4,7 @@ LightbeamFeature::LightbeamFeature() {
     _cb = bind(&LightbeamFeature::_animUpdateFunc, this, placeholders::_1);
     _color = RgbColor(0);
     _len = 0;
-    _interval = 0;
+    _gap = 0;
     _dir = MOVE_RIGHT;
     _speed = 0;
     _faded_end = FADED_DISABLE;
@@ -19,6 +19,13 @@ void LightbeamFeature::process(void) {
     else {
         _animations.StartAnimation(0, _speed, _cb);
     }
+}
+
+void LightbeamFeature::reset(void) {
+    if (_animations.IsAnimating()) {
+        _animations.StopAll();
+    }
+    _ref = 0;
 }
 
 void LightbeamFeature::setColor(uint8_t r, uint8_t g, uint8_t b) {
@@ -39,13 +46,13 @@ uint16_t LightbeamFeature::getLen(void) {
     return _len;
 }
 
-void LightbeamFeature::setInterval(uint16_t interval) {
-    _interval = interval;
+void LightbeamFeature::setGap(uint16_t gap) {
+    _gap = gap;
     _refreshPattern();
 }
 
-uint16_t LightbeamFeature::getInterval(void) {
-    return _interval;
+uint16_t LightbeamFeature::getGap(void) {
+    return _gap;
 }
 
 void LightbeamFeature::setDirection(dir_t dir) {
@@ -94,7 +101,7 @@ uint16_t LightbeamFeature::getHeadLen(void) {
 void LightbeamFeature::setData(lightbeam_data_t& data) {
     _color = data.color;
     _len = data.len;
-    _interval = data.interval;
+    _gap = data.gap;
     _dir = data.dir;
     _faded_end = data.faded_end;
     _tail_len = data.tail_len;
@@ -108,7 +115,7 @@ lightbeam_data_t LightbeamFeature::getData(void) {
 
     data.color = _color;
     data.len = _len;
-    data.interval = _interval;
+    data.gap = _gap;
     data.dir = _dir;
     data.faded_end = _faded_end;
     data.tail_len = _tail_len;
@@ -120,7 +127,7 @@ lightbeam_data_t LightbeamFeature::getData(void) {
 
 void LightbeamFeature::_refreshPattern(void) {
     _ref = 0;
-    uint16_t psize = _len + _interval + (_faded_end & FADED_TAIL ? _tail_len : 0) + (_faded_end & FADED_HEAD ? _head_len : 0);
+    uint16_t psize = _len + _gap + (_faded_end & FADED_TAIL ? _tail_len : 0) + (_faded_end & FADED_HEAD ? _head_len : 0);
     _pattern.resize(psize);
     
     uint16_t i = 0;
@@ -162,7 +169,7 @@ void LightbeamFeature::_refreshPattern(void) {
             _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
         }
     }
-    for (uint16_t j = 0; j < _interval; ++j) {
+    for (uint16_t j = 0; j < _gap; ++j) {
         _pattern[i++] = RgbColor(0);
     }
 }

@@ -2,7 +2,7 @@
 #include <StripHandler.h>
 #include <ConnectHandler.h>
 
-#include "global_conf.h"
+#include "global.h"
 
 void setup() {
   Serial.begin(115200);

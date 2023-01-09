@@ -5,7 +5,7 @@
 #include <NeoPixelAnimator.h>
 #include <vector>
 
-#include "global_conf.h"
+#include "global.h"
 
 #define COLOR_GAP 16
 
@@ -19,6 +19,7 @@ class RainbowFeature {
 public:
     RainbowFeature();
     void process(void);
+    void reset(void);
     virtual void setSpeed(uint16_t speed);
     virtual uint16_t getSpeed(void);
     void setData(rainbow_data_t& data);

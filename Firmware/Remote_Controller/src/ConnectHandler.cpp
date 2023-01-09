@@ -3,7 +3,7 @@
 ConnectHandler::ConnectHandler() {
     msg_init();
     _connected = true;
-    _hostIp = IPAddress(192, 168, 0, 107);
+    _hostIp = IPAddress(192, 168, 0, 111);
 }
 
 void ConnectHandler::begin(void) {
@@ -206,7 +206,7 @@ void ConnectHandler::_handle_reply(msg_reply_t& reply) {
         }
         lv_msg_send(RES_MATCH, &reply);
     }
-    Serial.printf("Send result: %d to GUI", reply.resp);
+    Serial.printf("Send result: %d to GUI\n", reply.resp);
 }
 
 led_mode_t ConnectHandler::packMode(uint8_t mode) {

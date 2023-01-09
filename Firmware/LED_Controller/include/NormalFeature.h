@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <NeoPixelBus.h>
 
-#include "global_conf.h"
+#include "global.h"
 
 typedef struct {
     RgbColor color;
@@ -20,5 +20,6 @@ public:
 
 private:
     RgbColor _color;
+    RgbColor _pre_color;
 
 };

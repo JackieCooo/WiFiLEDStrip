@@ -4,7 +4,7 @@
 #include <NeoPixelBus.h>
 #include <NeoPixelAnimator.h>
 
-#include "global_conf.h"
+#include "global.h"
 
 #define STAGE_NUM 4
 
@@ -21,13 +21,14 @@ class BreathingFeature {
 public:
     BreathingFeature();
     void process(void);
+    void reset(void);
     virtual void setColor(uint8_t r, uint8_t g, uint8_t b);
     void setDuration(uint16_t duration);
-    virtual void setInterval(uint16_t interval);
+    void setInterval(uint16_t interval);
     void setEase(AnimEaseFunction ease);
     virtual RgbColor getColor(void);
     uint16_t getDuartion(void);
-    virtual uint16_t getInterval(void);
+    uint16_t getInterval(void);
     AnimEaseFunction getEase(void);
     void setData(breathing_data_t& data);
     breathing_data_t getData(void);

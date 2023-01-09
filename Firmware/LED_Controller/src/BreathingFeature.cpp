@@ -50,6 +50,13 @@ void BreathingFeature::process(void) {
     }
 }
 
+void BreathingFeature::reset(void) {
+    if (_animations.IsAnimating()) {
+        _animations.StopAll();
+    }
+    _stage = 0;
+}
+
 void BreathingFeature::setColor(uint8_t r, uint8_t g, uint8_t b) {
     _color = RgbColor(r, g, b);
 }

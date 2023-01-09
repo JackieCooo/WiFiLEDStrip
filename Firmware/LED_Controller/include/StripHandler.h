@@ -7,7 +7,7 @@
 #include <LightbeamFeature.h>
 #include <RainbowFeature.h>
 
-#include "global_conf.h"
+#include "global.h"
 
 typedef enum {
     MODE_NORMAL,
@@ -21,21 +21,20 @@ class StripHandler : public BreathingFeature, public NormalFeature, public Light
 public:
     void begin(void);
     void routine(void);
-    void pause(void);
     void clear(void);
     void setMode(strip_mode_t mode);
     strip_mode_t getMode(void);
+    void setPower(bool power);
+    bool getPower(void);
 
     void setColor(uint8_t r, uint8_t g, uint8_t b) override;
-    void setInterval(uint16_t interval) override;
     void setSpeed(uint16_t speed) override;
     RgbColor getColor(void) override;
-    uint16_t getInterval(void) override;
     uint16_t getSpeed(void) override;
 
 private:
     strip_mode_t _mode;
-    bool _displayed;
+    bool _power;
 };
 
 extern StripHandler stripHandler;

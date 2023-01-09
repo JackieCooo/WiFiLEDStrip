@@ -4,17 +4,14 @@ NeoPixelBusType strip(LED_NUM, LED_PIN);
 
 void StripHandler::begin(void) {
     _mode = MODE_NORMAL;
-    _displayed = true;
+    _power = false;
 
     strip.Begin();
-}
-
-void StripHandler::pause(void) {
-    _displayed = false;
+    clear();
 }
 
 void StripHandler::routine(void) {
-    if (!_displayed) return;
+    if (!_power) return;
 
     if (_mode == MODE_NORMAL) {
         NormalFeature::process();
@@ -31,7 +28,7 @@ void StripHandler::routine(void) {
 }
 
 void StripHandler::clear(void) {
-    RgbColor black(0, 0, 0);
+    RgbColor black(0);
     for (uint16_t i = 0; i < strip.PixelCount(); i++) {
         strip.SetPixelColor(i, black);
     }
@@ -45,6 +42,26 @@ void StripHandler::setMode(strip_mode_t mode) {
 
 strip_mode_t StripHandler::getMode(void) {
     return _mode;
+}
+
+void StripHandler::setPower(bool power) {
+    _power = power;
+    if (!_power) {
+        if (_mode == MODE_BREATHING) {
+            BreathingFeature::reset();
+        }
+        else if (_mode == MODE_LIGHTBEAM) {
+            LightbeamFeature::reset();
+        }
+        else if (_mode == MODE_RAINBOW) {
+            RainbowFeature::reset();
+        }
+        clear();
+    }
+}
+
+bool StripHandler::getPower(void) {
+    return _power;
 }
 
 void StripHandler::setColor(uint8_t r, uint8_t g, uint8_t b) {
@@ -70,25 +87,6 @@ RgbColor StripHandler::getColor(void) {
         return LightbeamFeature::getColor();
     }
     return RgbColor(0);
-}
-
-void StripHandler::setInterval(uint16_t interval) {
-    if (_mode == MODE_BREATHING) {
-        BreathingFeature::setInterval(interval);
-    }
-    else if (_mode == MODE_LIGHTBEAM) {
-        LightbeamFeature::setInterval(interval);
-    }
-}
-
-uint16_t StripHandler::getInterval(void) {
-    if (_mode == MODE_BREATHING) {
-        return BreathingFeature::getInterval();
-    }
-    else if (_mode == MODE_LIGHTBEAM) {
-        return LightbeamFeature::getInterval();
-    }
-    return 0;
 }
 
 void StripHandler::setSpeed(uint16_t speed) {

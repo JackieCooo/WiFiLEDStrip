@@ -5,7 +5,7 @@
 #include <NeoPixelAnimator.h>
 #include <vector>
 
-#include "global_conf.h"
+#include "global.h"
 
 using namespace std;
 
@@ -23,7 +23,7 @@ typedef enum {
 typedef struct {
     RgbColor color;
     uint16_t len;
-    uint16_t interval;
+    uint16_t gap;
     uint16_t head_len;
     uint16_t tail_len;
     faded_end_t faded_end;
@@ -35,9 +35,10 @@ class LightbeamFeature {
 public:
     LightbeamFeature();
     void process(void);
+    void reset(void);
     virtual void setColor(uint8_t r, uint8_t g, uint8_t b);
     void setLen(uint16_t len);
-    virtual void setInterval(uint16_t interval);
+    void setGap(uint16_t gap);
     void setDirection(dir_t dir);
     virtual void setSpeed(uint16_t speed);
     void setFadedEnd(faded_end_t faded_end);
@@ -46,7 +47,7 @@ public:
     void setData(lightbeam_data_t& data);
     virtual RgbColor getColor(void);
     uint16_t getLen(void);
-    virtual uint16_t getInterval(void);
+    uint16_t getGap(void);
     dir_t getDirection(void);
     virtual uint16_t getSpeed(void);
     faded_end_t getFadedEnd(void);
@@ -57,7 +58,7 @@ public:
 private:
     RgbColor _color;
     uint16_t _len;
-    uint16_t _interval;
+    uint16_t _gap;
     uint16_t _head_len;
     uint16_t _tail_len;
     faded_end_t _faded_end;

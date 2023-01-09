@@ -15,6 +15,13 @@ void RainbowFeature::process(void) {
     }
 }
 
+void RainbowFeature::reset(void) {
+    if (_animations.IsAnimating()) {
+        _animations.StopAll();
+    }
+    _ref = 0;
+}
+
 void RainbowFeature::setSpeed(uint16_t speed) {
     _speed = _translateSpeed(speed);
 }

@@ -180,9 +180,9 @@ static lv_obj_t* mode_select_create_cb(lv_fragment_t* self, lv_obj_t* parent)
 static lv_obj_t* about_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
     about_fragment_t* fragment = (about_fragment_t*) self;
 
-    lv_obj_t* content = lv_btn_create(parent);
+    lv_obj_t* content = lv_obj_create(parent);
     lv_obj_set_flex_flow(content, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(content, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_flex_align(content, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_scroll_dir(content, LV_DIR_VER);
     lv_obj_set_scrollbar_mode(content, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_size(content, lv_pct(100), lv_pct(100));
@@ -196,7 +196,7 @@ static lv_obj_t* about_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
     lv_label_set_text(product_name_label, "Product name:");
 
     lv_obj_t* product_name = lv_label_create(content);
-    lv_label_set_text(product_name, "SmartLight Remote Controller");
+    lv_label_set_text(product_name, "SmartLight Controller");
 
     lv_obj_t* firmware_version_label = lv_label_create(content);
     lv_label_set_text(firmware_version_label, "Firmware version:");
@@ -209,6 +209,11 @@ static lv_obj_t* about_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
 
     lv_obj_t* author_name = lv_label_create(content);
     lv_label_set_text(author_name, "Jackie");
+
+    LV_IMG_DECLARE(img_author_avatar);
+    lv_obj_t* avatar = lv_img_create(content);
+    lv_img_set_src(avatar, &img_author_avatar);
+    lv_obj_set_size(avatar, 150, 150);
 
     return content;
 }
