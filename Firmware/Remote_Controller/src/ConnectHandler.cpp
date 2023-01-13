@@ -246,7 +246,7 @@ dir_t ConnectHandler::packDirection(uint8_t dir) {
         default:
             break;
     }
-    return MOVE_RIGHT;
+    return MOVE_LEFT;
 }
 
 ConnectHandler connHandler;

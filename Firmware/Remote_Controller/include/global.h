@@ -23,7 +23,7 @@ extern "C" {
 #define DEFAULT_FADED_END               FADED_DISABLE
 #define DEFAULT_HEAD_LEN                4
 #define DEFAULT_TAIL_LEN                4
-#define DEFAULT_DIRECTION               MOVE_RIGHT
+#define DEFAULT_DIRECTION               MOVE_LEFT
 #define DEFAULT_GAP                     2
 
 typedef struct {

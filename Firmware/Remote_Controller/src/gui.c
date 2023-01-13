@@ -128,7 +128,9 @@ static lv_obj_t* color_select_create_cb(lv_fragment_t* self, lv_obj_t* parent)
     lv_obj_t* color_selector = lv_colorwheel_create(content, true);
     lv_colorwheel_set_mode(color_selector, LV_COLORWHEEL_MODE_HUE);
     lv_colorwheel_set_mode_fixed(color_selector, true);
-    // lv_colorwheel_set_rgb(color_selector, );
+    // if (configuration.mode == MODE_NORMAL) lv_colorwheel_set_rgb(color_selector, configuration.setting.normal.color);
+    // else if (configuration.mode == MODE_BREATHING) lv_colorwheel_set_rgb(color_selector, configuration.setting.breathing.color);
+    // else if (configuration.mode == MODE_LIGHTBEAM) lv_colorwheel_set_rgb(color_selector, configuration.setting.lightbeam.color);
     lv_obj_set_size(color_selector, lv_pct(75), lv_pct(75));
     lv_obj_center(color_selector);
     lv_obj_add_event_cb(color_selector, color_selector_event_cb, LV_EVENT_VALUE_CHANGED, fragment);
@@ -649,5 +651,6 @@ void create_gui(void)
 }
 
 void refresh_gui(void) {
-
+    lv_fragment_t* fragment = lv_fragment_manager_get_top(manager);
+    lv_fragment_recreate_obj(fragment);
 }

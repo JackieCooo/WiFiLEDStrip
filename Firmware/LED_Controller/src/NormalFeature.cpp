@@ -2,17 +2,13 @@
 
 NormalFeature::NormalFeature() {
     _color = RgbColor(0);
-    _pre_color = RgbColor(0);
 }
 
 void NormalFeature::process(void) {
-    if (_color != _pre_color) {
-        for (uint16_t i = 0; i < strip.PixelCount(); i++) {
-            strip.SetPixelColor(i, _color);
-        }
-        strip.Show();
-        _pre_color = _color;
+    for (uint16_t i = 0; i < strip.PixelCount(); i++) {
+        strip.SetPixelColor(i, _color);
     }
+    strip.Show();
 }
 
 void NormalFeature::setColor(uint8_t r, uint8_t g, uint8_t b) {

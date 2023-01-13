@@ -20,6 +20,5 @@ public:
 
 private:
     RgbColor _color;
-    RgbColor _pre_color;
 
 };
