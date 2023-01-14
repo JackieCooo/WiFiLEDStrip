@@ -9,61 +9,14 @@
 
 using namespace std;
 
-#define FADED_DISABLE (0)
-#define FADED_HEAD (1 << 0)
-#define FADED_TAIL (1 << 1)
-
-typedef uint8_t faded_end_t;
-
-typedef enum {
-    MOVE_RIGHT,
-    MOVE_LEFT
-} dir_t;
-
-typedef struct {
-    RgbColor color;
-    uint16_t len;
-    uint16_t gap;
-    uint16_t head_len;
-    uint16_t tail_len;
-    faded_end_t faded_end;
-    dir_t dir;
-    uint16_t speed;
-} lightbeam_data_t;
-
 class LightbeamFeature {
 public:
     LightbeamFeature();
     void process(void);
     void reset(void);
-    virtual void setColor(uint8_t r, uint8_t g, uint8_t b);
-    void setLen(uint16_t len);
-    void setGap(uint16_t gap);
-    void setDirection(dir_t dir);
-    virtual void setSpeed(uint16_t speed);
-    void setFadedEnd(faded_end_t faded_end);
-    void setTailLen(uint16_t len);
-    void setHeadLen(uint16_t len);
-    void setData(lightbeam_data_t& data);
-    virtual RgbColor getColor(void);
-    uint16_t getLen(void);
-    uint16_t getGap(void);
-    dir_t getDirection(void);
-    virtual uint16_t getSpeed(void);
-    faded_end_t getFadedEnd(void);
-    uint16_t getTailLen(void);
-    uint16_t getHeadLen(void);
-    lightbeam_data_t getData(void);
+    void refresh(void);
 
 private:
-    RgbColor _color;
-    uint16_t _len;
-    uint16_t _gap;
-    uint16_t _head_len;
-    uint16_t _tail_len;
-    faded_end_t _faded_end;
-    dir_t _dir;
-    uint16_t _speed;  // pixels per second
     vector<RgbColor> _pattern;
     uint16_t _ref;  // the first pixel's referance to the pattern
     NeoPixelAnimator _animations = NeoPixelAnimator(1);

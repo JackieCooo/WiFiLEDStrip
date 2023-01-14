@@ -3,7 +3,6 @@
 RainbowFeature::RainbowFeature() {
     _cb = bind(&RainbowFeature::_animUpdateFunc, this, placeholders::_1);
     _initPattern();
-    _speed = 0;
 }
 
 void RainbowFeature::process(void) {
@@ -11,7 +10,7 @@ void RainbowFeature::process(void) {
         _animations.UpdateAnimations();
     }
     else {
-        _animations.StartAnimation(0, _speed, _cb);
+        _animations.StartAnimation(0, configuration.setting.rainbow.speed, _cb);
     }
 }
 
@@ -22,24 +21,8 @@ void RainbowFeature::reset(void) {
     _ref = 0;
 }
 
-void RainbowFeature::setSpeed(uint16_t speed) {
-    _speed = _translateSpeed(speed);
-}
-
-uint16_t RainbowFeature::getSpeed(void) {
-    return _speed;
-}
-
-void RainbowFeature::setData(rainbow_data_t& data) {
-    _speed = _translateSpeed(data.speed);
-}
-
-rainbow_data_t RainbowFeature::getData(void) {
-    rainbow_data_t data;
-
-    data.speed = _speed;
-
-    return data;
+void RainbowFeature::refresh(void) {
+    return;
 }
 
 void RainbowFeature::_animUpdateFunc(const AnimationParam& param) {

@@ -2,14 +2,6 @@
 
 LightbeamFeature::LightbeamFeature() {
     _cb = bind(&LightbeamFeature::_animUpdateFunc, this, placeholders::_1);
-    _color = RgbColor(0);
-    _len = 0;
-    _gap = 0;
-    _dir = MOVE_RIGHT;
-    _speed = 0;
-    _faded_end = FADED_DISABLE;
-    _tail_len = 0;
-    _head_len = 0;
 }
 
 void LightbeamFeature::process(void) {
@@ -17,7 +9,7 @@ void LightbeamFeature::process(void) {
         _animations.UpdateAnimations();
     }
     else {
-        _animations.StartAnimation(0, _speed, _cb);
+        _animations.StartAnimation(0, configuration.setting.lightbeam.speed, _cb);
     }
 }
 
@@ -28,111 +20,26 @@ void LightbeamFeature::reset(void) {
     _ref = 0;
 }
 
-void LightbeamFeature::setColor(uint8_t r, uint8_t g, uint8_t b) {
-    _color = RgbColor(r, g, b);
+void LightbeamFeature::refresh(void) {
+    reset();
     _refreshPattern();
-}
-
-RgbColor LightbeamFeature::getColor(void) {
-    return _color;
-}
-
-void LightbeamFeature::setLen(uint16_t len) {
-    _len = len;
-    _refreshPattern();
-}
-
-uint16_t LightbeamFeature::getLen(void) {
-    return _len;
-}
-
-void LightbeamFeature::setGap(uint16_t gap) {
-    _gap = gap;
-    _refreshPattern();
-}
-
-uint16_t LightbeamFeature::getGap(void) {
-    return _gap;
-}
-
-void LightbeamFeature::setDirection(dir_t dir) {
-    _dir = dir;
-}
-
-dir_t LightbeamFeature::getDirection(void) {
-    return _dir;
-}
-
-void LightbeamFeature::setSpeed(uint16_t speed) {
-    _speed = _translateSpeed(speed);
-}
-
-uint16_t LightbeamFeature::getSpeed(void) {
-    return _speed;
-}
-
-void LightbeamFeature::setFadedEnd(faded_end_t faded_end) {
-    _faded_end = faded_end;
-    _refreshPattern();
-}
-
-faded_end_t LightbeamFeature::getFadedEnd(void) {
-    return _faded_end;
-}
-
-void LightbeamFeature::setTailLen(uint16_t len) {
-    _tail_len = len;
-    _refreshPattern();
-}
-
-uint16_t LightbeamFeature::getTailLen(void) {
-    return _tail_len;
-}
-
-void LightbeamFeature::setHeadLen(uint16_t len) {
-    _head_len = len;
-    _refreshPattern();
-}
-
-uint16_t LightbeamFeature::getHeadLen(void) {
-    return _head_len;
-}
-
-void LightbeamFeature::setData(lightbeam_data_t& data) {
-    _color = data.color;
-    _len = data.len;
-    _gap = data.gap;
-    _dir = data.dir;
-    _faded_end = data.faded_end;
-    _tail_len = data.tail_len;
-    _head_len = data.head_len;
-    _speed = _translateSpeed(data.speed);
-    _refreshPattern();
-}
-
-lightbeam_data_t LightbeamFeature::getData(void) {
-    lightbeam_data_t data;
-
-    data.color = _color;
-    data.len = _len;
-    data.gap = _gap;
-    data.dir = _dir;
-    data.faded_end = _faded_end;
-    data.tail_len = _tail_len;
-    data.head_len = _head_len;
-    data.speed = _speed;
-
-    return data;
 }
 
 void LightbeamFeature::_refreshPattern(void) {
     _ref = 0;
-    uint16_t psize = _len + _gap + (_faded_end & FADED_TAIL ? _tail_len : 0) + (_faded_end & FADED_HEAD ? _head_len : 0);
+    RgbColor _color = configuration.setting.lightbeam.color;
+    dir_t _dir = configuration.setting.lightbeam.dir;
+    uint16_t _len = configuration.setting.lightbeam.len;
+    uint16_t _gap = configuration.setting.lightbeam.gap;
+    faded_end_t _faded_end = configuration.setting.lightbeam.faded_end;
+    uint16_t _head_len = configuration.setting.lightbeam.head_len;
+    uint16_t _tail_len = configuration.setting.lightbeam.tail_len;
+    uint16_t psize = _len + _gap + (_faded_end.FADED_HEAD ? _tail_len : 0) + (_faded_end.FADED_TAIL ? _head_len : 0);
     _pattern.resize(psize);
     
     uint16_t i = 0;
     NeoGamma<NeoGammaTableMethod> colorGamma;
-    if ((_faded_end & FADED_HEAD) && _dir == MOVE_LEFT) {
+    if ((_faded_end.FADED_HEAD) && _dir == MOVE_LEFT) {
         HslColor hsl(_color);
         float offset = hsl.L / (_head_len + 1);
         hsl.L = 0;
@@ -141,7 +48,7 @@ void LightbeamFeature::_refreshPattern(void) {
             _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
         }
     }
-    else if ((_faded_end & FADED_TAIL) && _dir == MOVE_RIGHT) {
+    else if ((_faded_end.FADED_TAIL) && _dir == MOVE_RIGHT) {
         HslColor hsl(_color);
         float offset = hsl.L / (_tail_len + 1);
         hsl.L = 0;
@@ -153,7 +60,7 @@ void LightbeamFeature::_refreshPattern(void) {
     for (uint16_t j = 0; j < _len; ++j) {
         _pattern[i++] = _color;
     }
-    if ((_faded_end & FADED_HEAD) && _dir == MOVE_RIGHT) {
+    if ((_faded_end.FADED_HEAD) && _dir == MOVE_RIGHT) {
         HslColor hsl(_color);
         float offset = hsl.L / (_head_len + 1);
         for (uint16_t j = 0; j < _head_len; j++) {
@@ -161,7 +68,7 @@ void LightbeamFeature::_refreshPattern(void) {
             _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
         }
     }
-    else if ((_faded_end & FADED_TAIL) && _dir == MOVE_LEFT) {
+    else if ((_faded_end.FADED_TAIL) && _dir == MOVE_LEFT) {
         HslColor hsl(_color);
         float offset = hsl.L / (_tail_len + 1);
         for (uint16_t j = 0; j < _tail_len; j++) {
@@ -180,6 +87,7 @@ void LightbeamFeature::_animUpdateFunc(const AnimationParam& param) {
             strip.SetPixelColor(i, _pattern[(i+_ref)%_pattern.size()]);
         }
         strip.Show();
+        dir_t _dir = configuration.setting.lightbeam.dir;
         if (_dir == MOVE_LEFT) {
             _ref = (++_ref) % _pattern.size();
         }

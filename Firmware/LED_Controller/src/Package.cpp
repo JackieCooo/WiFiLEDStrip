@@ -419,3 +419,46 @@ dir_t Package::packDirection(uint8_t& dir) {
     }
     return MOVE_LEFT;
 }
+
+strip_mode_t Package::packMode(uint8_t& mode) {
+    switch (mode)
+    {
+        case PKG_MODE_NORMAL:
+            return MODE_NORMAL;
+            break;
+        case PKG_MODE_BREATHING:
+            return MODE_BREATHING;
+            break;
+        case PKG_MODE_LIGHTBEAM:
+            return MODE_LIGHTBEAM;
+            break;
+        case PKG_MODE_RAINBOW:
+            return MODE_RAINBOW;
+            break;
+        default:
+            break;
+    }
+    return MODE_NORMAL;
+}
+
+faded_end_t Package::packFadedEnd(uint8_t& value) {
+    faded_end_t faded_end;
+    if (value & PKG_FADED_HEAD) {
+        faded_end.FADED_HEAD = 1;
+    }
+    if (value & PKG_FADED_TAIL) {
+        faded_end.FADED_TAIL = 1;
+    }
+    return faded_end;
+}
+
+uint8_t Package::parseFadedEnd(faded_end_t& value) {
+    uint8_t faded_end = 0;
+    if (value.FADED_HEAD) {
+        faded_end |= PKG_FADED_HEAD;
+    }
+    if (value.FADED_TAIL) {
+        faded_end |= PKG_FADED_TAIL;
+    }
+    return faded_end;
+}

@@ -6,6 +6,7 @@
 
 #include "Package.h"
 #include "StripHandler.h"
+#include "message_handler.h"
 #include "global.h"
 
 #define WIFI_SSID               "TP-LINK_B596"

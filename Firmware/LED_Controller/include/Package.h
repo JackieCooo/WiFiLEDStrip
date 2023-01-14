@@ -95,7 +95,34 @@ typedef struct {
     uint8_t size;
     uint8_t cmd;
     union {
-        configuration_t strip;
+        struct {
+            uint8_t power;
+            uint8_t mode;
+            union {
+                struct {
+                    uint16_t color;
+                } normal;
+                struct {
+                    uint16_t color;
+                    uint16_t duration;
+                    uint16_t interval;
+                    uint8_t ease;
+                } breathing;
+                struct {
+                    uint16_t color;
+                    uint16_t len;
+                    uint16_t gap;
+                    uint16_t head_len;
+                    uint16_t tail_len;
+                    uint16_t speed;
+                    uint8_t faded_end;
+                    uint8_t dir;
+                } lightbeam;
+                struct {
+                    uint16_t speed;
+                } rainbow;
+            } setting;
+        } strip;
         struct {
             uint8_t resp;
         } resp;
@@ -129,6 +156,9 @@ public:
     static AnimEaseFunction packEase(uint8_t& ease);
     static uint8_t parseEase(AnimEaseFunction ease);
     static dir_t packDirection(uint8_t& dir);
+    static strip_mode_t packMode(uint8_t& mode);
+    static faded_end_t packFadedEnd(uint8_t& value);
+    static uint8_t parseFadedEnd(faded_end_t& value);
 
 private:
     package_t _package;

@@ -41,4 +41,8 @@ void ConfigHandler::save(void) {
     }
 }
 
+void ConfigHandler::process(void) {
+    
+}
+
 ConfigHandler configHandler;
