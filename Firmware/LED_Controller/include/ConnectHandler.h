@@ -13,6 +13,7 @@
 #define WIFI_PWR                "chen1370292520"
 #define SERVER_PORT             20001
 #define MATCH_PORT              20002
+#define TIMEOUT_MS              2000
 
 #define BUF_SIZE(x)             (x[2])
 

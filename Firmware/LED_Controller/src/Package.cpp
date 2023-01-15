@@ -1,13 +1,5 @@
 #include "Package.h"
 
-/*
-NeoEaseComparator::NeoEaseComparator(AnimEaseFunction func) : _func(std::move(func)) {}
-
-bool NeoEaseComparator::operator==(AnimEaseFunction func) {
-    return *(_func.target<float(*)(float)>()) == *(func.target<float(*)(float)>());
-}
-*/
-
 bool Package::parse(uint8_t* buf, uint8_t size) {
     uint8_t stage = 0;
     uint8_t i = 0;
@@ -206,203 +198,103 @@ uint16_t Package::RGB888toRGB565(uint32_t& rgb888) {
     return rgb565 = CONCAT_RGB565(r, g, b);
 }
 
-AnimEaseFunction Package::packEase(uint8_t& ease) {
+ease_t Package::packEase(uint8_t& ease) {
     switch (ease)
     {
         case PKG_EASE_LINEAR:
-            return NeoEase::Linear;
+            return EASE_LINEAR;
             break;
         case PKG_EASE_QUADRATIC_IN:
-            return NeoEase::QuarticIn;
+            return EASE_QUADRATIC_IN;
             break;
         case PKG_EASE_QUADRATIC_OUT:
-            return NeoEase::QuarticOut;
+            return EASE_QUADRATIC_OUT;
             break;
         case PKG_EASE_QUADRATIC_IN_OUT:
-            return NeoEase::QuarticInOut;
+            return EASE_QUADRATIC_IN_OUT;
             break;
         case PKG_EASE_QUADRATIC_CENTER:
-            return NeoEase::QuarticCenter;
+            return EASE_QUADRATIC_CENTER;
             break;
         case PKG_EASE_CUBIC_IN:
-            return NeoEase::CubicIn;
+            return EASE_CUBIC_IN;
             break;
         case PKG_EASE_CUBIC_OUT:
-            return NeoEase::CubicOut;
+            return EASE_CUBIC_OUT;
             break;
         case PKG_EASE_CUBIC_IN_OUT:
-            return NeoEase::CubicInOut;
+            return EASE_CUBIC_IN_OUT;
             break;
         case PKG_EASE_CUBIC_CENTER:
-            return NeoEase::CubicCenter;
+            return EASE_CUBIC_CENTER;
             break;
         case PKG_EASE_QUARTIC_IN:
-            return NeoEase::QuarticIn;
+            return EASE_QUARTIC_IN;
             break;
         case PKG_EASE_QUARTIC_OUT:
-            return NeoEase::QuarticOut;
+            return EASE_QUARTIC_OUT;
             break;
         case PKG_EASE_QUARTIC_IN_OUT:
-            return NeoEase::QuarticInOut;
+            return EASE_QUARTIC_IN_OUT;
             break;
         case PKG_EASE_QUARTIC_CENTER:
-            return NeoEase::QuarticCenter;
+            return EASE_QUARTIC_CENTER;
             break;
         case PKG_EASE_QUINTIC_IN:
-            return NeoEase::QuinticIn;
+            return EASE_QUINTIC_IN;
             break;
         case PKG_EASE_QUINTIC_OUT:
-            return NeoEase::QuinticOut;
+            return EASE_QUINTIC_OUT;
             break;
         case PKG_EASE_QUINTIC_IN_OUT:
-            return NeoEase::QuinticInOut;
+            return EASE_QUINTIC_IN_OUT;
             break;
         case PKG_EASE_QUINTIC_CENTER:
-            return NeoEase::QuinticCenter;
+            return EASE_QUINTIC_CENTER;
             break;
         case PKG_EASE_SINUSOIDAL_IN:
-            return NeoEase::SinusoidalIn;
+            return EASE_SINUSOIDAL_IN;
             break;
         case PKG_EASE_SINUSOIDAL_OUT:
-            return NeoEase::SinusoidalOut;
+            return EASE_SINUSOIDAL_OUT;
             break;
         case PKG_EASE_SINUSOIDAL_IN_OUT:
-            return NeoEase::SinusoidalInOut;
+            return EASE_SINUSOIDAL_IN_OUT;
             break;
         case PKG_EASE_SINUSOIDAL_CENTER:
-            return NeoEase::SinusoidalCenter;
+            return EASE_SINUSOIDAL_CENTER;
             break;
         case PKG_EASE_EXPONENTIAL_IN:
-            return NeoEase::ExponentialIn;
+            return EASE_EXPONENTIAL_IN;
             break;
         case PKG_EASE_EXPONENTIAL_OUT:
-            return NeoEase::ExponentialOut;
+            return EASE_EXPONENTIAL_OUT;
             break;
         case PKG_EASE_EXPONENTIAL_IN_OUT:
-            return NeoEase::ExponentialInOut;
+            return EASE_EXPONENTIAL_IN_OUT;
             break;
         case PKG_EASE_EXPONENTIAL_CENTER:
-            return NeoEase::ExponentialCenter;
+            return EASE_EXPONENTIAL_CENTER;
             break;
         case PKG_EASE_CIRCULAR_IN:
-            return NeoEase::CircularIn;
+            return EASE_CIRCULAR_IN;
             break;
         case PKG_EASE_CIRCULAR_OUT:
-            return NeoEase::CircularOut;
+            return EASE_CIRCULAR_OUT;
             break;
         case PKG_EASE_CIRCULAR_IN_OUT:
-            return NeoEase::CircularInOut;
+            return EASE_CIRCULAR_IN_OUT;
             break;
         case PKG_EASE_CIRCULAR_CENTER:
-            return NeoEase::CircularCenter;
+            return EASE_CIRCULAR_CENTER;
             break;
         case PKG_EASE_GAMMA:
-            return NeoEase::Gamma;
+            return EASE_GAMMA;
             break;
         default:
             break;
     }
-    return NeoEase::Linear;
-}
-
-uint8_t Package::parseEase(AnimEaseFunction ease) {
-/*
-    NeoEaseComparator tar(ease);
-    if (tar == NeoEase::Linear) {
-        return PKG_EASE_LINEAR;
-    }
-    else if (tar == NeoEase::QuadraticIn) {
-        return PKG_EASE_QUADRATIC_IN;
-    }
-    else if (tar == NeoEase::QuadraticIn) {
-        return PKG_EASE_QUADRATIC_IN;
-    }
-    else if (tar == NeoEase::QuadraticOut) {
-        return PKG_EASE_QUADRATIC_OUT;
-    }
-    else if (tar == NeoEase::QuadraticInOut) {
-        return PKG_EASE_QUADRATIC_IN_OUT;
-    }
-    else if (tar == NeoEase::QuadraticCenter) {
-        return PKG_EASE_QUADRATIC_CENTER;
-    }
-    else if (tar == NeoEase::CubicIn) {
-        return PKG_EASE_CUBIC_IN;
-    }
-    else if (tar == NeoEase::CubicOut) {
-        return PKG_EASE_CUBIC_OUT;
-    }
-    else if (tar == NeoEase::CubicInOut) {
-        return PKG_EASE_QUADRATIC_IN_OUT;
-    }
-    else if (tar == NeoEase::CubicCenter) {
-        return PKG_EASE_CUBIC_CENTER;
-    }
-    else if (tar == NeoEase::QuarticIn) {
-        return PKG_EASE_QUARTIC_IN;
-    }
-    else if (tar == NeoEase::QuarticOut) {
-        return PKG_EASE_QUARTIC_OUT;
-    }
-    else if (tar == NeoEase::QuarticInOut) {
-        return PKG_EASE_QUARTIC_IN_OUT;
-    }
-    else if (tar == NeoEase::QuarticCenter) {
-        return PKG_EASE_QUARTIC_CENTER;
-    }
-    else if (tar == NeoEase::QuinticIn) {
-        return PKG_EASE_QUINTIC_IN;
-    }
-    else if (tar == NeoEase::QuinticOut) {
-        return PKG_EASE_QUINTIC_OUT;
-    }
-    else if (tar == NeoEase::QuinticInOut) {
-        return PKG_EASE_QUINTIC_IN_OUT;
-    }
-    else if (tar == NeoEase::QuinticCenter) {
-        return PKG_EASE_QUINTIC_CENTER;
-    }
-    else if (tar == NeoEase::SinusoidalIn) {
-        return PKG_EASE_SINUSOIDAL_IN;
-    }
-    else if (tar == NeoEase::SinusoidalOut) {
-        return PKG_EASE_SINUSOIDAL_OUT;
-    }
-    else if (tar == NeoEase::SinusoidalInOut) {
-        return PKG_EASE_SINUSOIDAL_IN_OUT;
-    }
-    else if (tar == NeoEase::SinusoidalCenter) {
-        return PKG_EASE_SINUSOIDAL_CENTER;
-    }
-    else if (tar == NeoEase::ExponentialIn) {
-        return PKG_EASE_EXPONENTIAL_IN;
-    }
-    else if (tar == NeoEase::ExponentialOut) {
-        return PKG_EASE_EXPONENTIAL_OUT;
-    }
-    else if (tar == NeoEase::ExponentialInOut) {
-        return PKG_EASE_EXPONENTIAL_IN_OUT;
-    }
-    else if (tar == NeoEase::ExponentialCenter) {
-        return PKG_EASE_EXPONENTIAL_CENTER;
-    }
-    else if (tar == NeoEase::CircularIn) {
-        return PKG_EASE_CIRCULAR_IN;
-    }
-    else if (tar == NeoEase::CircularOut) {
-        return PKG_EASE_CIRCULAR_OUT;
-    }
-    else if (tar == NeoEase::CircularInOut) {
-        return PKG_EASE_CIRCULAR_IN_OUT;
-    }
-    else if (tar == NeoEase::CircularCenter) {
-        return PKG_EASE_CIRCULAR_CENTER;
-    }
-    else if (tar == NeoEase::Gamma) {
-        return PKG_EASE_GAMMA;
-    }
-*/
-    return PKG_EASE_LINEAR;
+    return EASE_LINEAR;
 }
 
 dir_t Package::packDirection(uint8_t& dir) {

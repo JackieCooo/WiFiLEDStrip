@@ -21,9 +21,10 @@ void ConnectHandler::process(void) {
             memset(rx_buf, 0x00, sizeof(rx_buf));
             if (client.available()) {
                 client.read(rx_buf, sizeof(rx_buf));
-            }
-            if (_package.parse(rx_buf, sizeof(rx_buf))) {
-                _handleRequest(client);
+                if (_package.parse(rx_buf, sizeof(rx_buf))) {
+                    _handleRequest(client);
+                }
+                break;
             }
         }
         client.stop();
@@ -88,7 +89,7 @@ void ConnectHandler::_handleRequest(WiFiClient& client) {
             p.data.strip.setting.breathing.color = Package::RGB888toRGB565(rgb888);
             p.data.strip.setting.breathing.duration = configuration.setting.breathing.duration;
             p.data.strip.setting.breathing.interval = configuration.setting.breathing.interval;
-            p.data.strip.setting.breathing.ease = Package::parseEase(configuration.setting.breathing.ease);
+            p.data.strip.setting.breathing.ease = configuration.setting.breathing.ease;
         }
         else if (mode == MODE_LIGHTBEAM) {
             p.data.strip.mode = PKG_MODE_LIGHTBEAM;

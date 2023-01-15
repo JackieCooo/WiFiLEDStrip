@@ -5,7 +5,10 @@ NormalFeature::NormalFeature() {
 }
 
 void NormalFeature::process(void) {
-    return;
+    for (uint16_t i = 0; i < strip.PixelCount(); i++) {
+        strip.SetPixelColor(i, configuration.setting.normal.color);
+    }
+    strip.Show();
 }
 
 void NormalFeature::reset(void) {
@@ -13,8 +16,5 @@ void NormalFeature::reset(void) {
 }
 
 void NormalFeature::refresh(void) {
-    for (uint16_t i = 0; i < strip.PixelCount(); i++) {
-        strip.SetPixelColor(i, configuration.setting.normal.color);
-    }
-    strip.Show();
+    return;
 }

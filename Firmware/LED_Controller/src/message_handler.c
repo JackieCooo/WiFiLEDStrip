@@ -30,5 +30,7 @@ msg_request_t msg_receive(void) {
 }
 
 const msg_request_t* msg_peek(void) {
-    return (const msg_request_t*) queue_front(queue);
+    void* data = queue_front(queue);
+    if (data) return (const msg_request_t*) data;
+    return NULL;
 }

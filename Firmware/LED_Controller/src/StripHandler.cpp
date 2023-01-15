@@ -42,6 +42,7 @@ void StripHandler::reset(void) {
 }
 
 void StripHandler::refresh(void) {
+    clear();
     strip_mode_t _mode = configuration.mode;
     if (_mode == MODE_NORMAL) {
         NormalFeature::refresh();

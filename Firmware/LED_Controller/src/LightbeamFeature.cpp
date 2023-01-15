@@ -9,7 +9,7 @@ void LightbeamFeature::process(void) {
         _animations.UpdateAnimations();
     }
     else {
-        _animations.StartAnimation(0, configuration.setting.lightbeam.speed, _cb);
+        _animations.StartAnimation(0, _translateSpeed(configuration.setting.lightbeam.speed), _cb);
     }
 }
 
@@ -98,6 +98,6 @@ void LightbeamFeature::_animUpdateFunc(const AnimationParam& param) {
 }
 
 uint16_t LightbeamFeature::_translateSpeed(uint16_t &speed) {
-    if (speed > 1000) return 0;
+    if (speed > 1000 || speed == 0) return 0;
     return (uint16_t)(1000.0 / (float)speed);
 }

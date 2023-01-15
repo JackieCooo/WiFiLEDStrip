@@ -23,4 +23,5 @@ private:
     uint8_t _stage;
 
     void _animUpdateFunc(const AnimationParam& param);
+    static AnimEaseFunction _translateEase(ease_t& ease);
 };

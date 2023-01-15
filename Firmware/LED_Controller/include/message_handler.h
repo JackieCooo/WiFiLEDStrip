@@ -10,7 +10,6 @@ extern "C" {
 #include <esp_heap_caps.h>
 #include <string.h>
 
-#include "global.h"
 #include "queue.h"
 
 typedef enum {
