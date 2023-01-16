@@ -3,21 +3,25 @@
 #include "StripHandler.h"
 #include "ConnectHandler.h"
 #include "ConfigHandler.h"
-#include "message_handler.h"
 #include "global.h"
+
+xQueueHandle messageHandler;
 
 void setup() {
   Serial.begin(115200);
 
-  msg_init();
   configHandler.begin();
   configHandler.load();
   stripHandler.begin();
   connHandler.begin();
+
+  messageHandler = xQueueCreate(3, sizeof(msg_request_t));
+
+  xTaskCreate(StripHandler::task, "StripHandlerTask", 4096, NULL, 5, NULL);
+  xTaskCreate(ConnectHandler::task, "ConnectHandlerTask", 4096, NULL, 6, NULL);
+  xTaskCreate(ConfigHandler::task, "ConfigHandlerTask", 4096, NULL, 4, NULL);
 }
 
 void loop() {
-  stripHandler.process();
-  connHandler.process();
-  configHandler.process();
+  
 }

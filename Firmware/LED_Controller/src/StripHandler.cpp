@@ -66,4 +66,11 @@ void StripHandler::clear(void) {
     strip.Show();
 }
 
+void StripHandler::task(void* args) {
+    for (;;) {
+        stripHandler.process();
+        vTaskDelay(10);
+    }
+}
+
 StripHandler stripHandler;

@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <NeoPixelBus.h>
+#include <freertos/queue.h>
 
 #define LED_NUM 30
 #define LED_PIN 18
@@ -96,5 +97,17 @@ typedef struct {
     } setting;
 } configuration_t;
 
+typedef enum {
+    MSG_READ_CONFIG,
+    MSG_WRITE_CONFIG,
+    MSG_MATCH,
+} msg_t;
+
+typedef struct {
+    msg_t msg;
+    void* user_data;
+} msg_request_t;
+
 extern configuration_t configuration;
 extern NeoPixelBusType strip;
+extern xQueueHandle messageHandler;

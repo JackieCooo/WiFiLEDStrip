@@ -31,6 +31,13 @@ void ConnectHandler::process(void) {
     }
 }
 
+void ConnectHandler::task(void* args) {
+    for (;;) {
+        connHandler.process();
+        vTaskDelay(10);
+    }
+}
+
 void ConnectHandler::_handleRequest(WiFiClient& client) {
     package_t& p = _package.getPackage();
     if (p.cmd == PKG_CMD_WRITE_SETTING) {
@@ -67,7 +74,11 @@ void ConnectHandler::_handleRequest(WiFiClient& client) {
             configuration.setting.rainbow.speed = p.data.strip.setting.rainbow.speed;
         }
         stripHandler.refresh();
-        msg_send(MSG_WRITE_CONFIG, NULL);
+
+        msg_request_t request;
+        request.msg = MSG_WRITE_CONFIG;
+        request.user_data = NULL;
+        xQueueSend(messageHandler, &request, 1000);
 
         p.cmd = PKG_CMD_WRITE_REPLY;
         p.data.resp.resp = true;

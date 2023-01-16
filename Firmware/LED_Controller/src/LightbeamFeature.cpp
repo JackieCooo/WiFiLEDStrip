@@ -2,6 +2,7 @@
 
 LightbeamFeature::LightbeamFeature() {
     _cb = bind(&LightbeamFeature::_animUpdateFunc, this, placeholders::_1);
+    _refreshPattern();
 }
 
 void LightbeamFeature::process(void) {

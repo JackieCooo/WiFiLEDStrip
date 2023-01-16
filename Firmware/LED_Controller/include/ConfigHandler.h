@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <SPIFFS.h>
 
-#include "message_handler.h"
 #include "global.h"
 
 #define CONFIG_FILE_PATH        "/config.txt"
@@ -13,7 +12,7 @@ public:
     void load(void);
     void save(void);
     void process(void);
-
+    static void task(void* args);
 private:
 };
 

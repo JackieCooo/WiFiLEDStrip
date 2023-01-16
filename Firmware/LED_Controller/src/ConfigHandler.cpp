@@ -43,10 +43,16 @@ void ConfigHandler::save(void) {
 }
 
 void ConfigHandler::process(void) {
-    const msg_request_t* request = msg_peek();
-    if (request && request->msg == MSG_WRITE_CONFIG) {
+    msg_request_t msg;
+    if (xQueueReceive(messageHandler, &msg, portMAX_DELAY) && msg.msg == MSG_WRITE_CONFIG) {
         save();
-        msg_receive();
+    }
+}
+
+void ConfigHandler::task(void* args) {
+    for (;;) {
+        configHandler.process();
+        vTaskDelay(10);
     }
 }
 
