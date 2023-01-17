@@ -1,10 +1,5 @@
 #include "gui.h"
 
-/* Global variables define */
-
-configuration_t configuration;
-
-
 /* Static variables define */
 
 static lv_obj_t* container;
@@ -128,9 +123,9 @@ static lv_obj_t* color_select_create_cb(lv_fragment_t* self, lv_obj_t* parent)
     lv_obj_t* color_selector = lv_colorwheel_create(content, true);
     lv_colorwheel_set_mode(color_selector, LV_COLORWHEEL_MODE_HUE);
     lv_colorwheel_set_mode_fixed(color_selector, true);
-    // if (configuration.mode == MODE_NORMAL) lv_colorwheel_set_rgb(color_selector, configuration.setting.normal.color);
-    // else if (configuration.mode == MODE_BREATHING) lv_colorwheel_set_rgb(color_selector, configuration.setting.breathing.color);
-    // else if (configuration.mode == MODE_LIGHTBEAM) lv_colorwheel_set_rgb(color_selector, configuration.setting.lightbeam.color);
+    if (configuration.mode == MODE_NORMAL) lv_colorwheel_set_rgb(color_selector, configuration.setting.normal.color);
+    else if (configuration.mode == MODE_BREATHING) lv_colorwheel_set_rgb(color_selector, configuration.setting.breathing.color);
+    else if (configuration.mode == MODE_LIGHTBEAM) lv_colorwheel_set_rgb(color_selector, configuration.setting.lightbeam.color);
     lv_obj_set_size(color_selector, lv_pct(75), lv_pct(75));
     lv_obj_center(color_selector);
     lv_obj_add_event_cb(color_selector, color_selector_event_cb, LV_EVENT_VALUE_CHANGED, fragment);
@@ -321,9 +316,9 @@ static lv_obj_t* lightbeam_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     lv_btnmatrix_set_btn_ctrl_all(fragment->faded_end_selector, LV_BTNMATRIX_CTRL_CHECKABLE);
     lv_obj_set_size(fragment->faded_end_selector, 120, 50);
     lv_obj_set_style_pad_all(fragment->faded_end_selector, 0, 0);
-    if (configuration.setting.lightbeam.faded_end & FADED_HEAD)
+    if (configuration.setting.lightbeam.faded_end.FADED_HEAD)
         lv_btnmatrix_set_btn_ctrl(fragment->faded_end_selector, 0, LV_BTNMATRIX_CTRL_CHECKED);
-    if (configuration.setting.lightbeam.faded_end & FADED_TAIL)
+    if (configuration.setting.lightbeam.faded_end.FADED_TAIL)
         lv_btnmatrix_set_btn_ctrl(fragment->faded_end_selector, 1, LV_BTNMATRIX_CTRL_CHECKED);
 
     lv_obj_t* head_len_label = lv_label_create(content);
@@ -398,7 +393,10 @@ static void pwr_btn_event_cb(lv_event_t* e)
         lv_obj_t* btn = lv_event_get_target(e);
 
         void* data = init_message_package();
-        msg_send(MSG_WRITE_CONFIG, data);
+        msg_request_t request;
+        request.msg = MSG_WRITE_CONFIG;
+        request.user_data = data;
+        xQueueSend(messageHandler, &request, 1000);
 
         configuration.power = !configuration.power;
     }
@@ -446,7 +444,10 @@ static void color_selector_event_cb(lv_event_t* e)
         else if (configuration.mode == MODE_BREATHING) configuration.setting.breathing.color = color;
         else if (configuration.mode == MODE_LIGHTBEAM) configuration.setting.lightbeam.color = color;
 
-        msg_send(MSG_WRITE_CONFIG, data);
+        msg_request_t request;
+        request.msg = MSG_WRITE_CONFIG;
+        request.user_data = data;
+        xQueueSend(messageHandler, &request, 1000);
     }
 }
 
@@ -469,33 +470,22 @@ static void mode_changed_cb(lv_event_t* e) {
         if (*cur_sel == MODE_NORMAL)
         {
             configuration.mode = MODE_NORMAL;
-            configuration.setting.normal.color = DEFAULT_COLOR;
         }
         else if (*cur_sel == MODE_BREATHING) {
             configuration.mode = MODE_BREATHING;
-            configuration.setting.breathing.color = DEFAULT_COLOR;
-            configuration.setting.breathing.duration = DEFAULT_DURATION;
-            configuration.setting.breathing.ease = DEFAULT_EASE;
-            configuration.setting.breathing.interval = DEFAULT_INTERVAL;
         }
         else if (*cur_sel == MODE_LIGHTBEAM)
         {
             configuration.mode = MODE_LIGHTBEAM;
-            configuration.setting.lightbeam.color = DEFAULT_COLOR;
-            configuration.setting.lightbeam.dir = DEFAULT_DIRECTION;
-            configuration.setting.lightbeam.faded_end = DEFAULT_FADED_END;
-            configuration.setting.lightbeam.head_len = DEFAULT_HEAD_LEN;
-            configuration.setting.lightbeam.gap = DEFAULT_GAP;
-            configuration.setting.lightbeam.len = DEFAULT_LEN;
-            configuration.setting.lightbeam.speed = DEFAULT_SPEED;
-            configuration.setting.lightbeam.tail_len = DEFAULT_TAIL_LEN;
         }
         else if (*cur_sel = MODE_RAINBOW) {
             configuration.mode = MODE_RAINBOW;
-            configuration.setting.rainbow.speed = DEFAULT_SPEED;
         }
 
-        msg_send(MSG_WRITE_CONFIG, data);
+        msg_request_t request;
+        request.msg = MSG_WRITE_CONFIG;
+        request.user_data = data;
+        xQueueSend(messageHandler, &request, 1000);
     }
 }
 
@@ -521,9 +511,9 @@ static void confirm_panel_event_cb(lv_event_t* e) {
             uint16_t selected = lv_btnmatrix_get_selected_btn(fragment->direction_selector);
             if (selected == MOVE_LEFT) configuration.setting.lightbeam.dir = MOVE_LEFT;
             else if (selected == MOVE_RIGHT) configuration.setting.lightbeam.dir = MOVE_RIGHT;
-            uint8_t faded_end = 0;
-            if (lv_btnmatrix_has_btn_ctrl(fragment->faded_end_selector, 0, LV_BTNMATRIX_CTRL_CHECKED)) faded_end |= FADED_HEAD;
-            if (lv_btnmatrix_has_btn_ctrl(fragment->faded_end_selector, 1, LV_BTNMATRIX_CTRL_CHECKED)) faded_end |= FADED_TAIL;
+            faded_end_t faded_end;
+            if (lv_btnmatrix_has_btn_ctrl(fragment->faded_end_selector, 0, LV_BTNMATRIX_CTRL_CHECKED)) faded_end.FADED_HEAD = 1;
+            if (lv_btnmatrix_has_btn_ctrl(fragment->faded_end_selector, 1, LV_BTNMATRIX_CTRL_CHECKED)) faded_end.FADED_TAIL = 1;
             configuration.setting.lightbeam.faded_end = faded_end;
         }
         else if (*mode == MODE_RAINBOW) {
@@ -531,7 +521,10 @@ static void confirm_panel_event_cb(lv_event_t* e) {
 
             configuration.setting.rainbow.speed = styled_spinbox_get_value(fragment->speed_selector);
         }
-        msg_send(MSG_WRITE_CONFIG, data);
+        msg_request_t request;
+        request.msg = MSG_WRITE_CONFIG;
+        request.user_data = data;
+        xQueueSend(messageHandler, &request, 1000);
     }
     if (e->code == EVENT_CONFIRMED) {
         lv_fragment_manager_pop(manager);
@@ -560,13 +553,9 @@ static void setting_btn_event_cb(lv_event_t* e) {
 static void message_received_cb(void* s, lv_msg_t* m) {
     LV_UNUSED(s);
     uint32_t id = lv_msg_get_id(m);
-    msg_reply_t* reply = (msg_reply_t*) lv_msg_get_payload(m);
-    if (id == RES_CONFIG_UPDATED) {
-        printf("GUI received message id: %d, result: %d\n", id, reply->resp);
-        if (reply->resp) {
-            refresh_gui();
-            printf("GUI refreshed\n");
-        }
+    if (id == REFRESH_GUI) {
+        refresh_gui();
+        printf("GUI refreshed\n");
     }
 }
 
@@ -647,7 +636,7 @@ void create_gui(void)
     lv_fragment_manager_push(manager, main_gui_fragment, &container);
 
     lv_obj_add_event_cb(lv_scr_act(), gesture_event_cb, LV_EVENT_GESTURE, NULL);
-    lv_msg_subscribe(RES_CONFIG_UPDATED, message_received_cb, NULL);
+    lv_msg_subscribe(REFRESH_GUI, message_received_cb, NULL);
 }
 
 void refresh_gui(void) {

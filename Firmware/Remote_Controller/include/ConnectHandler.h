@@ -5,7 +5,6 @@
 #include <cstring>
 
 #include "Package.h"
-#include "message_handler.h"
 #include "lvgl.h"
 #include "global.h"
 
@@ -16,7 +15,7 @@
 #define MATCH_PORT                  20002
 
 #define MATCH_TIMEOUT_MS            5000
-#define TIMEOUT_MS                  2000
+#define TIMEOUT_MS                  3000
 
 #define BUF_SIZE(x)                 (x[2])
 
@@ -27,9 +26,7 @@ public:
     ConnectHandler();
     void begin(void);
     void process(void);
-    static led_mode_t packMode(uint8_t mode);
-    static ease_t packEase(uint8_t ease);
-    static dir_t packDirection(uint8_t dir);
+    static void task(void* args);
 
 private:
     Package _package;

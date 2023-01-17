@@ -1,30 +1,21 @@
 #ifndef _GLOBAL_H
 #define _GLOBAL_H
 
+#include <Arduino.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stdint.h>
-
+#include <stdbool.h>
 #include "lvgl.h"
+#include "freertos/queue.h"
 
-#define RES_CONFIG_UPDATED              1
+#define REFRESH_GUI                     1
 #define RES_MATCH                       2
 
-#define DEFAULT_POWER                   false
-#define DEFAULT_MODE                    MODE_NORMAL
-#define DEFAULT_COLOR                   lv_color_hex(0x001f)
-#define DEFAULT_DURATION                2000
-#define DEFAULT_INTERVAL                1000
-#define DEFAULT_EASE                    EASE_LINEAR
-#define DEFAULT_LEN                     3
-#define DEFAULT_SPEED                   8
-#define DEFAULT_FADED_END               FADED_DISABLE
-#define DEFAULT_HEAD_LEN                4
-#define DEFAULT_TAIL_LEN                4
-#define DEFAULT_DIRECTION               MOVE_LEFT
-#define DEFAULT_GAP                     2
+#define DEFAULT_COLOR                   lv_palette_main(LV_PALETTE_RED)
 
 typedef struct {
     uint16_t color;
@@ -99,11 +90,10 @@ typedef enum {
     EASE_GAMMA
 } ease_t;
 
-typedef uint8_t faded_end_t;
-
-#define FADED_DISABLE               (0)
-#define FADED_HEAD                  (1 << 0)
-#define FADED_TAIL                  (1 << 1)
+typedef struct {
+    uint8_t FADED_HEAD : 1;
+    uint8_t FADED_TAIL : 1;
+} faded_end_t;
 
 typedef enum {
     MOVE_LEFT,
@@ -113,7 +103,7 @@ typedef enum {
 typedef struct {
     bool power;
     led_mode_t mode;
-    union {
+    struct {
         struct {
             lv_color_t color;
         } normal;
@@ -139,7 +129,26 @@ typedef struct {
     } setting;
 } configuration_t;
 
+typedef enum {
+    MSG_READ_CONFIG,
+    MSG_WRITE_CONFIG,
+    MSG_MATCH,
+} msg_t;
+
+typedef struct {
+    msg_t msg;
+    void* user_data;
+} msg_request_t;
+
+typedef struct {
+    msg_t msg;
+    void* user_data;
+    bool resp;
+} msg_reply_t;
+
 extern configuration_t configuration;
+extern xQueueHandle messageHandler;
+extern xQueueHandle saveConfigMessage;
 
 #ifdef __cplusplus
 } /* extern "C" */

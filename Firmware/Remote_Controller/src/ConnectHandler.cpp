@@ -1,9 +1,8 @@
 #include "ConnectHandler.h"
 
 ConnectHandler::ConnectHandler() {
-    msg_init();
     _connected = true;
-    _hostIp = IPAddress(192, 168, 0, 111);
+    _hostIp = IPAddress(192, 168, 0, 107);
 }
 
 void ConnectHandler::begin(void) {
@@ -18,35 +17,40 @@ void ConnectHandler::begin(void) {
 
 void ConnectHandler::process(void) {
     if (!_connected) {
-        msg_send(MSG_MATCH, NULL);
+        msg_request_t request;
+        request.msg = MSG_MATCH;
+        request.user_data = NULL;
+        xQueueSend(messageHandler, &request, 1000);
     }
     _handle();
 }
 
 void ConnectHandler::_handle(void) {
-    if (msg_aviliable()) {
-        msg_request_t req_data = msg_receive();
-        _construct_transaction_data(req_data);
+    msg_request_t request;
+    if (xQueuePeek(messageHandler, &request, 1000) && (request.msg == MSG_MATCH || request.msg == MSG_READ_CONFIG || request.msg == MSG_WRITE_CONFIG)) {
+        xQueueReceive(messageHandler, &request, 1000);
+        _construct_transaction_data(request);
 
-        msg_reply_t res_data;
-        res_data.data = req_data;
-        if (req_data.msg == MSG_MATCH) {
+        msg_reply_t reply;
+        reply.msg = request.msg;
+        reply.user_data = request.user_data;
+        if (reply.msg == MSG_MATCH) {
             if (_match()) {
-                res_data.resp = true;
+                reply.resp = true;
             }
             else {
-                res_data.resp = false;
+                reply.resp = false;
             }
         }
         else {
             if (_transmit()) {
-                res_data.resp = true;
+                reply.resp = true;
             }
             else {
-                res_data.resp = false;
+                reply.resp = false;
             }
         }
-        _handle_reply(res_data);
+        _handle_reply(reply);
     }
 }
 
@@ -130,7 +134,7 @@ void ConnectHandler::_construct_transaction_data(msg_request_t& msg) {
             p.data.strip.mode = PKG_MODE_LIGHTBEAM;
             p.data.strip.setting.lightbeam.color = lv_color_to16(configuration.setting.lightbeam.color);
             p.data.strip.setting.lightbeam.dir = configuration.setting.lightbeam.dir;
-            p.data.strip.setting.lightbeam.faded_end = configuration.setting.lightbeam.faded_end;
+            p.data.strip.setting.lightbeam.faded_end = Package::parseFadedEnd(configuration.setting.lightbeam.faded_end);
             p.data.strip.setting.lightbeam.head_len = configuration.setting.lightbeam.head_len;
             p.data.strip.setting.lightbeam.gap = configuration.setting.lightbeam.gap;
             p.data.strip.setting.lightbeam.len = configuration.setting.lightbeam.len;
@@ -158,32 +162,35 @@ void ConnectHandler::_construct_transaction_data(msg_request_t& msg) {
 
 void ConnectHandler::_handle_reply(msg_reply_t& reply) {
     package_t& p = _package.getPackage();
-    if (reply.data.msg == MSG_WRITE_CONFIG) {
-        configuration_t* data = (configuration_t*) reply.data.user_data;
+    if (reply.msg == MSG_WRITE_CONFIG) {
+        configuration_t* data = (configuration_t*) reply.user_data;
         if (!reply.resp) {
             memcpy(&configuration, data, sizeof(configuration_t));  // if it failed, roll back to the old config
         }
+        else {
+            xSemaphoreGive(saveConfigMessage);
+        }
         heap_caps_free(data);
         data = NULL;
-        lv_msg_send(RES_CONFIG_UPDATED, &reply);
+        lv_msg_send(REFRESH_GUI, NULL);
     }
-    else if (reply.data.msg == MSG_READ_CONFIG) {
+    else if (reply.msg == MSG_READ_CONFIG) {
         if (reply.resp) {
             configuration.power = p.data.strip.power;
-            configuration.mode = ConnectHandler::packMode(p.data.strip.mode);
+            configuration.mode = Package::packMode(p.data.strip.mode);
             if (p.data.strip.mode == PKG_MODE_NORMAL) {
                 configuration.setting.normal.color = lv_color_hex(p.data.strip.setting.normal.color);
             }
             else if (p.data.strip.mode == PKG_MODE_BREATHING) {
                 configuration.setting.breathing.color = lv_color_hex(p.data.strip.setting.breathing.color);
                 configuration.setting.breathing.duration = p.data.strip.setting.breathing.duration;
-                configuration.setting.breathing.ease = ConnectHandler::packEase(p.data.strip.setting.breathing.ease);
+                configuration.setting.breathing.ease = Package::packEase(p.data.strip.setting.breathing.ease);
                 configuration.setting.breathing.interval = p.data.strip.setting.breathing.interval;
             }
             else if (p.data.strip.mode == PKG_MODE_LIGHTBEAM) {
                 configuration.setting.lightbeam.color = lv_color_hex(p.data.strip.setting.lightbeam.color);
-                configuration.setting.lightbeam.dir = ConnectHandler::packDirection(p.data.strip.setting.lightbeam.dir);
-                configuration.setting.lightbeam.faded_end = p.data.strip.setting.lightbeam.faded_end;
+                configuration.setting.lightbeam.dir = Package::packDirection(p.data.strip.setting.lightbeam.dir);
+                configuration.setting.lightbeam.faded_end = Package::packFadedEnd(p.data.strip.setting.lightbeam.faded_end);
                 configuration.setting.lightbeam.head_len = p.data.strip.setting.lightbeam.head_len;
                 configuration.setting.lightbeam.gap = p.data.strip.setting.lightbeam.gap;
                 configuration.setting.lightbeam.len = p.data.strip.setting.lightbeam.len;
@@ -194,59 +201,29 @@ void ConnectHandler::_handle_reply(msg_reply_t& reply) {
                 configuration.setting.rainbow.speed = p.data.strip.setting.rainbow.speed;
             }
         }
-        lv_msg_send(RES_CONFIG_UPDATED, &reply);
+        lv_msg_send(REFRESH_GUI, NULL);
     }
-    else if (reply.data.msg == MSG_MATCH) {
+    else if (reply.msg == MSG_MATCH) {
         if (reply.resp) {
             _hostIp = IPAddress(p.data.ip.a, p.data.ip.b, p.data.ip.c, p.data.ip.d);
             Serial.printf("Host IP: %s\n", _hostIp.toString().c_str());
             _connected = true;
             Serial.println("Matched");
-            msg_send(MSG_READ_CONFIG, NULL);
+            msg_request_t request;
+            request.msg = MSG_READ_CONFIG;
+            request.user_data = NULL;
+            xQueueSend(messageHandler, &request, 1000);
         }
         lv_msg_send(RES_MATCH, &reply);
     }
     Serial.printf("Send result: %d to GUI\n", reply.resp);
 }
 
-led_mode_t ConnectHandler::packMode(uint8_t mode) {
-    switch (mode)
-    {
-        case PKG_MODE_NORMAL:
-            return MODE_NORMAL;
-            break;
-        case PKG_MODE_BREATHING:
-            return MODE_BREATHING;
-            break;
-        case PKG_MODE_LIGHTBEAM:
-            return MODE_LIGHTBEAM;
-            break;
-        case PKG_MODE_RAINBOW:
-            return MODE_RAINBOW;
-            break;
-        default:
-            break;
+void ConnectHandler::task(void* args) {
+    for (;;) {
+        connHandler.process();
+        vTaskDelay(10);
     }
-    return MODE_NORMAL;
-}
-
-ease_t ConnectHandler::packEase(uint8_t ease) {
-    return EASE_LINEAR;
-}
-
-dir_t ConnectHandler::packDirection(uint8_t dir) {
-    switch (dir)
-    {
-        case PKG_MOVE_RIGHT:
-            return MOVE_RIGHT;
-            break;
-        case PKG_MOVE_LEFT:
-            return MOVE_LEFT;
-            break;
-        default:
-            break;
-    }
-    return MOVE_LEFT;
 }
 
 ConnectHandler connHandler;

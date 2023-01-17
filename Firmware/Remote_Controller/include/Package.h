@@ -18,15 +18,14 @@
 #define PKG_CMD_WRITE_REPLY                 (0x05)
 #define PKG_CMD_ACK_REPLY                   (0x06)
 
-#define PKG_REPLY_FAIL                      (0x00)
-#define PKG_REPLY_OK                        (0x01)
+#define PKG_FAIL                            (0x00)
+#define PKG_OK                              (0x01)
 
 #define PKG_MODE_NORMAL                     (0x00)
 #define PKG_MODE_BREATHING                  (0x01)
 #define PKG_MODE_LIGHTBEAM                  (0x02)
 #define PKG_MODE_RAINBOW                    (0x03)
 
-#define PKG_FADED_DISABLE                   (0)
 #define PKG_FADED_HEAD                      (1 << 0)
 #define PKG_FADED_TAIL                      (1 << 1)
 
@@ -95,7 +94,7 @@ typedef struct {
         } strip;
         struct {
             uint8_t resp;
-        } resp;
+        } reply;
         struct {
             uint8_t a;
             uint8_t b;
@@ -112,6 +111,11 @@ public:
     package_t& getPackage(void);
     static uint32_t RGB565toRGB888(uint16_t& rgb565);
     static uint16_t RGB888toRGB565(uint32_t& rgb888);
+    static led_mode_t packMode(uint8_t& mode);
+    static ease_t packEase(uint8_t& ease);
+    static dir_t packDirection(uint8_t& dir);
+    static faded_end_t packFadedEnd(uint8_t& value);
+    static uint8_t parseFadedEnd(faded_end_t& value);
 
 private:
     package_t _package;

@@ -4,13 +4,21 @@
 #include "display.h"
 #include "indev.h"
 #include "gui.h"
+#include "global.h"
 #include "ConnectHandler.h"
+#include "ConfigHandler.h"
 
+xQueueHandle messageHandler;
 Display display;
 Indev indev;
 
 void setup(void) {
   Serial.begin(115200);
+
+  configHandler.begin();
+  configHandler.load();
+
+  connHandler.begin();
 
   Serial.println("lvgl init");
   lv_init();
@@ -28,12 +36,14 @@ void setup(void) {
   create_gui();
   Serial.println("gui init done");
 
-  connHandler.begin();
+  messageHandler = xQueueCreate(3, sizeof(msg_request_t));
+
+  xTaskCreate(ConnectHandler::task, "ConnectHandlerTask", 4096, NULL, 5, NULL);
+  xTaskCreate(ConfigHandler::task, "ConfigHandlerTask", 4096, NULL, 4, NULL);
 }
 
 void loop(void) {
   lv_task_handler();
   lv_tick_inc(5);
-  connHandler.process();
   delay(5);
 }

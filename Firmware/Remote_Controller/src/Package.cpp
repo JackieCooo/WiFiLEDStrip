@@ -57,7 +57,7 @@ bool Package::parse(uint8_t* buf, uint8_t size) {
                 }
                 break;
             case 5:  // write reply cmd
-                _package.data.resp.resp = buf[i++];
+                _package.data.reply.resp = buf[i++];
                 stage = 99;
                 break;
             case 6:  // ack reply cmd
@@ -210,4 +210,153 @@ uint16_t Package::RGB888toRGB565(uint32_t& rgb888) {
     uint8_t g = RGB888_G(rgb888) >> 2;
     uint8_t b = RGB888_B(rgb888) >> 3;
     return rgb565 = CONCAT_RGB565(r, g, b);
+}
+
+led_mode_t Package::packMode(uint8_t& mode) {
+    switch (mode)
+    {
+        case PKG_MODE_NORMAL:
+            return MODE_NORMAL;
+            break;
+        case PKG_MODE_BREATHING:
+            return MODE_BREATHING;
+            break;
+        case PKG_MODE_LIGHTBEAM:
+            return MODE_LIGHTBEAM;
+            break;
+        case PKG_MODE_RAINBOW:
+            return MODE_RAINBOW;
+            break;
+        default:
+            break;
+    }
+    return MODE_NORMAL;
+}
+
+ease_t Package::packEase(uint8_t& ease) {
+    switch (ease)
+    {
+        case PKG_EASE_LINEAR:
+            return EASE_LINEAR;
+            break;
+        case PKG_EASE_QUADRATIC_IN:
+            return EASE_QUADRATIC_IN;
+            break;
+        case PKG_EASE_QUADRATIC_OUT:
+            return EASE_QUADRATIC_OUT;
+            break;
+        case PKG_EASE_QUADRATIC_IN_OUT:
+            return EASE_QUADRATIC_IN_OUT;
+            break;
+        case PKG_EASE_QUADRATIC_CENTER:
+            return EASE_QUADRATIC_CENTER;
+            break;
+        case PKG_EASE_CUBIC_IN:
+            return EASE_CUBIC_IN;
+            break;
+        case PKG_EASE_CUBIC_OUT:
+            return EASE_CUBIC_OUT;
+            break;
+        case PKG_EASE_CUBIC_IN_OUT:
+            return EASE_CUBIC_IN_OUT;
+            break;
+        case PKG_EASE_CUBIC_CENTER:
+            return EASE_CUBIC_CENTER;
+            break;
+        case PKG_EASE_QUARTIC_IN:
+            return EASE_QUARTIC_IN;
+            break;
+        case PKG_EASE_QUARTIC_OUT:
+            return EASE_QUARTIC_OUT;
+            break;
+        case PKG_EASE_QUARTIC_IN_OUT:
+            return EASE_QUARTIC_IN_OUT;
+            break;
+        case PKG_EASE_QUARTIC_CENTER:
+            return EASE_QUARTIC_CENTER;
+            break;
+        case PKG_EASE_QUINTIC_IN:
+            return EASE_QUINTIC_IN;
+            break;
+        case PKG_EASE_QUINTIC_OUT:
+            return EASE_QUINTIC_OUT;
+            break;
+        case PKG_EASE_QUINTIC_IN_OUT:
+            return EASE_QUINTIC_IN_OUT;
+            break;
+        case PKG_EASE_QUINTIC_CENTER:
+            return EASE_QUINTIC_CENTER;
+            break;
+        case PKG_EASE_SINUSOIDAL_IN:
+            return EASE_SINUSOIDAL_IN;
+            break;
+        case PKG_EASE_SINUSOIDAL_OUT:
+            return EASE_SINUSOIDAL_OUT;
+            break;
+        case PKG_EASE_SINUSOIDAL_IN_OUT:
+            return EASE_SINUSOIDAL_IN_OUT;
+            break;
+        case PKG_EASE_SINUSOIDAL_CENTER:
+            return EASE_SINUSOIDAL_CENTER;
+            break;
+        case PKG_EASE_EXPONENTIAL_IN:
+            return EASE_EXPONENTIAL_IN;
+            break;
+        case PKG_EASE_EXPONENTIAL_OUT:
+            return EASE_EXPONENTIAL_OUT;
+            break;
+        case PKG_EASE_EXPONENTIAL_IN_OUT:
+            return EASE_EXPONENTIAL_IN_OUT;
+            break;
+        case PKG_EASE_EXPONENTIAL_CENTER:
+            return EASE_EXPONENTIAL_CENTER;
+            break;
+        case PKG_EASE_CIRCULAR_IN:
+            return EASE_CIRCULAR_IN;
+            break;
+        case PKG_EASE_CIRCULAR_OUT:
+            return EASE_CIRCULAR_OUT;
+            break;
+        case PKG_EASE_CIRCULAR_IN_OUT:
+            return EASE_CIRCULAR_IN_OUT;
+            break;
+        case PKG_EASE_CIRCULAR_CENTER:
+            return EASE_CIRCULAR_CENTER;
+            break;
+        case PKG_EASE_GAMMA:
+            return EASE_GAMMA;
+            break;
+        default:
+            break;
+    }
+    return EASE_LINEAR;
+}
+
+dir_t Package::packDirection(uint8_t& dir) {
+    switch (dir)
+    {
+        case PKG_MOVE_RIGHT:
+            return MOVE_RIGHT;
+            break;
+        case PKG_MOVE_LEFT:
+            return MOVE_LEFT;
+            break;
+        default:
+            break;
+    }
+    return MOVE_LEFT;
+}
+
+faded_end_t Package::packFadedEnd(uint8_t& value) {
+    faded_end_t faded_end;
+    if (value & PKG_FADED_HEAD) faded_end.FADED_HEAD = 1;
+    if (value & PKG_FADED_TAIL) faded_end.FADED_TAIL = 1;
+    return faded_end;
+}
+
+uint8_t Package::parseFadedEnd(faded_end_t& value) {
+    uint8_t faded_end = 0;
+    if (value.FADED_HEAD) faded_end |= PKG_FADED_HEAD;
+    if (value.FADED_TAIL) faded_end |= PKG_FADED_TAIL;
+    return faded_end;
 }
