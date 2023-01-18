@@ -1,8 +1,9 @@
 #include "ConnectHandler.h"
 
+connectivity_t connectivity;
+
 ConnectHandler::ConnectHandler() {
-    _connected = true;
-    _hostIp = IPAddress(192, 168, 0, 107);
+
 }
 
 void ConnectHandler::begin(void) {
@@ -16,40 +17,42 @@ void ConnectHandler::begin(void) {
 }
 
 void ConnectHandler::process(void) {
-    if (!_connected) {
+    if (!connectivity.connected) {
         msg_request_t request;
-        request.msg = MSG_MATCH;
+        request.msg = MSG_CONNECT;
         request.user_data = NULL;
-        xQueueSend(messageHandler, &request, 1000);
+        xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
+    }
+    else {
+        if (!connectivity.matched) {
+            msg_request_t request;
+            request.msg = MSG_MATCH;
+            request.user_data = NULL;
+            xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
+        }
     }
     _handle();
 }
 
 void ConnectHandler::_handle(void) {
     msg_request_t request;
-    if (xQueuePeek(messageHandler, &request, 1000) && (request.msg == MSG_MATCH || request.msg == MSG_READ_CONFIG || request.msg == MSG_WRITE_CONFIG)) {
-        xQueueReceive(messageHandler, &request, 1000);
+    if (xQueueReceive(messageHandler, &request, QUEUE_TIMEOUT_MS)) {
         _construct_transaction_data(request);
 
         msg_reply_t reply;
-        reply.msg = request.msg;
-        reply.user_data = request.user_data;
-        if (reply.msg == MSG_MATCH) {
-            if (_match()) {
-                reply.resp = true;
-            }
-            else {
-                reply.resp = false;
-            }
+        if (request.msg == MSG_CONNECT) {
+            
+        }
+        else if (request.msg == MSG_MATCH) {
+            if (_match()) reply.resp = true;
+            else reply.resp = false;
         }
         else {
-            if (_transmit()) {
-                reply.resp = true;
-            }
-            else {
-                reply.resp = false;
-            }
+            if (_transmit()) reply.resp = true;
+            else reply.resp = false;
         }
+        reply.msg = request.msg;
+        reply.user_data = request.user_data;
         _handle_reply(reply);
     }
 }
@@ -68,7 +71,7 @@ bool ConnectHandler::_match(void) {
     sender.write(tx_buf, BUF_SIZE(tx_buf));
     sender.endPacket();
 
-    while (!_connected && timeout--) {
+    while (!connectivity.connected && timeout--) {
         if (receiver.parsePacket()) {
             uint8_t rx_buf[PKG_BUF_MAX_LEN];
             memset(rx_buf, 0x00, sizeof(rx_buf));
@@ -89,7 +92,7 @@ bool ConnectHandler::_transmit(void) {
     WiFiClient client;
     bool res = false;
     uint32_t timeout = TIMEOUT_MS;
-    if (client.connect(_hostIp, SERVER_PORT)) {
+    if (client.connect(_translate_ip_address(connectivity.host_ip), SERVER_PORT)) {
         uint8_t tx_buf[PKG_BUF_MAX_LEN];
         _package.pack(tx_buf, sizeof(tx_buf));
         client.write(tx_buf, BUF_SIZE(tx_buf));
@@ -205,14 +208,14 @@ void ConnectHandler::_handle_reply(msg_reply_t& reply) {
     }
     else if (reply.msg == MSG_MATCH) {
         if (reply.resp) {
-            _hostIp = IPAddress(p.data.ip.a, p.data.ip.b, p.data.ip.c, p.data.ip.d);
-            Serial.printf("Host IP: %s\n", _hostIp.toString().c_str());
-            _connected = true;
+            connectivity.host_ip = p.data.ip;
+            Serial.printf("Host IP: %d.%d.%d.%d\n", connectivity.host_ip.a, connectivity.host_ip.b, connectivity.host_ip.c, connectivity.host_ip.d);
+            connectivity.connected = true;
             Serial.println("Matched");
             msg_request_t request;
             request.msg = MSG_READ_CONFIG;
             request.user_data = NULL;
-            xQueueSend(messageHandler, &request, 1000);
+            xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
         }
         lv_msg_send(RES_MATCH, &reply);
     }
@@ -224,6 +227,10 @@ void ConnectHandler::task(void* args) {
         connHandler.process();
         vTaskDelay(10);
     }
+}
+
+IPAddress ConnectHandler::_translate_ip_address(ip_addr_t& ip) {
+    return IPAddress(ip.a, ip.b, ip.c, ip.d);
 }
 
 ConnectHandler connHandler;

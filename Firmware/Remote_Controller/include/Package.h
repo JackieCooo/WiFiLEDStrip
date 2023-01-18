@@ -95,12 +95,7 @@ typedef struct {
         struct {
             uint8_t resp;
         } reply;
-        struct {
-            uint8_t a;
-            uint8_t b;
-            uint8_t c;
-            uint8_t d;
-        } ip;
+        ip_addr_t ip;
     } data;
 } package_t;
 

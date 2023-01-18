@@ -13,6 +13,7 @@ extern "C" {
 #include "global.h"
 #include "styled_spinbox.h"
 #include "confirm_panel.h"
+#include "wifi_list_item.h"
 
 /* User defines */
 #define BTN_HOR_RES 120
@@ -43,6 +44,15 @@ typedef struct {
     lv_obj_t* duration_selector;
     lv_obj_t* interval_selector;
 } breathing_setting_fragment_t;
+
+typedef struct {
+    lv_fragment_t base;
+} wifi_scan_fragment_t;
+
+typedef struct {
+    lv_fragment_t base;
+    char* ssid;
+} wifi_connect_fragment_t;
 
 typedef struct {
     lv_fragment_t base;

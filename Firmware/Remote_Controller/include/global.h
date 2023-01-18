@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
-#include <stdbool.h>
 #include "lvgl.h"
 #include "freertos/queue.h"
 
@@ -16,6 +14,7 @@ extern "C" {
 #define RES_MATCH                       2
 
 #define DEFAULT_COLOR                   lv_palette_main(LV_PALETTE_RED)
+#define QUEUE_TIMEOUT_MS                (20)
 
 typedef struct {
     uint16_t color;
@@ -133,6 +132,7 @@ typedef enum {
     MSG_READ_CONFIG,
     MSG_WRITE_CONFIG,
     MSG_MATCH,
+    MSG_CONNECT,
 } msg_t;
 
 typedef struct {
@@ -146,9 +146,23 @@ typedef struct {
     bool resp;
 } msg_reply_t;
 
+typedef struct {
+    uint8_t a;
+    uint8_t b;
+    uint8_t c;
+    uint8_t d;
+} ip_addr_t;
+
+typedef struct {
+    bool connected;
+    bool matched;
+    ip_addr_t host_ip;
+} connectivity_t;
+
 extern configuration_t configuration;
 extern xQueueHandle messageHandler;
 extern xQueueHandle saveConfigMessage;
+extern connectivity_t connectivity;
 
 #ifdef __cplusplus
 } /* extern "C" */

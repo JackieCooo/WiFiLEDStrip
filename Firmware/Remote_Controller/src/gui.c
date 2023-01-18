@@ -15,6 +15,9 @@ static lv_obj_t* about_create_cb(lv_fragment_t* self, lv_obj_t* parent);
 static lv_obj_t* breathing_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t* parent);
 static lv_obj_t* lightbeam_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t* parent);
 static lv_obj_t* rainbow_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t* parent);
+static lv_obj_t* wifi_scan_create_cb(lv_fragment_t* self, lv_obj_t* parent);
+static lv_obj_t* wifi_connect_create_cb(lv_fragment_t* self, lv_obj_t* parent);
+static void wifi_connect_construct_cb(lv_fragment_t* self, void* args);
 static void container_del_cb(lv_event_t* e);
 static void pwr_btn_event_cb(lv_event_t* e);
 static void color_btn_event_cb(lv_event_t* e);
@@ -25,6 +28,10 @@ static void gesture_event_cb(lv_event_t* e);
 static void mode_changed_cb(lv_event_t* e);
 static void setting_btn_event_cb(lv_event_t* e);
 static void confirm_panel_event_cb(lv_event_t* e);
+static void wifi_list_item_event_cb(lv_event_t* e);
+static void password_area_event_cb(lv_event_t* e);
+static void connect_btn_event_cb(lv_event_t* e);
+static void keyboard_event_cb(lv_event_t* e);
 static void message_received_cb(void* s, lv_msg_t* m);
 
 static void stylish_default_btn(lv_obj_t* btn, const char* text);
@@ -70,6 +77,17 @@ static const lv_fragment_class_t lightbeam_setting_cls = {
 static const lv_fragment_class_t rainbow_setting_cls = {
     .create_obj_cb = rainbow_mode_setting_create_cb,
     .instance_size = sizeof(rainbow_setting_fragment_t)
+};
+
+static const lv_fragment_class_t wifi_scan_cls = {
+    .create_obj_cb = wifi_scan_create_cb,
+    .instance_size = sizeof(wifi_scan_fragment_t)
+};
+
+static const lv_fragment_class_t wifi_connect_cls = {
+    .constructor_cb = wifi_connect_construct_cb,
+    .create_obj_cb = wifi_connect_create_cb,
+    .instance_size = sizeof(wifi_connect_fragment_t)
 };
 
 
@@ -378,6 +396,87 @@ static lv_obj_t* rainbow_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t* p
     return content;
 }
 
+static lv_obj_t* wifi_scan_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
+    wifi_scan_fragment_t* fragment = (wifi_scan_fragment_t*) self;
+
+    lv_obj_t* content = lv_obj_create(parent);
+    lv_obj_set_flex_flow(content, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(content, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_scroll_dir(content, LV_DIR_VER);
+    lv_obj_set_scrollbar_mode(content, LV_SCROLLBAR_MODE_ACTIVE);
+    lv_obj_set_size(content, lv_pct(100), lv_pct(100));
+    lv_obj_set_style_pad_row(content, 0, 0);
+    lv_obj_set_style_pad_top(content, 10, 0);
+    lv_obj_set_style_pad_bottom(content, 10, 0);
+    lv_obj_set_style_border_opa(content, 0, 0);
+    lv_obj_set_style_bg_opa(content, 0, 0);
+
+    int num = 10;
+    for (int i = 0; i < num; ++i) {
+        lv_obj_t* item = create_wifi_list_item(content, "test");
+        if (i == num - 1) {
+            lv_obj_set_style_border_side(item, LV_BORDER_SIDE_NONE, 0);
+        }
+        lv_obj_add_event_cb(item, wifi_list_item_event_cb, LV_EVENT_CLICKED, NULL);
+    }
+
+    return content;
+}
+
+static lv_obj_t* wifi_connect_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
+    wifi_connect_fragment_t* fragment = (wifi_connect_fragment_t*) self;
+
+    lv_obj_t* content = lv_obj_create(parent);
+    lv_obj_set_flex_flow(content, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(content, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_scroll_dir(content, LV_DIR_VER);
+    lv_obj_set_scrollbar_mode(content, LV_SCROLLBAR_MODE_ACTIVE);
+    lv_obj_set_size(content, lv_pct(100), lv_pct(100));
+    lv_obj_set_style_pad_row(content, 20, 0);
+    lv_obj_set_style_pad_top(content, 10, 0);
+    lv_obj_set_style_pad_bottom(content, 10, 0);
+    lv_obj_set_style_border_opa(content, 0, 0);
+    lv_obj_set_style_bg_opa(content, 0, 0);
+
+    lv_obj_t* keyboard = lv_keyboard_create(lv_scr_act());
+    lv_obj_set_width(keyboard, lv_pct(100));
+    lv_keyboard_set_mode(keyboard, LV_KEYBOARD_MODE_TEXT_LOWER);
+    lv_keyboard_set_textarea(keyboard, NULL);
+    lv_keyboard_set_popovers(keyboard, true);
+    lv_obj_add_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(keyboard, LV_OBJ_FLAG_FLOATING);
+    lv_obj_align(keyboard, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_add_event_cb(keyboard, keyboard_event_cb, LV_EVENT_ALL, NULL);
+
+    lv_obj_t* ssid_label = lv_label_create(content);
+    lv_obj_set_width(ssid_label, lv_pct(100));
+    lv_label_set_text(ssid_label, fragment->ssid);
+    lv_obj_set_style_border_side(ssid_label, LV_BORDER_SIDE_BOTTOM, 0);
+    lv_obj_set_style_border_opa(ssid_label, lv_pct(50), 0);
+    lv_obj_set_style_border_width(ssid_label, 1, 0);
+    lv_obj_set_style_border_color(ssid_label, lv_palette_main(LV_PALETTE_GREY), 0);
+
+    lv_obj_t* password = lv_textarea_create(content);
+    lv_textarea_set_placeholder_text(password, "Password");
+    lv_textarea_set_one_line(password, true);
+    lv_textarea_set_password_mode(password, true);
+    lv_obj_add_event_cb(password, password_area_event_cb, LV_EVENT_ALL, keyboard);
+    lv_obj_set_size(password, 200, 40);
+
+    lv_obj_t* connect_btn = lv_btn_create(content);
+    lv_obj_add_event_cb(connect_btn, connect_btn_event_cb, LV_EVENT_CLICKED, password);
+    stylish_default_btn(connect_btn, "Connect");
+    lv_obj_set_style_translate_x(connect_btn, (240 - 120 - 20 * 2) / 2, 0);
+
+    return content;
+}
+
+static void wifi_connect_construct_cb(lv_fragment_t* self, void* args) {
+    wifi_connect_fragment_t* fragment = (wifi_connect_fragment_t*) self;
+
+    fragment->ssid = (char*) args;
+}
+
 static void container_del_cb(lv_event_t* e)
 {
     if (e->code == LV_EVENT_DELETE)
@@ -550,6 +649,48 @@ static void setting_btn_event_cb(lv_event_t* e) {
     }
 }
 
+static void wifi_list_item_event_cb(lv_event_t* e) {
+    if (e->code == LV_EVENT_CLICKED) {
+        lv_obj_t* item = lv_event_get_target(e);
+        lv_obj_t* label = lv_obj_get_child(item, 0);
+        char* ssid = lv_label_get_text(label);
+        lv_fragment_t* connect_page = lv_fragment_create(&wifi_connect_cls, ssid);
+        lv_fragment_manager_push(manager, connect_page, &container);
+    }
+}
+
+static void password_area_event_cb(lv_event_t* e) {
+    lv_obj_t* textarea = lv_event_get_target(e);
+    lv_obj_t* keyboard = lv_event_get_user_data(e);
+    if (e->code == LV_EVENT_FOCUSED) {
+        lv_keyboard_set_textarea(keyboard, textarea);
+        lv_obj_clear_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_move_foreground(keyboard);
+    }
+    else if (e->code == LV_EVENT_DEFOCUSED) {
+        lv_keyboard_set_textarea(keyboard, NULL);
+        lv_obj_add_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_move_background(keyboard);
+    }
+}
+
+static void connect_btn_event_cb(lv_event_t* e) {
+    if (e->code == LV_EVENT_CLICKED) {
+        lv_fragment_manager_pop(manager);
+    }
+}
+
+static void keyboard_event_cb(lv_event_t* e) {
+    if (e->code == LV_EVENT_READY || e->code == LV_EVENT_CANCEL) {
+        lv_obj_t* keyboard = lv_event_get_target(e);
+        lv_obj_t* textarea = lv_keyboard_get_textarea(keyboard);
+        lv_obj_clear_state(textarea, LV_STATE_FOCUSED);
+        lv_keyboard_set_textarea(keyboard, NULL);
+        lv_obj_add_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_move_background(keyboard);
+    }
+}
+
 static void message_received_cb(void* s, lv_msg_t* m) {
     LV_UNUSED(s);
     uint32_t id = lv_msg_get_id(m);
@@ -632,8 +773,11 @@ void create_gui(void)
     manager = lv_fragment_manager_create(NULL);
     lv_obj_add_event_cb(container, container_del_cb, LV_EVENT_DELETE, NULL);
 
-    lv_fragment_t* main_gui_fragment = lv_fragment_create(&home_cls, NULL);
-    lv_fragment_manager_push(manager, main_gui_fragment, &container);
+    // lv_fragment_t* main_gui_fragment = lv_fragment_create(&home_cls, NULL);
+    // lv_fragment_manager_push(manager, main_gui_fragment, &container);
+
+    lv_fragment_t* wifi_scan_fragment = lv_fragment_create(&wifi_scan_cls, NULL);
+    lv_fragment_manager_push(manager, wifi_scan_fragment, &container);
 
     lv_obj_add_event_cb(lv_scr_act(), gesture_event_cb, LV_EVENT_GESTURE, NULL);
     lv_msg_subscribe(REFRESH_GUI, message_received_cb, NULL);

@@ -27,17 +27,18 @@ public:
     void begin(void);
     void process(void);
     static void task(void* args);
+    static void scan_wifi_task(void* args);
 
 private:
     Package _package;
-    bool _connected;
-    IPAddress _hostIp;
+    
 
     void _handle(void);
     bool _match(void);
     bool _transmit(void);
     void _construct_transaction_data(msg_request_t& msg);
     void _handle_reply(msg_reply_t& reply);
+    static IPAddress _translate_ip_address(ip_addr_t& ip);
 };
 
 extern ConnectHandler connHandler;
