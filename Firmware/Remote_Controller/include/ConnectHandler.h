@@ -8,9 +8,6 @@
 #include "lvgl.h"
 #include "global.h"
 
-#define WIFI_SSID                   "TP-LINK_B596"
-#define WIFI_PWR                    "chen1370292520"
-
 #define SERVER_PORT                 20001
 #define MATCH_PORT                  20002
 

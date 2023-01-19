@@ -7,21 +7,22 @@ ConnectHandler::ConnectHandler() {
 }
 
 void ConnectHandler::begin(void) {
-    WiFi.begin(WIFI_SSID, WIFI_PWR);
-    Serial.print("WiFi connecting");
-    while (WiFi.status() != WL_CONNECTED) {
-        Serial.print(".");
-        delay(500);
-    }
-    Serial.printf("\nIP: %s\n", WiFi.localIP().toString().c_str());
+    // WiFi.begin(WIFI_SSID, WIFI_PWR);
+    // Serial.print("WiFi connecting");
+    // while (WiFi.status() != WL_CONNECTED) {
+    //     Serial.print(".");
+    //     delay(500);
+    // }
+    // Serial.printf("\nIP: %s\n", WiFi.localIP().toString().c_str());
 }
 
 void ConnectHandler::process(void) {
     if (!connectivity.connected) {
         msg_request_t request;
-        request.msg = MSG_CONNECT;
+        request.msg = MSG_WIFI_SCAN;
         request.user_data = NULL;
         xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
+        lv_msg_send(WIFI_CONNECT_GUI, NULL);
     }
     else {
         if (!connectivity.matched) {
@@ -40,8 +41,11 @@ void ConnectHandler::_handle(void) {
         _construct_transaction_data(request);
 
         msg_reply_t reply;
-        if (request.msg == MSG_CONNECT) {
+        if (request.msg == MSG_WIFI_SCAN) {
             
+        }
+        else if (request.msg == MSG_WIFI_CONNECT) {
+
         }
         else if (request.msg == MSG_MATCH) {
             if (_match()) reply.resp = true;

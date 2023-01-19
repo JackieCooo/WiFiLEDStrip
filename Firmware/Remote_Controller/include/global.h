@@ -12,6 +12,7 @@ extern "C" {
 
 #define REFRESH_GUI                     1
 #define RES_MATCH                       2
+#define WIFI_CONNECT_GUI                3
 
 #define DEFAULT_COLOR                   lv_palette_main(LV_PALETTE_RED)
 #define QUEUE_TIMEOUT_MS                (20)
@@ -132,7 +133,8 @@ typedef enum {
     MSG_READ_CONFIG,
     MSG_WRITE_CONFIG,
     MSG_MATCH,
-    MSG_CONNECT,
+    MSG_WIFI_SCAN,
+    MSG_WIFI_CONNECT,
 } msg_t;
 
 typedef struct {
@@ -157,6 +159,8 @@ typedef struct {
     bool connected;
     bool matched;
     ip_addr_t host_ip;
+    char* ssid;
+    char* password;
 } connectivity_t;
 
 extern configuration_t configuration;
