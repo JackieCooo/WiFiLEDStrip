@@ -2,27 +2,19 @@
 
 connectivity_t connectivity;
 
-ConnectHandler::ConnectHandler() {
-
-}
-
 void ConnectHandler::begin(void) {
-    // WiFi.begin(WIFI_SSID, WIFI_PWR);
-    // Serial.print("WiFi connecting");
-    // while (WiFi.status() != WL_CONNECTED) {
-    //     Serial.print(".");
-    //     delay(500);
-    // }
-    // Serial.printf("\nIP: %s\n", WiFi.localIP().toString().c_str());
+    WiFi.onEvent(_wifi_callback);
+    if (!connectivity.connected) {
+        show_connect_gui();
+    }
+    else {
+        show_main_gui();
+    }
 }
 
 void ConnectHandler::process(void) {
     if (!connectivity.connected) {
-        msg_request_t request;
-        request.msg = MSG_WIFI_SCAN;
-        request.user_data = NULL;
-        xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
-        lv_msg_send(WIFI_CONNECT_GUI, NULL);
+        WiFi.scanNetworks();  // scan wifi in sync mode
     }
     else {
         if (!connectivity.matched) {
@@ -235,6 +227,25 @@ void ConnectHandler::task(void* args) {
 
 IPAddress ConnectHandler::_translate_ip_address(ip_addr_t& ip) {
     return IPAddress(ip.a, ip.b, ip.c, ip.d);
+}
+
+void ConnectHandler::_wifi_callback(arduino_event_id_t event, arduino_event_info_t info) {
+    if (event == ARDUINO_EVENT_WIFI_SCAN_DONE) {
+        if (info.wifi_scan_done.status) {
+            uint8_t num = info.wifi_scan_done.number;
+
+            for (uint8_t i = 0; i < num; ++i) {
+                Serial.printf("SSID: %s, RSSI, %d\n", WiFi.SSID(i).c_str(), WiFi.RSSI(i));
+                
+            }
+        }
+    }
+    else if (event == ARDUINO_EVENT_WIFI_STA_CONNECTED) {
+
+    }
+    else if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
+
+    }
 }
 
 ConnectHandler connHandler;

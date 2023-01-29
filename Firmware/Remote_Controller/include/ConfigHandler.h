@@ -5,8 +5,8 @@
 
 #include "global.h"
 
-#define CONFIG_FILE_PATH        "/config.txt"
-#define WIFI_CONFIG_FILE_PATH   "/wifi.txt"
+#define CONFIG_FILE_PATH        "/configuration.txt"
+#define WIFI_CONFIG_FILE_PATH   "/connectivity.txt"
 
 class ConfigHandler {
 public:
@@ -17,7 +17,9 @@ public:
     void process(void);
     static void task(void* args);
 private:
-    void _validateConfiguration(void);
+    void _initConfigurationSetting(File& file);
+    void _initConnectivitySetting(File& file);
+    void _checkLocalFiles(void);
 };
 
 extern ConfigHandler configHandler;

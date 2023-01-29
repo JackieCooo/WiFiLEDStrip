@@ -6,6 +6,7 @@
 
 #include "Package.h"
 #include "lvgl.h"
+#include "gui.h"
 #include "global.h"
 
 #define SERVER_PORT                 20001
@@ -20,22 +21,20 @@ using namespace std;
 
 class ConnectHandler {
 public:
-    ConnectHandler();
     void begin(void);
     void process(void);
     static void task(void* args);
-    static void scan_wifi_task(void* args);
 
 private:
     Package _package;
     
-
     void _handle(void);
     bool _match(void);
     bool _transmit(void);
     void _construct_transaction_data(msg_request_t& msg);
     void _handle_reply(msg_reply_t& reply);
     static IPAddress _translate_ip_address(ip_addr_t& ip);
+    static void _wifi_callback(arduino_event_id_t event, arduino_event_info_t info);
 };
 
 extern ConnectHandler connHandler;

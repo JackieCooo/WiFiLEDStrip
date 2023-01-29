@@ -70,8 +70,11 @@ typedef struct {
     lv_obj_t* speed_selector;
 } rainbow_setting_fragment_t;
 
-void create_gui(void);
+void init_gui(void);
 void refresh_gui(void);
+void clear_gui(void);
+void show_connect_gui(void);
+void show_main_gui(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

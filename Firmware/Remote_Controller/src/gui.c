@@ -411,15 +411,6 @@ static lv_obj_t* wifi_scan_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
     lv_obj_set_style_border_opa(content, 0, 0);
     lv_obj_set_style_bg_opa(content, 0, 0);
 
-    int num = 10;
-    for (int i = 0; i < num; ++i) {
-        lv_obj_t* item = create_wifi_list_item(content, "test");
-        if (i == num - 1) {
-            lv_obj_set_style_border_side(item, LV_BORDER_SIDE_NONE, 0);
-        }
-        lv_obj_add_event_cb(item, wifi_list_item_event_cb, LV_EVENT_CLICKED, NULL);
-    }
-
     return content;
 }
 
@@ -698,6 +689,9 @@ static void message_received_cb(void* s, lv_msg_t* m) {
         refresh_gui();
         printf("GUI refreshed\n");
     }
+    else if (id == WIFI_CONNECT_GUI) {
+        
+    }
 }
 
 
@@ -760,7 +754,7 @@ static void power_btn_set_state(lv_obj_t* btn, bool state) {
 
 /* Main function */
 
-void create_gui(void)
+void init_gui(void)
 {
     EVENT_SELECTED_CHANGED = lv_event_register_id();
     EVENT_CONFIRMED = lv_event_register_id();
@@ -773,12 +767,6 @@ void create_gui(void)
     manager = lv_fragment_manager_create(NULL);
     lv_obj_add_event_cb(container, container_del_cb, LV_EVENT_DELETE, NULL);
 
-    // lv_fragment_t* main_gui_fragment = lv_fragment_create(&home_cls, NULL);
-    // lv_fragment_manager_push(manager, main_gui_fragment, &container);
-
-    lv_fragment_t* wifi_scan_fragment = lv_fragment_create(&wifi_scan_cls, NULL);
-    lv_fragment_manager_push(manager, wifi_scan_fragment, &container);
-
     lv_obj_add_event_cb(lv_scr_act(), gesture_event_cb, LV_EVENT_GESTURE, NULL);
     lv_msg_subscribe(REFRESH_GUI, message_received_cb, NULL);
 }
@@ -786,4 +774,21 @@ void create_gui(void)
 void refresh_gui(void) {
     lv_fragment_t* fragment = lv_fragment_manager_get_top(manager);
     lv_fragment_recreate_obj(fragment);
+}
+
+void clear_gui(void) {
+    uint8_t size = lv_fragment_manager_get_stack_size(manager);
+    for (uint8_t i = 0; i < size; i++) {
+        lv_fragment_manager_pop(manager);
+    }
+}
+
+void show_connect_gui(void) {
+    lv_fragment_t* wifi_scan_fragment = lv_fragment_create(&wifi_scan_cls, NULL);
+    lv_fragment_manager_push(manager, wifi_scan_fragment, &container);
+}
+
+void show_main_gui(void) {
+    lv_fragment_t* main_gui_fragment = lv_fragment_create(&home_cls, NULL);
+    lv_fragment_manager_push(manager, main_gui_fragment, &container);
 }

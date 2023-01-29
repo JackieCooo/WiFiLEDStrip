@@ -33,7 +33,7 @@ void setup(void) {
   Serial.println("touch init done");
 
   Serial.println("gui init");
-  create_gui();
+  init_gui();
   Serial.println("gui init done");
 
   messageHandler = xQueueCreate(3, sizeof(msg_request_t));
