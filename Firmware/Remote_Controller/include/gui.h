@@ -14,6 +14,7 @@ extern "C" {
 #include "styled_spinbox.h"
 #include "confirm_panel.h"
 #include "wifi_list_item.h"
+#include "loading_gui.h"
 
 /* User defines */
 #define BTN_HOR_RES 120

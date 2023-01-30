@@ -12,7 +12,7 @@ extern "C" {
 
 #define REFRESH_GUI                     1
 #define RES_MATCH                       2
-#define WIFI_CONNECT_GUI                3
+#define MSG_WIFI_SCAN_DONE              3
 
 #define DEFAULT_COLOR                   lv_palette_main(LV_PALETTE_RED)
 #define QUEUE_TIMEOUT_MS                (20)
@@ -162,6 +162,18 @@ typedef struct {
     char* ssid;
     char* password;
 } connectivity_t;
+
+#define MAX_WIFI_LIST_LEN 32
+
+typedef struct {
+    const char* ssid;
+    int16_t rssi;
+} wifi_info_t;
+
+typedef struct {
+    wifi_info_t list[MAX_WIFI_LIST_LEN];
+    uint8_t size;
+} wifi_list_t;
 
 extern configuration_t configuration;
 extern xQueueHandle messageHandler;

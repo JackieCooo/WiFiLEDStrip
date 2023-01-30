@@ -34,7 +34,7 @@ void ConnectHandler::_handle(void) {
 
         msg_reply_t reply;
         if (request.msg == MSG_WIFI_SCAN) {
-            
+            WiFi.scanNetworks();
         }
         else if (request.msg == MSG_WIFI_CONNECT) {
 
@@ -234,10 +234,15 @@ void ConnectHandler::_wifi_callback(arduino_event_id_t event, arduino_event_info
         if (info.wifi_scan_done.status) {
             uint8_t num = info.wifi_scan_done.number;
 
+            wifi_list_t list;
             for (uint8_t i = 0; i < num; ++i) {
                 Serial.printf("SSID: %s, RSSI, %d\n", WiFi.SSID(i).c_str(), WiFi.RSSI(i));
-                
+                wifi_info_t info;
+                info.ssid = WiFi.SSID(i).c_str();
+                info.rssi = WiFi.RSSI(i);
+                list.list[list.size++] = info;
             }
+            lv_msg_send(MSG_WIFI_SCAN_DONE, &list);
         }
     }
     else if (event == ARDUINO_EVENT_WIFI_STA_CONNECTED) {

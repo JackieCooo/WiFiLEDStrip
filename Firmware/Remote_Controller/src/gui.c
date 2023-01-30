@@ -32,6 +32,8 @@ static void wifi_list_item_event_cb(lv_event_t* e);
 static void password_area_event_cb(lv_event_t* e);
 static void connect_btn_event_cb(lv_event_t* e);
 static void keyboard_event_cb(lv_event_t* e);
+static void wifi_scan_event_cb(lv_event_t* e);
+static void refresh_btn_event_cb(lv_event_t* e);
 static void message_received_cb(void* s, lv_msg_t* m);
 
 static void stylish_default_btn(lv_obj_t* btn, const char* text);
@@ -410,6 +412,11 @@ static lv_obj_t* wifi_scan_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
     lv_obj_set_style_pad_bottom(content, 10, 0);
     lv_obj_set_style_border_opa(content, 0, 0);
     lv_obj_set_style_bg_opa(content, 0, 0);
+    lv_msg_subscribe_obj(MSG_WIFI_SCAN_DONE, content, NULL);
+    lv_obj_add_event_cb(content, wifi_scan_event_cb, LV_EVENT_MSG_RECEIVED, content);
+
+    lv_obj_t* refresh_btn = lv_btn_create(content);
+    stylish_default_btn(refresh_btn, "Refresh");
 
     return content;
 }
@@ -440,8 +447,10 @@ static lv_obj_t* wifi_connect_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
     lv_obj_add_event_cb(keyboard, keyboard_event_cb, LV_EVENT_ALL, NULL);
 
     lv_obj_t* ssid_label = lv_label_create(content);
-    lv_obj_set_width(ssid_label, lv_pct(100));
+    lv_obj_set_size(ssid_label, lv_pct(100), 30);
+    lv_obj_align(ssid_label, LV_ALIGN_TOP_LEFT, 0, 0);
     lv_label_set_text(ssid_label, fragment->ssid);
+    lv_obj_set_style_text_font(ssid_label, &lv_font_montserrat_20, 0);
     lv_obj_set_style_border_side(ssid_label, LV_BORDER_SIDE_BOTTOM, 0);
     lv_obj_set_style_border_opa(ssid_label, lv_pct(50), 0);
     lv_obj_set_style_border_width(ssid_label, 1, 0);
@@ -643,8 +652,7 @@ static void setting_btn_event_cb(lv_event_t* e) {
 static void wifi_list_item_event_cb(lv_event_t* e) {
     if (e->code == LV_EVENT_CLICKED) {
         lv_obj_t* item = lv_event_get_target(e);
-        lv_obj_t* label = lv_obj_get_child(item, 0);
-        char* ssid = lv_label_get_text(label);
+        char* ssid = lv_obj_get_user_data(item);
         lv_fragment_t* connect_page = lv_fragment_create(&wifi_connect_cls, ssid);
         lv_fragment_manager_push(manager, connect_page, &container);
     }
@@ -682,15 +690,46 @@ static void keyboard_event_cb(lv_event_t* e) {
     }
 }
 
+static void wifi_scan_event_cb(lv_event_t* e) {
+    if (e->code == LV_EVENT_MSG_RECEIVED) {
+        lv_msg_t* m = lv_event_get_msg(e);
+        uint32_t id = lv_msg_get_id(m);
+        if (id == MSG_WIFI_SCAN_DONE) {
+            lv_obj_t* obj = lv_event_get_user_data(e);
+            wifi_list_t* list = lv_msg_get_payload(m);
+            
+            // clear all of its items
+            uint8_t size = lv_obj_get_child_cnt(obj);
+            for (uint8_t i = 0; i < size; ++i) {
+                lv_obj_t* item = lv_obj_get_child(obj, i);
+                lv_obj_del(item);
+            }
+
+            // fill with new items
+            for (uint8_t i = 0; i < list->size; ++i) {
+                lv_obj_t* item = create_wifi_list_item(obj, list->list[i].ssid);
+                lv_obj_add_event_cb(item, wifi_list_item_event_cb, LV_EVENT_CLICKED, NULL);
+            }
+        }
+    }
+}
+
+static void refresh_btn_event_cb(lv_event_t* e) {
+    if (e->code == LV_EVENT_CLICKED) {
+        lv_obj_t* obj = show_loading_gui("loading");
+        msg_request_t request;
+        request.msg = MSG_WIFI_SCAN;
+        request.user_data = NULL;
+        xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
+    }
+}
+
 static void message_received_cb(void* s, lv_msg_t* m) {
     LV_UNUSED(s);
     uint32_t id = lv_msg_get_id(m);
     if (id == REFRESH_GUI) {
         refresh_gui();
         printf("GUI refreshed\n");
-    }
-    else if (id == WIFI_CONNECT_GUI) {
-        
     }
 }
 
@@ -784,11 +823,13 @@ void clear_gui(void) {
 }
 
 void show_connect_gui(void) {
+    clear_gui();
     lv_fragment_t* wifi_scan_fragment = lv_fragment_create(&wifi_scan_cls, NULL);
     lv_fragment_manager_push(manager, wifi_scan_fragment, &container);
 }
 
 void show_main_gui(void) {
+    clear_gui();
     lv_fragment_t* main_gui_fragment = lv_fragment_create(&home_cls, NULL);
     lv_fragment_manager_push(manager, main_gui_fragment, &container);
 }

@@ -9,7 +9,7 @@ extern "C" {
 
 #define WIFI_LIST_ITEM_H        50
 
-lv_obj_t* create_wifi_list_item(lv_obj_t* parent, const char* ssid);
+lv_obj_t* create_wifi_list_item(lv_obj_t* parent, char* ssid);
 
 #ifdef __cplusplus
 } /* extern "C" */
