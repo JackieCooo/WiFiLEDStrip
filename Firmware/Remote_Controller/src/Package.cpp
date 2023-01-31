@@ -61,10 +61,12 @@ bool Package::parse(uint8_t* buf, uint8_t size) {
                 stage = 99;
                 break;
             case 6:  // ack reply cmd
-                _package.data.ip.a = buf[i++];
-                _package.data.ip.b = buf[i++];
-                _package.data.ip.c = buf[i++];
-                _package.data.ip.d = buf[i++];
+                uint8_t a, b, c, d;
+                a = buf[i++];
+                b = buf[i++];
+                c = buf[i++];
+                d = buf[i++];
+                _package.data.ip.addr = PP_HTONL(LWIP_MAKEU32(a,b,c,d));
                 stage = 99;
                 break;
             case 23:  // read normal mode setting
@@ -157,10 +159,10 @@ void Package::pack(uint8_t* buf, uint8_t size) {
     }
     else if (_package.cmd == PKG_CMD_ACK) {
         buf[i++] = _package.cmd;
-        buf[i++] = _package.data.ip.a;
-        buf[i++] = _package.data.ip.b;
-        buf[i++] = _package.data.ip.c;
-        buf[i++] = _package.data.ip.d;
+        buf[i++] = ip4_addr1_val(_package.data.ip);
+        buf[i++] = ip4_addr2_val(_package.data.ip);
+        buf[i++] = ip4_addr3_val(_package.data.ip);
+        buf[i++] = ip4_addr4_val(_package.data.ip);
     }
     buf[i++] = PKG_FRAME_TAIL1;
     buf[i++] = PKG_FRAME_TAIL2;

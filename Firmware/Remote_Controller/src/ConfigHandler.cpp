@@ -1,6 +1,7 @@
 #include "ConfigHandler.h"
 
 configuration_t configuration;
+connectivity_t connectivity;
 xQueueHandle saveConfigMessage;
 
 ConfigHandler::ConfigHandler() {
@@ -11,6 +12,7 @@ void ConfigHandler::begin(void) {
     // SPIFFS.format();
     if (SPIFFS.begin(true)) {
         Serial.println("SPIFFS init done");
+        _checkLocalFiles();
     }
     else {
         Serial.println("SPIFFS init failed");
@@ -19,18 +21,25 @@ void ConfigHandler::begin(void) {
 }
 
 void ConfigHandler::load(void) {
+    Serial.println("Loading configuration");
+
     File file = SPIFFS.open(CONFIG_FILE_PATH, FILE_READ);
     if (file) {
-        Serial.println("Loading configuration");
         uint8_t buf[sizeof(configuration_t)];
-        memset(buf, 0x00, sizeof(buf));
         file.read(buf, sizeof(configuration_t));
         memcpy(&configuration, buf, sizeof(configuration_t));
         file.close();
     }
-    else {
-        Serial.println("File open failed");
+
+    file = SPIFFS.open(WIFI_CONFIG_FILE_PATH, FILE_READ);
+    if (file) {
+        uint8_t buf[sizeof(connectivity_t)];
+        file.read(buf, sizeof(connectivity_t));
+        memcpy(&connectivity, buf, sizeof(connectivity_t));
+        file.close();
     }
+
+    Serial.println("Configuration loaded");
 }
 
 void ConfigHandler::save(void) {
@@ -69,8 +78,8 @@ void ConfigHandler::_initConfigurationSetting(File& file) {
     config.setting.breathing.interval = 1000;
     config.setting.lightbeam.color = lv_palette_main(LV_PALETTE_RED);
     config.setting.lightbeam.dir = MOVE_LEFT;
-    faded_end_t faded_end = {0};
-    config.setting.lightbeam.faded_end = faded_end;
+    config.setting.lightbeam.faded_end.FADED_HEAD = 0;
+    config.setting.lightbeam.faded_end.FADED_TAIL = 0;
     config.setting.lightbeam.gap = 2;
     config.setting.lightbeam.head_len = 4;
     config.setting.lightbeam.len = 4;
@@ -84,11 +93,10 @@ void ConfigHandler::_initConfigurationSetting(File& file) {
 void ConfigHandler::_initConnectivitySetting(File& file) {
     connectivity_t connect;
     connect.connected = false;
-    ip_addr_t host_ip = {0};
-    connect.host_ip = host_ip;
+    connect.host_ip.addr = 0;
     connect.matched = false;
-    connect.password = NULL;
-    connect.ssid = NULL;
+    memset(connect.ssid, 0x00, sizeof(connect.ssid));
+    memset(connect.password, 0x00, sizeof(connect.password));
 
     file.write((uint8_t*)&connect, sizeof(connectivity_t));
 }

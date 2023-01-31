@@ -9,12 +9,12 @@ extern "C" {
 
 #include "lvgl.h"
 #include "freertos/queue.h"
+#include "lwip/ip4_addr.h"
 
 #define REFRESH_GUI                     1
 #define RES_MATCH                       2
 #define MSG_WIFI_SCAN_DONE              3
 
-#define DEFAULT_COLOR                   lv_palette_main(LV_PALETTE_RED)
 #define QUEUE_TIMEOUT_MS                (20)
 
 typedef struct {
@@ -148,25 +148,21 @@ typedef struct {
     bool resp;
 } msg_reply_t;
 
-typedef struct {
-    uint8_t a;
-    uint8_t b;
-    uint8_t c;
-    uint8_t d;
-} ip_addr_t;
+#define SSID_MAX_LEN    32
+#define PSW_MAX_LEN     32
 
 typedef struct {
     bool connected;
     bool matched;
-    ip_addr_t host_ip;
-    char* ssid;
-    char* password;
+    ip4_addr_t host_ip;
+    char ssid[SSID_MAX_LEN];
+    char password[PSW_MAX_LEN];
 } connectivity_t;
 
 #define MAX_WIFI_LIST_LEN 32
 
 typedef struct {
-    const char* ssid;
+    char ssid[SSID_MAX_LEN];
     int16_t rssi;
 } wifi_info_t;
 

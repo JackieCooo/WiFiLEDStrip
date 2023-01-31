@@ -7,11 +7,9 @@ extern "C" {
 
 #include "lvgl.h"
 
-lv_obj_t* show_loading_gui(const char* text);
-
-inline void hide_loading_gui(lv_obj_t* obj) {
-    lv_obj_del(obj);
-}
+void show_loading_gui(const char* text);
+void loading_gui_set_text(const char* text);
+void hide_loading_gui(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

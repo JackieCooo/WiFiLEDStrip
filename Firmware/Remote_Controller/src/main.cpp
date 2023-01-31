@@ -15,10 +15,10 @@ Indev indev;
 void setup(void) {
   Serial.begin(115200);
 
+  messageHandler = xQueueCreate(3, sizeof(msg_request_t));
+
   configHandler.begin();
   configHandler.load();
-
-  connHandler.begin();
 
   Serial.println("lvgl init");
   lv_init();
@@ -36,7 +36,9 @@ void setup(void) {
   init_gui();
   Serial.println("gui init done");
 
-  messageHandler = xQueueCreate(3, sizeof(msg_request_t));
+  Serial.println("connect init");
+  connHandler.begin();
+  Serial.println("connect init done");
 
   xTaskCreate(ConnectHandler::task, "ConnectHandlerTask", 4096, NULL, 5, NULL);
   xTaskCreate(ConfigHandler::task, "ConfigHandlerTask", 4096, NULL, 4, NULL);

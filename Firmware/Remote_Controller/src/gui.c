@@ -5,7 +5,6 @@
 static lv_obj_t* container;
 static lv_fragment_manager_t* manager;
 
-
 /* Static functions define */
 
 static lv_obj_t* home_create_cb(lv_fragment_t* self, lv_obj_t* parent);
@@ -17,6 +16,7 @@ static lv_obj_t* lightbeam_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
 static lv_obj_t* rainbow_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t* parent);
 static lv_obj_t* wifi_scan_create_cb(lv_fragment_t* self, lv_obj_t* parent);
 static lv_obj_t* wifi_connect_create_cb(lv_fragment_t* self, lv_obj_t* parent);
+static void wifi_scan_construct_cb(lv_fragment_t* self, void* args);
 static void wifi_connect_construct_cb(lv_fragment_t* self, void* args);
 static void container_del_cb(lv_event_t* e);
 static void pwr_btn_event_cb(lv_event_t* e);
@@ -32,7 +32,6 @@ static void wifi_list_item_event_cb(lv_event_t* e);
 static void password_area_event_cb(lv_event_t* e);
 static void connect_btn_event_cb(lv_event_t* e);
 static void keyboard_event_cb(lv_event_t* e);
-static void wifi_scan_event_cb(lv_event_t* e);
 static void refresh_btn_event_cb(lv_event_t* e);
 static void message_received_cb(void* s, lv_msg_t* m);
 
@@ -83,6 +82,7 @@ static const lv_fragment_class_t rainbow_setting_cls = {
 
 static const lv_fragment_class_t wifi_scan_cls = {
     .create_obj_cb = wifi_scan_create_cb,
+    .constructor_cb = wifi_scan_construct_cb,
     .instance_size = sizeof(wifi_scan_fragment_t)
 };
 
@@ -412,11 +412,17 @@ static lv_obj_t* wifi_scan_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
     lv_obj_set_style_pad_bottom(content, 10, 0);
     lv_obj_set_style_border_opa(content, 0, 0);
     lv_obj_set_style_bg_opa(content, 0, 0);
-    lv_msg_subscribe_obj(MSG_WIFI_SCAN_DONE, content, NULL);
-    lv_obj_add_event_cb(content, wifi_scan_event_cb, LV_EVENT_MSG_RECEIVED, content);
+
+    if (fragment->wifi_list) {
+        for (uint8_t i = 0; i < fragment->wifi_list->size; ++i) {
+            lv_obj_t* item = create_wifi_list_item(content, fragment->wifi_list->list[i].ssid);
+            lv_obj_add_event_cb(item, wifi_list_item_event_cb, LV_EVENT_CLICKED, NULL);
+        }
+    }
 
     lv_obj_t* refresh_btn = lv_btn_create(content);
     stylish_default_btn(refresh_btn, "Refresh");
+    lv_obj_add_event_cb(refresh_btn, refresh_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
     return content;
 }
@@ -469,6 +475,13 @@ static lv_obj_t* wifi_connect_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
     lv_obj_set_style_translate_x(connect_btn, (240 - 120 - 20 * 2) / 2, 0);
 
     return content;
+}
+
+static void wifi_scan_construct_cb(lv_fragment_t* self, void* args) {
+    LV_UNUSED(args);
+
+    wifi_scan_fragment_t* fragment = (wifi_scan_fragment_t*) self;
+    fragment->wifi_list = heap_caps_malloc(sizeof(wifi_list_t), MALLOC_CAP_DEFAULT);
 }
 
 static void wifi_connect_construct_cb(lv_fragment_t* self, void* args) {
@@ -690,33 +703,9 @@ static void keyboard_event_cb(lv_event_t* e) {
     }
 }
 
-static void wifi_scan_event_cb(lv_event_t* e) {
-    if (e->code == LV_EVENT_MSG_RECEIVED) {
-        lv_msg_t* m = lv_event_get_msg(e);
-        uint32_t id = lv_msg_get_id(m);
-        if (id == MSG_WIFI_SCAN_DONE) {
-            lv_obj_t* obj = lv_event_get_user_data(e);
-            wifi_list_t* list = lv_msg_get_payload(m);
-            
-            // clear all of its items
-            uint8_t size = lv_obj_get_child_cnt(obj);
-            for (uint8_t i = 0; i < size; ++i) {
-                lv_obj_t* item = lv_obj_get_child(obj, i);
-                lv_obj_del(item);
-            }
-
-            // fill with new items
-            for (uint8_t i = 0; i < list->size; ++i) {
-                lv_obj_t* item = create_wifi_list_item(obj, list->list[i].ssid);
-                lv_obj_add_event_cb(item, wifi_list_item_event_cb, LV_EVENT_CLICKED, NULL);
-            }
-        }
-    }
-}
-
 static void refresh_btn_event_cb(lv_event_t* e) {
     if (e->code == LV_EVENT_CLICKED) {
-        lv_obj_t* obj = show_loading_gui("loading");
+        show_loading_gui("refreshing WiFi info");
         msg_request_t request;
         request.msg = MSG_WIFI_SCAN;
         request.user_data = NULL;
@@ -730,6 +719,16 @@ static void message_received_cb(void* s, lv_msg_t* m) {
     if (id == REFRESH_GUI) {
         refresh_gui();
         printf("GUI refreshed\n");
+    }
+    else if (id == MSG_WIFI_SCAN_DONE) {
+        wifi_scan_fragment_t* fragment = (wifi_scan_fragment_t*) lv_fragment_manager_get_top(manager);
+        const wifi_list_t* data = lv_msg_get_payload(m);
+        memcpy(fragment->wifi_list, data, sizeof(wifi_list_t));
+
+        refresh_gui();
+
+        // disable loading gui
+        hide_loading_gui();
     }
 }
 
@@ -808,6 +807,9 @@ void init_gui(void)
 
     lv_obj_add_event_cb(lv_scr_act(), gesture_event_cb, LV_EVENT_GESTURE, NULL);
     lv_msg_subscribe(REFRESH_GUI, message_received_cb, NULL);
+    lv_msg_subscribe(MSG_WIFI_SCAN_DONE, message_received_cb, NULL);
+
+    show_loading_gui("System initializing...");
 }
 
 void refresh_gui(void) {
@@ -823,13 +825,11 @@ void clear_gui(void) {
 }
 
 void show_connect_gui(void) {
-    clear_gui();
     lv_fragment_t* wifi_scan_fragment = lv_fragment_create(&wifi_scan_cls, NULL);
     lv_fragment_manager_push(manager, wifi_scan_fragment, &container);
 }
 
 void show_main_gui(void) {
-    clear_gui();
     lv_fragment_t* main_gui_fragment = lv_fragment_create(&home_cls, NULL);
     lv_fragment_manager_push(manager, main_gui_fragment, &container);
 }

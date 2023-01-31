@@ -1,5 +1,6 @@
 {
     "files.associations": {
         "lv_port_indev.h": "c"
-    }
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }

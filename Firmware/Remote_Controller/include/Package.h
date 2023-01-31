@@ -77,12 +77,6 @@
 #define RGB888_B(x)                         ((uint8_t)((x & 0x0000FF) >> 0))
 #define CONCAT_RGB888(r, g, b)              (((uint32_t)r << 16) + ((uint32_t)g << 8) + (uint32_t)b)
 
-#define INADDR_1(x)                         ((uint8_t)((x & 0xFF000000) >> 24))
-#define INADDR_2(x)                         ((uint8_t)((x & 0x00FF0000) >> 16))
-#define INADDR_3(x)                         ((uint8_t)((x & 0x0000FF00) >> 8))
-#define INADDR_4(x)                         ((uint8_t)((x & 0x000000FF) >> 0))
-#define CONCAT_INADDR(a, b, c, d)           (((uint32_t)a << 24) + ((uint32_t)b << 16) + ((uint32_t)c << 8) + (uint32_t)d)
-
 typedef struct {
     uint8_t size;
     uint8_t cmd;
@@ -95,7 +89,7 @@ typedef struct {
         struct {
             uint8_t resp;
         } reply;
-        ip_addr_t ip;
+        ip4_addr_t ip;
     } data;
 } package_t;
 

@@ -1,43 +1,44 @@
 #include "ConnectHandler.h"
 
-connectivity_t connectivity;
-
 void ConnectHandler::begin(void) {
-    WiFi.onEvent(_wifi_callback);
-    if (!connectivity.connected) {
+    WiFi.onEvent(_wifi_event_cb);
+
+    connectivity.connected = false;
+    connectivity.matched = false;
+
+    if (connectivity.ssid[0] == 0x00) {  // haven't connected to any wifi before
         show_connect_gui();
+        msg_request_t request;
+        request.msg = MSG_WIFI_SCAN;
+        request.user_data = NULL;
+        xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
     }
-    else {
-        show_main_gui();
+    else {  // have connected to wifi before
+        msg_request_t request;
+        request.msg = MSG_WIFI_CONNECT;
+        request.user_data = NULL;
+        xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
     }
 }
 
 void ConnectHandler::process(void) {
-    if (!connectivity.connected) {
-        WiFi.scanNetworks();  // scan wifi in sync mode
-    }
-    else {
-        if (!connectivity.matched) {
-            msg_request_t request;
-            request.msg = MSG_MATCH;
-            request.user_data = NULL;
-            xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
-        }
-    }
-    _handle();
-}
-
-void ConnectHandler::_handle(void) {
     msg_request_t request;
     if (xQueueReceive(messageHandler, &request, QUEUE_TIMEOUT_MS)) {
         _construct_transaction_data(request);
 
         msg_reply_t reply;
         if (request.msg == MSG_WIFI_SCAN) {
-            WiFi.scanNetworks();
+            Serial.print("WiFi scaning");
+            WiFi.scanNetworks();  // scan in sync mode
         }
         else if (request.msg == MSG_WIFI_CONNECT) {
-
+            WiFi.begin(connectivity.ssid, connectivity.password);
+            Serial.print("WiFi connecting");
+            while(WiFi.status() != WL_CONNECTED) {
+                Serial.print(".");
+                delay(200);
+            }
+            Serial.printf("\nIP: %s\n", WiFi.localIP().toString().c_str());
         }
         else if (request.msg == MSG_MATCH) {
             if (_match()) reply.resp = true;
@@ -88,7 +89,7 @@ bool ConnectHandler::_transmit(void) {
     WiFiClient client;
     bool res = false;
     uint32_t timeout = TIMEOUT_MS;
-    if (client.connect(_translate_ip_address(connectivity.host_ip), SERVER_PORT)) {
+    if (client.connect(IPAddress(connectivity.host_ip.addr), SERVER_PORT)) {
         uint8_t tx_buf[PKG_BUF_MAX_LEN];
         _package.pack(tx_buf, sizeof(tx_buf));
         client.write(tx_buf, BUF_SIZE(tx_buf));
@@ -152,10 +153,7 @@ void ConnectHandler::_construct_transaction_data(msg_request_t& msg) {
     else if (msg.msg == MSG_MATCH) {
         IPAddress ip = WiFi.localIP();
         p.cmd = PKG_CMD_ACK;
-        p.data.ip.a = ip[0];
-        p.data.ip.b = ip[1];
-        p.data.ip.c = ip[2];
-        p.data.ip.d = ip[3];
+        p.data.ip.addr = PP_HTONL(uint32_t(ip));
     }
 }
 
@@ -205,7 +203,7 @@ void ConnectHandler::_handle_reply(msg_reply_t& reply) {
     else if (reply.msg == MSG_MATCH) {
         if (reply.resp) {
             connectivity.host_ip = p.data.ip;
-            Serial.printf("Host IP: %d.%d.%d.%d\n", connectivity.host_ip.a, connectivity.host_ip.b, connectivity.host_ip.c, connectivity.host_ip.d);
+            Serial.printf("Host IP: %d.%d.%d.%d\n", ip4_addr1_val(connectivity.host_ip), ip4_addr2_val(connectivity.host_ip), ip4_addr3_val(connectivity.host_ip), ip4_addr4_val(connectivity.host_ip));
             connectivity.connected = true;
             Serial.println("Matched");
             msg_request_t request;
@@ -225,20 +223,17 @@ void ConnectHandler::task(void* args) {
     }
 }
 
-IPAddress ConnectHandler::_translate_ip_address(ip_addr_t& ip) {
-    return IPAddress(ip.a, ip.b, ip.c, ip.d);
-}
-
-void ConnectHandler::_wifi_callback(arduino_event_id_t event, arduino_event_info_t info) {
+void ConnectHandler::_wifi_event_cb(arduino_event_id_t event, arduino_event_info_t info) {
     if (event == ARDUINO_EVENT_WIFI_SCAN_DONE) {
-        if (info.wifi_scan_done.status) {
+        if (info.wifi_scan_done.status == 0) {
             uint8_t num = info.wifi_scan_done.number;
 
             wifi_list_t list;
-            for (uint8_t i = 0; i < num; ++i) {
-                Serial.printf("SSID: %s, RSSI, %d\n", WiFi.SSID(i).c_str(), WiFi.RSSI(i));
+            for (uint8_t i = 0; i < min((int)num, MAX_WIFI_LIST_LEN); ++i) {
+                Serial.printf("SSID: %s, RSSI: %d\n", WiFi.SSID(i).c_str(), WiFi.RSSI(i));
                 wifi_info_t info;
-                info.ssid = WiFi.SSID(i).c_str();
+                const char* str_ssid = WiFi.SSID(i).c_str();
+                memcpy(info.ssid, str_ssid, strlen(str_ssid));
                 info.rssi = WiFi.RSSI(i);
                 list.list[list.size++] = info;
             }

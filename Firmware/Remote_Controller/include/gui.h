@@ -48,6 +48,7 @@ typedef struct {
 
 typedef struct {
     lv_fragment_t base;
+    wifi_list_t* wifi_list;
 } wifi_scan_fragment_t;
 
 typedef struct {
