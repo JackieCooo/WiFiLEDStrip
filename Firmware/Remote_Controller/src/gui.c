@@ -414,8 +414,10 @@ static lv_obj_t* wifi_scan_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
     lv_obj_set_style_bg_opa(content, 0, 0);
 
     if (fragment->wifi_list) {
-        for (uint8_t i = 0; i < fragment->wifi_list->size; ++i) {
-            lv_obj_t* item = create_wifi_list_item(content, fragment->wifi_list->list[i].ssid);
+        struct list_elem_t* p = fragment->wifi_list->head;
+        for (uint8_t i = 0; i < fragment->wifi_list->size; ++i, p = p->next) {
+            wifi_info_t* info = (wifi_info_t*) p->data;
+            lv_obj_t* item = create_wifi_list_item(content, info->ssid);
             lv_obj_add_event_cb(item, wifi_list_item_event_cb, LV_EVENT_CLICKED, NULL);
         }
     }
@@ -479,9 +481,6 @@ static lv_obj_t* wifi_connect_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
 
 static void wifi_scan_construct_cb(lv_fragment_t* self, void* args) {
     LV_UNUSED(args);
-
-    wifi_scan_fragment_t* fragment = (wifi_scan_fragment_t*) self;
-    fragment->wifi_list = heap_caps_malloc(sizeof(wifi_list_t), MALLOC_CAP_DEFAULT);
 }
 
 static void wifi_connect_construct_cb(lv_fragment_t* self, void* args) {
@@ -722,8 +721,9 @@ static void message_received_cb(void* s, lv_msg_t* m) {
     }
     else if (id == MSG_WIFI_SCAN_DONE) {
         wifi_scan_fragment_t* fragment = (wifi_scan_fragment_t*) lv_fragment_manager_get_top(manager);
-        const wifi_list_t* data = lv_msg_get_payload(m);
-        memcpy(fragment->wifi_list, data, sizeof(wifi_list_t));
+        wifi_list_t* list = *((wifi_list_t**)lv_msg_get_payload(m));
+        if (fragment->wifi_list) list_del(fragment->wifi_list);
+        fragment->wifi_list = list;
 
         refresh_gui();
 

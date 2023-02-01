@@ -26,6 +26,8 @@ void list_push_back(list_t* list, void* data);
 void list_push_front(list_t* list, void* data);
 void list_pop_back(list_t* list);
 void list_pop_front(list_t* list);
+void list_clear(list_t* list);
+void list_del(list_t* list);
 void* list_front(list_t* list);
 void* list_back(list_t* list);
 void* list_get(list_t* list, uint8_t index);

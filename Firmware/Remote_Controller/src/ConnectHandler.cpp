@@ -228,14 +228,14 @@ void ConnectHandler::_wifi_event_cb(arduino_event_id_t event, arduino_event_info
         if (info.wifi_scan_done.status == 0) {
             uint8_t num = info.wifi_scan_done.number;
 
-            wifi_list_t list;
-            for (uint8_t i = 0; i < min((int)num, MAX_WIFI_LIST_LEN); ++i) {
+            wifi_list_t* list = list_create();
+            for (uint8_t i = 0; i < num; ++i) {
                 Serial.printf("SSID: %s, RSSI: %d\n", WiFi.SSID(i).c_str(), WiFi.RSSI(i));
-                wifi_info_t info;
+                wifi_info_t* info = (wifi_info_t*) heap_caps_malloc(sizeof(wifi_info_t), MALLOC_CAP_DEFAULT);
                 const char* str_ssid = WiFi.SSID(i).c_str();
-                memcpy(info.ssid, str_ssid, strlen(str_ssid));
-                info.rssi = WiFi.RSSI(i);
-                list.list[list.size++] = info;
+                strcpy(info->ssid, str_ssid);
+                info->rssi = WiFi.RSSI(i);
+                list_push_back(list, info);
             }
             lv_msg_send(MSG_WIFI_SCAN_DONE, &list);
         }

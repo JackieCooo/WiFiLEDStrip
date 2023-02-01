@@ -10,6 +10,7 @@ extern "C" {
 #include "lvgl.h"
 #include "freertos/queue.h"
 #include "lwip/ip4_addr.h"
+#include "list.h"
 
 #define REFRESH_GUI                     1
 #define RES_MATCH                       2
@@ -166,10 +167,7 @@ typedef struct {
     int16_t rssi;
 } wifi_info_t;
 
-typedef struct {
-    wifi_info_t list[MAX_WIFI_LIST_LEN];
-    uint8_t size;
-} wifi_list_t;
+typedef list_t wifi_list_t;
 
 extern configuration_t configuration;
 extern xQueueHandle messageHandler;

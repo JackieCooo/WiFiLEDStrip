@@ -71,6 +71,18 @@ void list_pop_front(list_t* list) {
     --list->size;
 }
 
+void list_clear(list_t* list) {
+    for (uint8_t i = 0; i < list->size; i++) {
+        list_pop_back(list);
+    }
+}
+
+void list_del(list_t* list) {
+    list_clear(list);
+    heap_caps_free(list);
+    list = NULL;
+}
+
 void* list_front(list_t* list) {
     struct list_elem_t* p = list_front_ptr(list);
     if (p) return p->data;
