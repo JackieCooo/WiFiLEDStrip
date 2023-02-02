@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+#include <malloc.h>
 
 #include "lvgl.h"
 #include "checked_group.h"
@@ -53,7 +54,7 @@ typedef struct {
 
 typedef struct {
     lv_fragment_t base;
-    char* ssid;
+    const char* ssid;
 } wifi_connect_fragment_t;
 
 typedef struct {

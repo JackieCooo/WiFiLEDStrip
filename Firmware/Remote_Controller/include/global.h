@@ -169,6 +169,11 @@ typedef struct {
 
 typedef list_t wifi_list_t;
 
+typedef struct {
+    char ssid[SSID_MAX_LEN];
+    char password[PSW_MAX_LEN];
+} wifi_connect_t;
+
 extern configuration_t configuration;
 extern xQueueHandle messageHandler;
 extern xQueueHandle saveConfigMessage;

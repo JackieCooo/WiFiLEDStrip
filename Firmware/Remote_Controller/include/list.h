@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <esp_heap_caps.h>
+#include <malloc.h>
 
 #ifdef __cplusplus
 extern "C" {

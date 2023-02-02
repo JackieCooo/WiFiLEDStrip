@@ -6,7 +6,7 @@ static struct list_elem_t* list_get_ptr(list_t* list, uint8_t index);
 static struct list_elem_t* list_create_elem(void* data);
 
 list_t* list_create(void) {
-    list_t* list = (list_t*) heap_caps_malloc(sizeof(list_t), MALLOC_CAP_DEFAULT);
+    list_t* list = (list_t*) malloc(sizeof(list_t));
     list->head = NULL;
     list->size = 0;
     return list;
@@ -50,7 +50,7 @@ void list_pop_back(list_t* list) {
         else {
             list->head = NULL;
         }
-        heap_caps_free(p1);
+        free(p1);
     }
     --list->size;
 }
@@ -66,7 +66,7 @@ void list_pop_front(list_t* list) {
         else {
             list->head = NULL;
         }
-        heap_caps_free(p1);
+        free(p1);
     }
     --list->size;
 }
@@ -79,7 +79,7 @@ void list_clear(list_t* list) {
 
 void list_del(list_t* list) {
     list_clear(list);
-    heap_caps_free(list);
+    free(list);
     list = NULL;
 }
 
@@ -119,7 +119,7 @@ static struct list_elem_t* list_get_ptr(list_t* list, uint8_t index) {
 }
 
 static struct list_elem_t* list_create_elem(void* data) {
-    struct list_elem_t* elem = (struct list_elem_t*) heap_caps_malloc(sizeof(struct list_elem_t), MALLOC_CAP_DEFAULT);
+    struct list_elem_t* elem = (struct list_elem_t*) malloc(sizeof(struct list_elem_t));
     elem->data = data;
     elem->next = NULL;
     elem->prev = NULL;

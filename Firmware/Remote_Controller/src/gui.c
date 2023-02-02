@@ -480,6 +480,9 @@ static lv_obj_t* wifi_connect_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
 }
 
 static void wifi_scan_construct_cb(lv_fragment_t* self, void* args) {
+    wifi_scan_fragment_t* fragment = (wifi_scan_fragment_t*) self;
+    fragment->wifi_list = NULL;
+
     LV_UNUSED(args);
 }
 
@@ -682,12 +685,22 @@ static void password_area_event_cb(lv_event_t* e) {
         lv_keyboard_set_textarea(keyboard, NULL);
         lv_obj_add_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
         lv_obj_move_background(keyboard);
+        
     }
 }
 
 static void connect_btn_event_cb(lv_event_t* e) {
     if (e->code == LV_EVENT_CLICKED) {
-        lv_fragment_manager_pop(manager);
+        lv_obj_t* psw_area = lv_event_get_user_data(e);
+        wifi_connect_fragment_t* fragment = (wifi_connect_fragment_t*) lv_fragment_manager_get_top(manager);
+        wifi_connect_t* conn = (wifi_connect_t*) malloc(sizeof(wifi_connect_t));
+        strcpy(conn->ssid, fragment->ssid);
+        strcpy(conn->password, lv_textarea_get_text(psw_area));
+
+        msg_request_t request;
+        request.msg = MSG_WIFI_CONNECT;
+        request.user_data = conn;
+        xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
     }
 }
 
@@ -704,7 +717,7 @@ static void keyboard_event_cb(lv_event_t* e) {
 
 static void refresh_btn_event_cb(lv_event_t* e) {
     if (e->code == LV_EVENT_CLICKED) {
-        show_loading_gui("refreshing WiFi info");
+        show_loading_gui("scaning wifi...");
         msg_request_t request;
         request.msg = MSG_WIFI_SCAN;
         request.user_data = NULL;
@@ -720,9 +733,16 @@ static void message_received_cb(void* s, lv_msg_t* m) {
         printf("GUI refreshed\n");
     }
     else if (id == MSG_WIFI_SCAN_DONE) {
+        if (lv_fragment_manager_get_stack_size(manager) == 0) show_connect_gui();
         wifi_scan_fragment_t* fragment = (wifi_scan_fragment_t*) lv_fragment_manager_get_top(manager);
         wifi_list_t* list = *((wifi_list_t**)lv_msg_get_payload(m));
-        if (fragment->wifi_list) list_del(fragment->wifi_list);
+        if (fragment->wifi_list) {
+            for (struct list_elem_t* p = fragment->wifi_list->head; p; p = p->next) {
+                free(p->data);
+                p->data = NULL;
+            }
+            list_del(fragment->wifi_list);
+        }
         fragment->wifi_list = list;
 
         refresh_gui();

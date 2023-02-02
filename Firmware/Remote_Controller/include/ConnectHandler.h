@@ -2,7 +2,6 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
-#include <cstring>
 
 #include "Package.h"
 #include "lvgl.h"

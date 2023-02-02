@@ -6,8 +6,8 @@ void ConnectHandler::begin(void) {
     connectivity.connected = false;
     connectivity.matched = false;
 
-    if (connectivity.ssid[0] == 0x00) {  // haven't connected to any wifi before
-        show_connect_gui();
+    if (strlen(connectivity.ssid) == 0) {  // haven't connected to any wifi before
+        // show_connect_gui();
         msg_request_t request;
         request.msg = MSG_WIFI_SCAN;
         request.user_data = NULL;
@@ -32,8 +32,17 @@ void ConnectHandler::process(void) {
             WiFi.scanNetworks();  // scan in sync mode
         }
         else if (request.msg == MSG_WIFI_CONNECT) {
-            WiFi.begin(connectivity.ssid, connectivity.password);
-            Serial.print("WiFi connecting");
+            if (request.user_data) {
+                wifi_connect_t* conn = (wifi_connect_t*) request.user_data;
+                WiFi.begin(conn->ssid, conn->password);
+                Serial.printf("Connecting to SSID: %s, PSW: %s\n", conn->ssid, conn->password);
+                free(conn);
+                conn = NULL;
+            }
+            else {
+                WiFi.begin(connectivity.ssid, connectivity.password);
+                Serial.printf("Connecting to SSID: %s, PSW: %s\n", connectivity.ssid, connectivity.password);
+            }
             while(WiFi.status() != WL_CONNECTED) {
                 Serial.print(".");
                 delay(200);
@@ -231,9 +240,8 @@ void ConnectHandler::_wifi_event_cb(arduino_event_id_t event, arduino_event_info
             wifi_list_t* list = list_create();
             for (uint8_t i = 0; i < num; ++i) {
                 Serial.printf("SSID: %s, RSSI: %d\n", WiFi.SSID(i).c_str(), WiFi.RSSI(i));
-                wifi_info_t* info = (wifi_info_t*) heap_caps_malloc(sizeof(wifi_info_t), MALLOC_CAP_DEFAULT);
-                const char* str_ssid = WiFi.SSID(i).c_str();
-                strcpy(info->ssid, str_ssid);
+                wifi_info_t* info = (wifi_info_t*) malloc(sizeof(wifi_info_t));
+                WiFi.SSID(i).toCharArray(info->ssid, MAX_SSID_LEN);
                 info->rssi = WiFi.RSSI(i);
                 list_push_back(list, info);
             }
