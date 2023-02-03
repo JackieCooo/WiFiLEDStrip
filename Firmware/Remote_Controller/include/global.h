@@ -13,8 +13,12 @@ extern "C" {
 #include "list.h"
 
 #define REFRESH_GUI                     1
-#define RES_MATCH                       2
-#define MSG_WIFI_SCAN_DONE              3
+#define MSG_MATCH_RESULT                2
+#define MSG_ACK_RESULT                  3
+#define MSG_WIFI_SCAN_DONE              4
+#define MSG_WIFI_CONNECTED              5
+#define MSG_READ_RESULT                 6
+#define MSG_WRITE_RESULT                7
 
 #define QUEUE_TIMEOUT_MS                (20)
 
@@ -131,11 +135,12 @@ typedef struct {
 } configuration_t;
 
 typedef enum {
-    MSG_READ_CONFIG,
-    MSG_WRITE_CONFIG,
-    MSG_MATCH,
+    MSG_READ_HOST,
+    MSG_WRITE_HOST,
+    MSG_MATCH_HOST,
     MSG_WIFI_SCAN,
     MSG_WIFI_CONNECT,
+    MSG_ACK_HOST,
 } msg_t;
 
 typedef struct {
@@ -153,8 +158,6 @@ typedef struct {
 #define PSW_MAX_LEN     32
 
 typedef struct {
-    bool connected;
-    bool matched;
     ip4_addr_t host_ip;
     char ssid[SSID_MAX_LEN];
     char password[PSW_MAX_LEN];

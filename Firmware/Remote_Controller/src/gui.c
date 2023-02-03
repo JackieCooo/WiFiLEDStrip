@@ -508,7 +508,7 @@ static void pwr_btn_event_cb(lv_event_t* e)
 
         void* data = init_message_package();
         msg_request_t request;
-        request.msg = MSG_WRITE_CONFIG;
+        request.msg = MSG_WRITE_HOST;
         request.user_data = data;
         xQueueSend(messageHandler, &request, 1000);
 
@@ -559,7 +559,7 @@ static void color_selector_event_cb(lv_event_t* e)
         else if (configuration.mode == MODE_LIGHTBEAM) configuration.setting.lightbeam.color = color;
 
         msg_request_t request;
-        request.msg = MSG_WRITE_CONFIG;
+        request.msg = MSG_WRITE_HOST;
         request.user_data = data;
         xQueueSend(messageHandler, &request, 1000);
     }
@@ -597,7 +597,7 @@ static void mode_changed_cb(lv_event_t* e) {
         }
 
         msg_request_t request;
-        request.msg = MSG_WRITE_CONFIG;
+        request.msg = MSG_WRITE_HOST;
         request.user_data = data;
         xQueueSend(messageHandler, &request, 1000);
     }
@@ -636,7 +636,7 @@ static void confirm_panel_event_cb(lv_event_t* e) {
             configuration.setting.rainbow.speed = styled_spinbox_get_value(fragment->speed_selector);
         }
         msg_request_t request;
-        request.msg = MSG_WRITE_CONFIG;
+        request.msg = MSG_WRITE_HOST;
         request.user_data = data;
         xQueueSend(messageHandler, &request, 1000);
     }
@@ -701,6 +701,8 @@ static void connect_btn_event_cb(lv_event_t* e) {
         request.msg = MSG_WIFI_CONNECT;
         request.user_data = conn;
         xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
+
+        show_loading_gui("Connecting...");
     }
 }
 
@@ -717,7 +719,7 @@ static void keyboard_event_cb(lv_event_t* e) {
 
 static void refresh_btn_event_cb(lv_event_t* e) {
     if (e->code == LV_EVENT_CLICKED) {
-        show_loading_gui("scaning wifi...");
+        show_loading_gui("Scaning...");
         msg_request_t request;
         request.msg = MSG_WIFI_SCAN;
         request.user_data = NULL;
@@ -749,6 +751,46 @@ static void message_received_cb(void* s, lv_msg_t* m) {
 
         // disable loading gui
         hide_loading_gui();
+    }
+    else if (id == MSG_WIFI_CONNECTED) {
+        hide_loading_gui();
+        lv_fragment_manager_pop(manager);
+    }
+    else if (id == MSG_MATCH_RESULT) {
+        msg_reply_t* reply = (msg_reply_t*) lv_msg_get_payload(m);
+
+        if (reply->resp) {
+            loading_gui_set_text("Requiring data...");
+
+            msg_request_t request;
+            request.msg = MSG_READ_HOST;
+            request.user_data = NULL;
+            xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
+        }
+        else {
+            hide_loading_gui();
+            show_matching_failed_gui();
+        }
+    }
+    else if (id == MSG_READ_RESULT) {
+        msg_reply_t* reply = (msg_reply_t*) lv_msg_get_payload(m);
+
+        if (reply->resp) {
+
+        }
+        else {
+
+        }
+    }
+    else if (id == MSG_WRITE_RESULT) {
+        msg_reply_t* reply = (msg_reply_t*) lv_msg_get_payload(m);
+
+        if (reply->resp) {
+
+        }
+        else {
+
+        }
     }
 }
 
@@ -826,8 +868,13 @@ void init_gui(void)
     lv_obj_add_event_cb(container, container_del_cb, LV_EVENT_DELETE, NULL);
 
     lv_obj_add_event_cb(lv_scr_act(), gesture_event_cb, LV_EVENT_GESTURE, NULL);
+
     lv_msg_subscribe(REFRESH_GUI, message_received_cb, NULL);
+    lv_msg_subscribe(MSG_MATCH_RESULT, message_received_cb, NULL);
     lv_msg_subscribe(MSG_WIFI_SCAN_DONE, message_received_cb, NULL);
+    lv_msg_subscribe(MSG_WIFI_CONNECTED, message_received_cb, NULL);
+    lv_msg_subscribe(MSG_READ_RESULT, message_received_cb, NULL);
+    lv_msg_subscribe(MSG_WRITE_RESULT, message_received_cb, NULL);
 
     show_loading_gui("System initializing...");
 }
@@ -852,4 +899,8 @@ void show_connect_gui(void) {
 void show_main_gui(void) {
     lv_fragment_t* main_gui_fragment = lv_fragment_create(&home_cls, NULL);
     lv_fragment_manager_push(manager, main_gui_fragment, &container);
+}
+
+void show_matching_failed_gui(void) {
+
 }

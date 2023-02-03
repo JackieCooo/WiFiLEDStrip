@@ -54,7 +54,7 @@ typedef struct {
 
 typedef struct {
     lv_fragment_t base;
-    const char* ssid;
+    char* ssid;
 } wifi_connect_fragment_t;
 
 typedef struct {
@@ -78,6 +78,7 @@ void refresh_gui(void);
 void clear_gui(void);
 void show_connect_gui(void);
 void show_main_gui(void);
+void show_matching_failed_gui(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

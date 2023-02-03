@@ -3,11 +3,10 @@
 void ConnectHandler::begin(void) {
     WiFi.onEvent(_wifi_event_cb);
 
-    connectivity.connected = false;
-    connectivity.matched = false;
+    _connected = false;
+    _matched = false;
 
     if (strlen(connectivity.ssid) == 0) {  // haven't connected to any wifi before
-        // show_connect_gui();
         msg_request_t request;
         request.msg = MSG_WIFI_SCAN;
         request.user_data = NULL;
@@ -23,10 +22,9 @@ void ConnectHandler::begin(void) {
 
 void ConnectHandler::process(void) {
     msg_request_t request;
-    if (xQueueReceive(messageHandler, &request, QUEUE_TIMEOUT_MS)) {
+    if (xQueueReceive(messageHandler, &request, portMAX_DELAY)) {
         _construct_transaction_data(request);
 
-        msg_reply_t reply;
         if (request.msg == MSG_WIFI_SCAN) {
             Serial.print("WiFi scaning");
             WiFi.scanNetworks();  // scan in sync mode
@@ -36,6 +34,8 @@ void ConnectHandler::process(void) {
                 wifi_connect_t* conn = (wifi_connect_t*) request.user_data;
                 WiFi.begin(conn->ssid, conn->password);
                 Serial.printf("Connecting to SSID: %s, PSW: %s\n", conn->ssid, conn->password);
+                strcpy(connectivity.ssid, conn->ssid);
+                strcpy(connectivity.password, conn->password);
                 free(conn);
                 conn = NULL;
             }
@@ -43,23 +43,78 @@ void ConnectHandler::process(void) {
                 WiFi.begin(connectivity.ssid, connectivity.password);
                 Serial.printf("Connecting to SSID: %s, PSW: %s\n", connectivity.ssid, connectivity.password);
             }
-            while(WiFi.status() != WL_CONNECTED) {
-                Serial.print(".");
-                delay(200);
+        }
+        else if (request.msg == MSG_MATCH_HOST) {
+            package_t& p = _package.getPackage();
+
+            msg_reply_t reply;
+            reply.msg = MSG_MATCH_HOST;
+            reply.user_data = NULL;
+            if (_match()) {
+                connectivity.host_ip = p.data.ip;
+                Serial.printf("Host IP: %d.%d.%d.%d\n", ip4_addr1_val(connectivity.host_ip), ip4_addr2_val(connectivity.host_ip), ip4_addr3_val(connectivity.host_ip), ip4_addr4_val(connectivity.host_ip));
+                Serial.println("Matched");
+                _matched = true;
+                reply.resp = true;
             }
-            Serial.printf("\nIP: %s\n", WiFi.localIP().toString().c_str());
+            else {
+                reply.resp = false;
+            }
+            lv_msg_send(MSG_MATCH_RESULT, &reply);
         }
-        else if (request.msg == MSG_MATCH) {
-            if (_match()) reply.resp = true;
-            else reply.resp = false;
+        else if (request.msg == MSG_READ_HOST) {
+            package_t& p = _package.getPackage();
+
+            msg_reply_t reply;
+            reply.msg = MSG_READ_HOST;
+            reply.user_data = NULL;
+            if (_transmit()) {
+                configuration.power = p.data.strip.power;
+                configuration.mode = Package::packMode(p.data.strip.mode);
+                if (p.data.strip.mode == PKG_MODE_NORMAL) {
+                    configuration.setting.normal.color = lv_color_hex(p.data.strip.setting.normal.color);
+                }
+                else if (p.data.strip.mode == PKG_MODE_BREATHING) {
+                    configuration.setting.breathing.color = lv_color_hex(p.data.strip.setting.breathing.color);
+                    configuration.setting.breathing.duration = p.data.strip.setting.breathing.duration;
+                    configuration.setting.breathing.ease = Package::packEase(p.data.strip.setting.breathing.ease);
+                    configuration.setting.breathing.interval = p.data.strip.setting.breathing.interval;
+                }
+                else if (p.data.strip.mode == PKG_MODE_LIGHTBEAM) {
+                    configuration.setting.lightbeam.color = lv_color_hex(p.data.strip.setting.lightbeam.color);
+                    configuration.setting.lightbeam.dir = Package::packDirection(p.data.strip.setting.lightbeam.dir);
+                    configuration.setting.lightbeam.faded_end = Package::packFadedEnd(p.data.strip.setting.lightbeam.faded_end);
+                    configuration.setting.lightbeam.head_len = p.data.strip.setting.lightbeam.head_len;
+                    configuration.setting.lightbeam.gap = p.data.strip.setting.lightbeam.gap;
+                    configuration.setting.lightbeam.len = p.data.strip.setting.lightbeam.len;
+                    configuration.setting.lightbeam.speed = p.data.strip.setting.lightbeam.speed;
+                    configuration.setting.lightbeam.tail_len = p.data.strip.setting.lightbeam.tail_len;
+                }
+                else if (p.data.strip.mode == PKG_MODE_RAINBOW) {
+                    configuration.setting.rainbow.speed = p.data.strip.setting.rainbow.speed;
+                }
+
+                reply.resp = true;
+            }
+            else {
+                reply.resp = false;
+            }
+            lv_msg_send(MSG_READ_RESULT, &reply);
         }
-        else {
-            if (_transmit()) reply.resp = true;
-            else reply.resp = false;
+        else if (request.msg == MSG_WRITE_HOST) {
+            configuration_t* old_data = (configuration_t*) request.user_data;
+            msg_reply_t reply;
+            reply.msg = MSG_WRITE_HOST;
+            if (_transmit()) {
+                xSemaphoreGive(saveConfigMessage);
+            }
+            else {
+                memcpy(&configuration, old_data, sizeof(configuration_t));  // if it failed, roll back to the old config
+            }
+            free(old_data);
+            old_data = NULL;
+            lv_msg_send(MSG_WRITE_RESULT, &reply);
         }
-        reply.msg = request.msg;
-        reply.user_data = request.user_data;
-        _handle_reply(reply);
     }
 }
 
@@ -70,6 +125,7 @@ bool ConnectHandler::_match(void) {
     uint32_t timeout = MATCH_TIMEOUT_MS;
     package_t& p = _package.getPackage();
 
+    // broadcast in UDP, in order to get host IP
     receiver.begin(MATCH_PORT);
     sender.beginPacket(IPAddress(255, 255, 255, 255), MATCH_PORT);
     uint8_t tx_buf[PKG_BUF_MAX_LEN];
@@ -77,13 +133,14 @@ bool ConnectHandler::_match(void) {
     sender.write(tx_buf, BUF_SIZE(tx_buf));
     sender.endPacket();
 
-    while (!connectivity.connected && timeout--) {
+    while (timeout--) {
         if (receiver.parsePacket()) {
             uint8_t rx_buf[PKG_BUF_MAX_LEN];
             memset(rx_buf, 0x00, sizeof(rx_buf));
             receiver.read(rx_buf, sizeof(rx_buf));
             if (_package.parse(rx_buf, sizeof(rx_buf))) {
                 res = true;
+                break;
             }
         }
         delay(1);
@@ -124,7 +181,7 @@ bool ConnectHandler::_transmit(void) {
 void ConnectHandler::_construct_transaction_data(msg_request_t& msg) {
     package_t& p = _package.getPackage();
 
-    if (msg.msg == MSG_WRITE_CONFIG) {
+    if (msg.msg == MSG_WRITE_HOST) {
         Serial.println("Write config message");
         p.cmd = PKG_CMD_WRITE_SETTING;
         p.data.strip.power = configuration.power;
@@ -155,74 +212,15 @@ void ConnectHandler::_construct_transaction_data(msg_request_t& msg) {
             p.data.strip.setting.rainbow.speed = configuration.setting.rainbow.speed;
         }
     }
-    else if (msg.msg == MSG_READ_CONFIG) {
+    else if (msg.msg == MSG_READ_HOST) {
         Serial.println("Read config message");
         p.cmd = PKG_CMD_READ_SETTING;
     }
-    else if (msg.msg == MSG_MATCH) {
+    else if (msg.msg == MSG_MATCH_HOST) {
         IPAddress ip = WiFi.localIP();
         p.cmd = PKG_CMD_ACK;
         p.data.ip.addr = PP_HTONL(uint32_t(ip));
     }
-}
-
-void ConnectHandler::_handle_reply(msg_reply_t& reply) {
-    package_t& p = _package.getPackage();
-    if (reply.msg == MSG_WRITE_CONFIG) {
-        configuration_t* data = (configuration_t*) reply.user_data;
-        if (!reply.resp) {
-            memcpy(&configuration, data, sizeof(configuration_t));  // if it failed, roll back to the old config
-        }
-        else {
-            xSemaphoreGive(saveConfigMessage);
-        }
-        heap_caps_free(data);
-        data = NULL;
-        lv_msg_send(REFRESH_GUI, NULL);
-    }
-    else if (reply.msg == MSG_READ_CONFIG) {
-        if (reply.resp) {
-            configuration.power = p.data.strip.power;
-            configuration.mode = Package::packMode(p.data.strip.mode);
-            if (p.data.strip.mode == PKG_MODE_NORMAL) {
-                configuration.setting.normal.color = lv_color_hex(p.data.strip.setting.normal.color);
-            }
-            else if (p.data.strip.mode == PKG_MODE_BREATHING) {
-                configuration.setting.breathing.color = lv_color_hex(p.data.strip.setting.breathing.color);
-                configuration.setting.breathing.duration = p.data.strip.setting.breathing.duration;
-                configuration.setting.breathing.ease = Package::packEase(p.data.strip.setting.breathing.ease);
-                configuration.setting.breathing.interval = p.data.strip.setting.breathing.interval;
-            }
-            else if (p.data.strip.mode == PKG_MODE_LIGHTBEAM) {
-                configuration.setting.lightbeam.color = lv_color_hex(p.data.strip.setting.lightbeam.color);
-                configuration.setting.lightbeam.dir = Package::packDirection(p.data.strip.setting.lightbeam.dir);
-                configuration.setting.lightbeam.faded_end = Package::packFadedEnd(p.data.strip.setting.lightbeam.faded_end);
-                configuration.setting.lightbeam.head_len = p.data.strip.setting.lightbeam.head_len;
-                configuration.setting.lightbeam.gap = p.data.strip.setting.lightbeam.gap;
-                configuration.setting.lightbeam.len = p.data.strip.setting.lightbeam.len;
-                configuration.setting.lightbeam.speed = p.data.strip.setting.lightbeam.speed;
-                configuration.setting.lightbeam.tail_len = p.data.strip.setting.lightbeam.tail_len;
-            }
-            else if (p.data.strip.mode == PKG_MODE_RAINBOW) {
-                configuration.setting.rainbow.speed = p.data.strip.setting.rainbow.speed;
-            }
-        }
-        lv_msg_send(REFRESH_GUI, NULL);
-    }
-    else if (reply.msg == MSG_MATCH) {
-        if (reply.resp) {
-            connectivity.host_ip = p.data.ip;
-            Serial.printf("Host IP: %d.%d.%d.%d\n", ip4_addr1_val(connectivity.host_ip), ip4_addr2_val(connectivity.host_ip), ip4_addr3_val(connectivity.host_ip), ip4_addr4_val(connectivity.host_ip));
-            connectivity.connected = true;
-            Serial.println("Matched");
-            msg_request_t request;
-            request.msg = MSG_READ_CONFIG;
-            request.user_data = NULL;
-            xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
-        }
-        lv_msg_send(RES_MATCH, &reply);
-    }
-    Serial.printf("Send result: %d to GUI\n", reply.resp);
 }
 
 void ConnectHandler::task(void* args) {
@@ -249,10 +247,29 @@ void ConnectHandler::_wifi_event_cb(arduino_event_id_t event, arduino_event_info
         }
     }
     else if (event == ARDUINO_EVENT_WIFI_STA_CONNECTED) {
+        Serial.println("WiFi connected");
 
+        _connected = true;
+        lv_msg_send(MSG_WIFI_CONNECTED, NULL);
+
+        msg_request_t request;
+        if (connectivity.host_ip.addr == IPADDR_ANY) {
+            request.msg = MSG_MATCH_HOST;
+            show_loading_gui("Matching...");
+        }
+        else {
+            request.msg = MSG_ACK_HOST;
+            show_loading_gui("Acking...");
+        }
+        request.user_data = NULL;
+        xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
     }
     else if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
-
+        Serial.printf("WiFi disconnected, error code: %d\n", info.wifi_sta_disconnected.reason);
+        _connected = false;
+    }
+    else if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
+        Serial.printf("IP: %s\n", WiFi.localIP().toString().c_str());
     }
 }
 

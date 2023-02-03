@@ -26,11 +26,12 @@ public:
 
 private:
     Package _package;
+    bool _connected;
+    bool _matched;
     
     bool _match(void);
     bool _transmit(void);
     void _construct_transaction_data(msg_request_t& msg);
-    void _handle_reply(msg_reply_t& reply);
     static void _wifi_event_cb(arduino_event_id_t event, arduino_event_info_t info);
 };
 

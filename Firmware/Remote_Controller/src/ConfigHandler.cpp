@@ -92,9 +92,7 @@ void ConfigHandler::_initConfigurationSetting(File& file) {
 
 void ConfigHandler::_initConnectivitySetting(File& file) {
     connectivity_t connect;
-    connect.connected = false;
     connect.host_ip.addr = 0;
-    connect.matched = false;
     memset(connect.ssid, 0x00, sizeof(connect.ssid));
     memset(connect.password, 0x00, sizeof(connect.password));
 
