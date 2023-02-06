@@ -223,6 +223,22 @@ void ConnectHandler::_construct_transaction_data(msg_request_t& msg) {
     }
 }
 
+bool ConnectHandler::get_connect_status(void) {
+    return _connected;
+}
+
+void ConnectHandler::set_connect_status(bool status) {
+    _connected = status;
+}
+
+bool ConnectHandler::get_match_status(void) {
+    return _matched;
+}
+
+void ConnectHandler::set_match_status(bool status) {
+    _matched = status;
+}
+
 void ConnectHandler::task(void* args) {
     for (;;) {
         connHandler.process();
@@ -249,27 +265,25 @@ void ConnectHandler::_wifi_event_cb(arduino_event_id_t event, arduino_event_info
     else if (event == ARDUINO_EVENT_WIFI_STA_CONNECTED) {
         Serial.println("WiFi connected");
 
-        _connected = true;
         lv_msg_send(MSG_WIFI_CONNECTED, NULL);
+    }
+    else if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
+        Serial.printf("WiFi disconnected, error code: %d\n", info.wifi_sta_disconnected.reason);
+    }
+    else if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
+        Serial.printf("IP: %s\n", WiFi.localIP().toString().c_str());
 
         msg_request_t request;
         if (connectivity.host_ip.addr == IPADDR_ANY) {
             request.msg = MSG_MATCH_HOST;
-            show_loading_gui("Matching...");
+            loading_gui_set_text("Matching...");
         }
         else {
             request.msg = MSG_ACK_HOST;
-            show_loading_gui("Acking...");
+            loading_gui_set_text("Acking...");
         }
         request.user_data = NULL;
         xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
-    }
-    else if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
-        Serial.printf("WiFi disconnected, error code: %d\n", info.wifi_sta_disconnected.reason);
-        _connected = false;
-    }
-    else if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
-        Serial.printf("IP: %s\n", WiFi.localIP().toString().c_str());
     }
 }
 

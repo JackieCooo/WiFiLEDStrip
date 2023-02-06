@@ -22,6 +22,10 @@ class ConnectHandler {
 public:
     void begin(void);
     void process(void);
+    bool get_connect_status(void);
+    void set_connect_status(bool status);
+    bool get_match_status(void);
+    void set_match_status(bool status);
     static void task(void* args);
 
 private:

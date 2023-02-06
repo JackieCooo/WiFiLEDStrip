@@ -17,8 +17,8 @@ void setup(void) {
 
   messageHandler = xQueueCreate(3, sizeof(msg_request_t));
 
-  configHandler.begin();
-  configHandler.load();
+  // configHandler.begin();
+  // configHandler.load();
 
   Serial.println("lvgl init");
   lv_init();

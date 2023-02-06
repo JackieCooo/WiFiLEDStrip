@@ -33,6 +33,7 @@ static void password_area_event_cb(lv_event_t* e);
 static void connect_btn_event_cb(lv_event_t* e);
 static void keyboard_event_cb(lv_event_t* e);
 static void refresh_btn_event_cb(lv_event_t* e);
+static void matching_failed_dialog_event_cb(lv_event_t* e);
 static void message_received_cb(void* s, lv_msg_t* m);
 
 static void stylish_default_btn(lv_obj_t* btn, const char* text);
@@ -727,6 +728,16 @@ static void refresh_btn_event_cb(lv_event_t* e) {
     }
 }
 
+static void matching_failed_dialog_event_cb(lv_event_t* e) {
+    if (e->code == EVENT_DIALOG_LEFT_BTN_CLICKED) {
+        show_connect_gui();
+    }
+    else if (e->code == EVENT_DIALOG_RIGHT_BTN_CLICKED) {
+        show_loading_gui("Matching...");
+    }
+    lv_obj_del(lv_event_get_target(e));
+}
+
 static void message_received_cb(void* s, lv_msg_t* m) {
     LV_UNUSED(s);
     uint32_t id = lv_msg_get_id(m);
@@ -753,7 +764,6 @@ static void message_received_cb(void* s, lv_msg_t* m) {
         hide_loading_gui();
     }
     else if (id == MSG_WIFI_CONNECTED) {
-        hide_loading_gui();
         lv_fragment_manager_pop(manager);
     }
     else if (id == MSG_MATCH_RESULT) {
@@ -769,7 +779,7 @@ static void message_received_cb(void* s, lv_msg_t* m) {
         }
         else {
             hide_loading_gui();
-            show_matching_failed_gui();
+            show_matching_failed_dialog();
         }
     }
     else if (id == MSG_READ_RESULT) {
@@ -859,6 +869,7 @@ void init_gui(void)
     EVENT_SELECTED_CHANGED = lv_event_register_id();
     EVENT_CONFIRMED = lv_event_register_id();
     EVENT_APPLIED = lv_event_register_id();
+    optional_dialog_register_event_id();
 
     container = lv_obj_create(lv_scr_act());
     lv_obj_remove_style_all(container);
@@ -901,6 +912,7 @@ void show_main_gui(void) {
     lv_fragment_manager_push(manager, main_gui_fragment, &container);
 }
 
-void show_matching_failed_gui(void) {
-
+void show_matching_failed_dialog(void) {
+    lv_obj_t* dialog = create_optional_dialog("Host device matching failed!", "Change WiFi", "Retry");
+    lv_obj_add_event_cb(dialog, matching_failed_dialog_event_cb, LV_EVENT_ALL, NULL);
 }
