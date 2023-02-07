@@ -5,20 +5,17 @@
 #include "indev.h"
 #include "gui.h"
 #include "global.h"
+#include "message_handler.h"
 #include "ConnectHandler.h"
 #include "ConfigHandler.h"
 
-xQueueHandle messageHandler;
 Display display;
 Indev indev;
 
 void setup(void) {
   Serial.begin(115200);
 
-  messageHandler = xQueueCreate(3, sizeof(msg_request_t));
-
-  // configHandler.begin();
-  // configHandler.load();
+  initMessageHandler();
 
   Serial.println("lvgl init");
   lv_init();
@@ -35,6 +32,9 @@ void setup(void) {
   Serial.println("gui init");
   init_gui();
   Serial.println("gui init done");
+
+  configHandler.begin();
+  configHandler.load();
 
   Serial.println("connect init");
   connHandler.begin();

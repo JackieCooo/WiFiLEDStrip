@@ -15,7 +15,7 @@ typedef enum {
     MODE_LIGHTBEAM,
     MODE_RAINBOW,
     MODE_NUM
-} strip_mode_t;
+} led_mode_t;
 
 typedef enum {
     EASE_LINEAR,
@@ -61,39 +61,64 @@ typedef struct {
 } faded_end_t;
 
 typedef struct {
-    RgbColor color;
+    uint16_t color;
 } normal_data_t;
 
 typedef struct {
-    RgbColor color;
+    uint16_t color;
     uint16_t duration;
     uint16_t interval;
-    ease_t ease;
+    uint8_t ease;
 } breathing_data_t;
 
 typedef struct {
-    RgbColor color;
-    uint16_t len;
-    uint16_t gap;
-    uint16_t head_len;
-    uint16_t tail_len;
-    faded_end_t faded_end;
-    dir_t dir;
+    uint16_t color;
+    uint8_t len;
+    uint8_t gap;
+    uint8_t head_len;
+    uint8_t tail_len;
     uint16_t speed;
+    uint8_t faded_end;
+    uint8_t dir;
 } lightbeam_data_t;
 
 typedef struct {
     uint16_t speed;
 } rainbow_data_t;
 
+typedef union {
+    normal_data_t normal;
+    breathing_data_t breathing;
+    lightbeam_data_t lightbeam;
+    rainbow_data_t rainbow;
+} setting_data_t;
+
 typedef struct {
     bool power;
-    strip_mode_t mode;
+    led_mode_t mode;
     struct {
-        normal_data_t normal;
-        breathing_data_t breathing;
-        lightbeam_data_t lightbeam;
-        rainbow_data_t rainbow;
+        struct {
+            RgbColor color;
+        } normal;
+        struct {
+            RgbColor color;
+            uint16_t duration;
+            uint16_t interval;
+            ease_t ease;
+        } breathing;
+        struct {
+            RgbColor color;
+            uint8_t len;
+            uint8_t gap;
+            uint8_t head_len;
+            uint8_t tail_len;
+            uint16_t speed;
+            faded_end_t faded_end;
+            dir_t dir;
+        } lightbeam;
+        struct {
+            uint16_t speed;
+        } rainbow;
     } setting;
 } configuration_t;
 

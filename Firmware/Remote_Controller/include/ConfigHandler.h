@@ -5,15 +5,15 @@
 
 #include "global.h"
 
-#define CONFIG_FILE_PATH        "/configuration.txt"
-#define WIFI_CONFIG_FILE_PATH   "/connectivity.txt"
+#define CONFIG_FILE_PATH        "/configuration.bin"
+#define CONNECT_FILE_PATH       "/connectivity.bin"
+#define SETTING_FILE_PATH       "/setting.bin"
 
 class ConfigHandler {
 public:
-    ConfigHandler();
     void begin(void);
     void load(void);
-    void save(void);
+    void save(local_file_t cmd);
     void process(void);
     static void task(void* args);
 private:

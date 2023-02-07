@@ -12,13 +12,14 @@ extern "C" {
 #include "lwip/ip4_addr.h"
 #include "list.h"
 
-#define REFRESH_GUI                     1
 #define MSG_MATCH_RESULT                2
 #define MSG_ACK_RESULT                  3
 #define MSG_WIFI_SCAN_DONE              4
 #define MSG_WIFI_CONNECTED              5
 #define MSG_READ_RESULT                 6
 #define MSG_WRITE_RESULT                7
+#define MSG_WIFI_DISCONNECTED           8
+#define MSG_WIFI_PASSWORD_FAILED        9
 
 #define QUEUE_TIMEOUT_MS                (20)
 
@@ -35,10 +36,10 @@ typedef struct {
 
 typedef struct {
     uint16_t color;
-    uint16_t len;
-    uint16_t gap;
-    uint16_t head_len;
-    uint16_t tail_len;
+    uint8_t len;
+    uint8_t gap;
+    uint8_t head_len;
+    uint8_t tail_len;
     uint16_t speed;
     uint8_t faded_end;
     uint8_t dir;
@@ -120,10 +121,10 @@ typedef struct {
         } breathing;
         struct {
             lv_color_t color;
-            uint16_t len;
-            uint16_t gap;
-            uint16_t head_len;
-            uint16_t tail_len;
+            uint8_t len;
+            uint8_t gap;
+            uint8_t head_len;
+            uint8_t tail_len;
             uint16_t speed;
             faded_end_t faded_end;
             dir_t dir;
@@ -177,9 +178,14 @@ typedef struct {
     char password[PSW_MAX_LEN];
 } wifi_connect_t;
 
+typedef enum {
+    FILE_CONFIG,
+    FILE_CONNECT,
+    FILE_SETTING,
+} local_file_t;
+
 extern configuration_t configuration;
-extern xQueueHandle messageHandler;
-extern xQueueHandle saveConfigMessage;
+extern xQueueHandle saveFileMessage;
 extern connectivity_t connectivity;
 
 #ifdef __cplusplus

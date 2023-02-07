@@ -7,6 +7,7 @@
 #include "lvgl.h"
 #include "gui.h"
 #include "global.h"
+#include "message_handler.h"
 
 #define SERVER_PORT                 20001
 #define MATCH_PORT                  20002
@@ -23,19 +24,16 @@ public:
     void begin(void);
     void process(void);
     bool get_connect_status(void);
-    void set_connect_status(bool status);
     bool get_match_status(void);
     void set_match_status(bool status);
     static void task(void* args);
 
 private:
     Package _package;
-    bool _connected;
     bool _matched;
     
     bool _match(void);
-    bool _transmit(void);
-    void _construct_transaction_data(msg_request_t& msg);
+    bool _transmit(uint8_t cmd);
     static void _wifi_event_cb(arduino_event_id_t event, arduino_event_info_t info);
 };
 

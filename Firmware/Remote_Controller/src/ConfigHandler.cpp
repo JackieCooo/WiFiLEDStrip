@@ -2,14 +2,11 @@
 
 configuration_t configuration;
 connectivity_t connectivity;
-xQueueHandle saveConfigMessage;
-
-ConfigHandler::ConfigHandler() {
-    saveConfigMessage = xSemaphoreCreateBinary();
-}
+xQueueHandle saveFileMessage;
 
 void ConfigHandler::begin(void) {
-    // SPIFFS.format();
+    SPIFFS.format();
+    saveFileMessage = xQueueCreate(1, sizeof(local_file_t));
     if (SPIFFS.begin(true)) {
         Serial.println("SPIFFS init done");
         _checkLocalFiles();
@@ -31,7 +28,7 @@ void ConfigHandler::load(void) {
         file.close();
     }
 
-    file = SPIFFS.open(WIFI_CONFIG_FILE_PATH, FILE_READ);
+    file = SPIFFS.open(CONNECT_FILE_PATH, FILE_READ);
     if (file) {
         uint8_t buf[sizeof(connectivity_t)];
         file.read(buf, sizeof(connectivity_t));
@@ -42,21 +39,30 @@ void ConfigHandler::load(void) {
     Serial.println("Configuration loaded");
 }
 
-void ConfigHandler::save(void) {
-    File file = SPIFFS.open(CONFIG_FILE_PATH, FILE_WRITE);
-    if (file) {
-        Serial.println("Saving configuration");
-        file.write((uint8_t*)&configuration, sizeof(configuration_t));
-        file.close();
+void ConfigHandler::save(local_file_t cmd) {
+    File file;
+    if (cmd == FILE_CONFIG) {
+        file = SPIFFS.open(CONFIG_FILE_PATH, FILE_WRITE);
     }
-    else {
-        Serial.println("File open failed");
+    else if (cmd == FILE_CONNECT) {
+        file = SPIFFS.open(CONNECT_FILE_PATH, FILE_WRITE);
+    }
+    if (file) {
+        Serial.printf("Saving file, id: %d\n", cmd);
+        if (cmd == FILE_CONFIG) {
+            file.write((uint8_t*)&configuration, sizeof(configuration_t));
+        }
+        else if (cmd == FILE_CONNECT) {
+            file.write((uint8_t*)&connectivity, sizeof(connectivity_t));
+        }
+        file.close();
     }
 }
 
 void ConfigHandler::process(void) {
-    if (xSemaphoreTake(saveConfigMessage, portMAX_DELAY)) {
-        save();
+    local_file_t cmd;
+    if (xQueueReceive(saveFileMessage, &cmd, portMAX_DELAY)) {
+        save(cmd);
     }
 }
 
@@ -107,9 +113,9 @@ void ConfigHandler::_checkLocalFiles(void) {
         file.close();
         Serial.println("Config file created");
     }
-    if (!SPIFFS.exists(WIFI_CONFIG_FILE_PATH)) {
+    if (!SPIFFS.exists(CONNECT_FILE_PATH)) {
         Serial.println("WiFi config file not find, creating");
-        File file = SPIFFS.open(WIFI_CONFIG_FILE_PATH, FILE_WRITE, true);
+        File file = SPIFFS.open(CONNECT_FILE_PATH, FILE_WRITE, true);
         _initConnectivitySetting(file);
         file.close();
         Serial.println("WiFi config file created");

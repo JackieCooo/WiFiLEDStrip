@@ -33,7 +33,8 @@ static void password_area_event_cb(lv_event_t* e);
 static void connect_btn_event_cb(lv_event_t* e);
 static void keyboard_event_cb(lv_event_t* e);
 static void refresh_btn_event_cb(lv_event_t* e);
-static void matching_failed_dialog_event_cb(lv_event_t* e);
+static void match_failed_dialog_event_cb(lv_event_t* e);
+static void ack_failed_dialog_event_cb(lv_event_t* e);
 static void message_received_cb(void* s, lv_msg_t* m);
 
 static void stylish_default_btn(lv_obj_t* btn, const char* text);
@@ -270,8 +271,8 @@ static lv_obj_t* breathing_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     static led_mode_t breathing_mode_tag = MODE_BREATHING;
     lv_obj_t* confirm_panel = create_confirm_panel(content);
     lv_obj_set_user_data(confirm_panel, &breathing_mode_tag);
-    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRMED, fragment);
-    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_APPLIED, fragment);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRM_PANEL_CONFIRMED, fragment);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRM_PANEL_APPLIED, fragment);
 
     return content;
 }
@@ -361,8 +362,8 @@ static lv_obj_t* lightbeam_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t*
     static led_mode_t lightbeam_mode_tag = MODE_LIGHTBEAM;
     lv_obj_t* confirm_panel = create_confirm_panel(content);
     lv_obj_set_user_data(confirm_panel, &lightbeam_mode_tag);
-    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRMED, fragment);
-    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_APPLIED, fragment);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRM_PANEL_CONFIRMED, fragment);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRM_PANEL_APPLIED, fragment);
 
     return content;
 }
@@ -393,8 +394,8 @@ static lv_obj_t* rainbow_mode_setting_create_cb(lv_fragment_t* self, lv_obj_t* p
     static led_mode_t rainbow_mode_tag = MODE_RAINBOW;
     lv_obj_t* confirm_panel = create_confirm_panel(content);
     lv_obj_set_user_data(confirm_panel, &rainbow_mode_tag);
-    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRMED, fragment);
-    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_APPLIED, fragment);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRM_PANEL_CONFIRMED, fragment);
+    lv_obj_add_event_cb(confirm_panel, confirm_panel_event_cb, EVENT_CONFIRM_PANEL_APPLIED, fragment);
 
     return content;
 }
@@ -425,6 +426,7 @@ static lv_obj_t* wifi_scan_create_cb(lv_fragment_t* self, lv_obj_t* parent) {
 
     lv_obj_t* refresh_btn = lv_btn_create(content);
     stylish_default_btn(refresh_btn, "Refresh");
+    lv_obj_set_style_translate_y(refresh_btn, 20, 0);
     lv_obj_add_event_cb(refresh_btn, refresh_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
     return content;
@@ -508,10 +510,7 @@ static void pwr_btn_event_cb(lv_event_t* e)
         lv_obj_t* btn = lv_event_get_target(e);
 
         void* data = init_message_package();
-        msg_request_t request;
-        request.msg = MSG_WRITE_HOST;
-        request.user_data = data;
-        xQueueSend(messageHandler, &request, 1000);
+        sendMessage(MSG_WRITE_HOST, data);
 
         configuration.power = !configuration.power;
     }
@@ -559,10 +558,7 @@ static void color_selector_event_cb(lv_event_t* e)
         else if (configuration.mode == MODE_BREATHING) configuration.setting.breathing.color = color;
         else if (configuration.mode == MODE_LIGHTBEAM) configuration.setting.lightbeam.color = color;
 
-        msg_request_t request;
-        request.msg = MSG_WRITE_HOST;
-        request.user_data = data;
-        xQueueSend(messageHandler, &request, 1000);
+        sendMessage(MSG_WRITE_HOST, data);
     }
 }
 
@@ -597,15 +593,12 @@ static void mode_changed_cb(lv_event_t* e) {
             configuration.mode = MODE_RAINBOW;
         }
 
-        msg_request_t request;
-        request.msg = MSG_WRITE_HOST;
-        request.user_data = data;
-        xQueueSend(messageHandler, &request, 1000);
+        sendMessage(MSG_WRITE_HOST, data);
     }
 }
 
 static void confirm_panel_event_cb(lv_event_t* e) {
-    if (e->code == EVENT_CONFIRMED || e->code == EVENT_APPLIED) {
+    if (e->code == EVENT_CONFIRM_PANEL_CONFIRMED || e->code == EVENT_CONFIRM_PANEL_APPLIED) {
         lv_obj_t* obj = lv_event_get_target(e);
         led_mode_t* mode = (led_mode_t*) lv_obj_get_user_data(obj);
         void* data = init_message_package();
@@ -636,12 +629,10 @@ static void confirm_panel_event_cb(lv_event_t* e) {
 
             configuration.setting.rainbow.speed = styled_spinbox_get_value(fragment->speed_selector);
         }
-        msg_request_t request;
-        request.msg = MSG_WRITE_HOST;
-        request.user_data = data;
-        xQueueSend(messageHandler, &request, 1000);
+
+        sendMessage(MSG_WRITE_HOST, data);
     }
-    if (e->code == EVENT_CONFIRMED) {
+    if (e->code == EVENT_CONFIRM_PANEL_CONFIRMED) {
         lv_fragment_manager_pop(manager);
     }
 }
@@ -698,11 +689,7 @@ static void connect_btn_event_cb(lv_event_t* e) {
         strcpy(conn->ssid, fragment->ssid);
         strcpy(conn->password, lv_textarea_get_text(psw_area));
 
-        msg_request_t request;
-        request.msg = MSG_WIFI_CONNECT;
-        request.user_data = conn;
-        xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
-
+        sendMessage(MSG_WIFI_CONNECT, conn);
         show_loading_gui("Connecting...");
     }
 }
@@ -721,19 +708,29 @@ static void keyboard_event_cb(lv_event_t* e) {
 static void refresh_btn_event_cb(lv_event_t* e) {
     if (e->code == LV_EVENT_CLICKED) {
         show_loading_gui("Scaning...");
-        msg_request_t request;
-        request.msg = MSG_WIFI_SCAN;
-        request.user_data = NULL;
-        xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
+        sendMessage(MSG_WIFI_SCAN, NULL);
     }
 }
 
-static void matching_failed_dialog_event_cb(lv_event_t* e) {
+static void match_failed_dialog_event_cb(lv_event_t* e) {
     if (e->code == EVENT_DIALOG_LEFT_BTN_CLICKED) {
-        show_connect_gui();
+        
     }
     else if (e->code == EVENT_DIALOG_RIGHT_BTN_CLICKED) {
         show_loading_gui("Matching...");
+        sendMessage(MSG_MATCH_HOST, NULL);
+    }
+    lv_obj_del(lv_event_get_target(e));
+}
+
+static void ack_failed_dialog_event_cb(lv_event_t* e) {
+    if (e->code == EVENT_DIALOG_LEFT_BTN_CLICKED) {
+        show_loading_gui("Matching...");
+        sendMessage(MSG_MATCH_HOST, NULL);
+    }
+    else if (e->code == EVENT_DIALOG_RIGHT_BTN_CLICKED) {
+        show_loading_gui("Acking...");
+        sendMessage(MSG_ACK_HOST, NULL);
     }
     lv_obj_del(lv_event_get_target(e));
 }
@@ -741,11 +738,7 @@ static void matching_failed_dialog_event_cb(lv_event_t* e) {
 static void message_received_cb(void* s, lv_msg_t* m) {
     LV_UNUSED(s);
     uint32_t id = lv_msg_get_id(m);
-    if (id == REFRESH_GUI) {
-        refresh_gui();
-        printf("GUI refreshed\n");
-    }
-    else if (id == MSG_WIFI_SCAN_DONE) {
+    if (id == MSG_WIFI_SCAN_DONE) {
         if (lv_fragment_manager_get_stack_size(manager) == 0) show_connect_gui();
         wifi_scan_fragment_t* fragment = (wifi_scan_fragment_t*) lv_fragment_manager_get_top(manager);
         wifi_list_t* list = *((wifi_list_t**)lv_msg_get_payload(m));
@@ -771,35 +764,48 @@ static void message_received_cb(void* s, lv_msg_t* m) {
 
         if (reply->resp) {
             loading_gui_set_text("Requiring data...");
-
-            msg_request_t request;
-            request.msg = MSG_READ_HOST;
-            request.user_data = NULL;
-            xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
+            sendMessage(MSG_READ_HOST, NULL);
         }
         else {
             hide_loading_gui();
-            show_matching_failed_dialog();
+            show_match_failed_dialog();
         }
     }
     else if (id == MSG_READ_RESULT) {
         msg_reply_t* reply = (msg_reply_t*) lv_msg_get_payload(m);
 
         if (reply->resp) {
-
+            hide_loading_gui();
+            show_main_gui();
         }
         else {
-
+            sendMessage(MSG_READ_HOST, NULL);
         }
     }
     else if (id == MSG_WRITE_RESULT) {
         msg_reply_t* reply = (msg_reply_t*) lv_msg_get_payload(m);
 
         if (reply->resp) {
+            refresh_gui();
+        }
+    }
+    else if (id == MSG_WIFI_DISCONNECTED) {
+        show_loading_gui("Reconnecting...");
+        sendMessage(MSG_WIFI_CONNECT, NULL);
+    }
+    else if (id == MSG_WIFI_PASSWORD_FAILED) {
+        hide_loading_gui();
+    }
+    else if (id == MSG_ACK_RESULT) {
+        msg_reply_t* reply = (msg_reply_t*) lv_msg_get_payload(m);
 
+        if (reply->resp) {
+            loading_gui_set_text("Requiring data...");
+            sendMessage(MSG_READ_HOST, NULL);
         }
         else {
-
+            hide_loading_gui();
+            show_ack_failed_dialog();
         }
     }
 }
@@ -867,8 +873,7 @@ static void power_btn_set_state(lv_obj_t* btn, bool state) {
 void init_gui(void)
 {
     EVENT_SELECTED_CHANGED = lv_event_register_id();
-    EVENT_CONFIRMED = lv_event_register_id();
-    EVENT_APPLIED = lv_event_register_id();
+    confirm_panel_register_event_id();
     optional_dialog_register_event_id();
 
     container = lv_obj_create(lv_scr_act());
@@ -880,12 +885,14 @@ void init_gui(void)
 
     lv_obj_add_event_cb(lv_scr_act(), gesture_event_cb, LV_EVENT_GESTURE, NULL);
 
-    lv_msg_subscribe(REFRESH_GUI, message_received_cb, NULL);
     lv_msg_subscribe(MSG_MATCH_RESULT, message_received_cb, NULL);
     lv_msg_subscribe(MSG_WIFI_SCAN_DONE, message_received_cb, NULL);
     lv_msg_subscribe(MSG_WIFI_CONNECTED, message_received_cb, NULL);
     lv_msg_subscribe(MSG_READ_RESULT, message_received_cb, NULL);
     lv_msg_subscribe(MSG_WRITE_RESULT, message_received_cb, NULL);
+    lv_msg_subscribe(MSG_WIFI_DISCONNECTED, message_received_cb, NULL);
+    lv_msg_subscribe(MSG_WIFI_PASSWORD_FAILED, message_received_cb, NULL);
+    lv_msg_subscribe(MSG_ACK_RESULT, message_received_cb, NULL);
 
     show_loading_gui("System initializing...");
 }
@@ -912,7 +919,14 @@ void show_main_gui(void) {
     lv_fragment_manager_push(manager, main_gui_fragment, &container);
 }
 
-void show_matching_failed_dialog(void) {
-    lv_obj_t* dialog = create_optional_dialog("Host device matching failed!", "Change WiFi", "Retry");
-    lv_obj_add_event_cb(dialog, matching_failed_dialog_event_cb, LV_EVENT_ALL, NULL);
+void show_match_failed_dialog(void) {
+    lv_obj_t* dialog = create_optional_dialog("Host device match failed!", "Change WiFi", "Retry");
+    lv_obj_add_event_cb(dialog, match_failed_dialog_event_cb, EVENT_DIALOG_LEFT_BTN_CLICKED, NULL);
+    lv_obj_add_event_cb(dialog, match_failed_dialog_event_cb, EVENT_DIALOG_RIGHT_BTN_CLICKED, NULL);
+}
+
+void show_ack_failed_dialog(void) {
+    lv_obj_t* dialog = create_optional_dialog("Host device ack failed!", "Match", "Retry");
+    lv_obj_add_event_cb(dialog, ack_failed_dialog_event_cb, EVENT_DIALOG_LEFT_BTN_CLICKED, NULL);
+    lv_obj_add_event_cb(dialog, ack_failed_dialog_event_cb, EVENT_DIALOG_RIGHT_BTN_CLICKED, NULL);
 }

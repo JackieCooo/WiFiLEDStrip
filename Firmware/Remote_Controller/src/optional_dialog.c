@@ -55,7 +55,7 @@ lv_obj_t* create_optional_dialog(const char* text, const char* left_btn_text, co
     lv_obj_set_style_text_align(right_btn_label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_add_event_cb(right_btn, optional_dialog_right_btn_event_cb, LV_EVENT_CLICKED, bg);
 
-    return dialog;
+    return bg;
 }
 
 void optional_dialog_register_event_id(void) {

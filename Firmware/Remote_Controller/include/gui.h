@@ -17,6 +17,7 @@ extern "C" {
 #include "wifi_list_item.h"
 #include "loading_gui.h"
 #include "optional_dialog.h"
+#include "message_handler.h"
 
 /* User defines */
 #define BTN_HOR_RES 120
@@ -79,7 +80,8 @@ void refresh_gui(void);
 void clear_gui(void);
 void show_connect_gui(void);
 void show_main_gui(void);
-void show_matching_failed_dialog(void);
+void show_match_failed_dialog(void);
+void show_ack_failed_dialog(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

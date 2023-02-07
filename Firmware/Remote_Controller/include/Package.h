@@ -1,10 +1,12 @@
 #pragma once
 
 #include <Arduino.h>
+#include <WiFi.h>
 
 #include "global.h"
 
 #define PKG_BUF_MAX_LEN                     (32)
+#define PKG_BUF_SIZE_INDEX                  (2)
 
 #define PKG_FRAME_HEAD1                     (0xAA)
 #define PKG_FRAME_HEAD2                     (0xBB)
@@ -17,6 +19,8 @@
 #define PKG_CMD_READ_REPLY                  (0x04)
 #define PKG_CMD_WRITE_REPLY                 (0x05)
 #define PKG_CMD_ACK_REPLY                   (0x06)
+#define PKG_CMD_MATCH                       (0x07)
+#define PKG_CMD_MATCH_REPLY                 (0x08)
 
 #define PKG_FAIL                            (0x00)
 #define PKG_OK                              (0x01)
@@ -96,7 +100,8 @@ typedef struct {
 class Package {
 public:
     bool parse(uint8_t* buf, uint8_t size);
-    void pack(uint8_t* buf, uint8_t size);
+    void pack(uint8_t* buf, uint8_t cmd);
+    void parseFromPackage(void);
     package_t& getPackage(void);
     static uint32_t RGB565toRGB888(uint16_t& rgb565);
     static uint16_t RGB888toRGB565(uint32_t& rgb888);
@@ -108,6 +113,4 @@ public:
 
 private:
     package_t _package;
-
-    uint8_t _calPackSize(void);
 };
