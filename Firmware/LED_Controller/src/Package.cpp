@@ -31,7 +31,10 @@ bool Package::parse(uint8_t* buf, uint8_t size) {
                     stage = 99;
                 }
                 else if (_package.cmd == PKG_CMD_ACK) {
-                    stage = 6;
+                    stage = 99;
+                }
+                else if (_package.cmd == PKG_CMD_MATCH) {
+                    stage = 99;
                 }
                 else {
                     return false;
@@ -69,13 +72,13 @@ bool Package::parse(uint8_t* buf, uint8_t size) {
                 break;
             case 25:  // write lightbeam mode setting
                 _package.data.strip.setting.lightbeam.color = PKG_CONCAT(buf[i++], buf[i++]);
-                _package.data.strip.setting.lightbeam.len = PKG_CONCAT(buf[i++], buf[i++]);
-                _package.data.strip.setting.lightbeam.gap = PKG_CONCAT(buf[i++], buf[i++]);
-                _package.data.strip.setting.lightbeam.head_len = PKG_CONCAT(buf[i++], buf[i++]);
-                _package.data.strip.setting.lightbeam.tail_len = PKG_CONCAT(buf[i++], buf[i++]);
-                _package.data.strip.setting.lightbeam.speed = PKG_CONCAT(buf[i++], buf[i++]);
+                _package.data.strip.setting.lightbeam.len = buf[i++];
+                _package.data.strip.setting.lightbeam.gap = buf[i++];
                 _package.data.strip.setting.lightbeam.faded_end = buf[i++];
+                _package.data.strip.setting.lightbeam.head_len = buf[i++];
+                _package.data.strip.setting.lightbeam.tail_len = buf[i++];
                 _package.data.strip.setting.lightbeam.dir = buf[i++];
+                _package.data.strip.setting.lightbeam.speed = PKG_CONCAT(buf[i++], buf[i++]);
                 stage = 99;
                 break;
             case 26:  // write rainbow mode setting

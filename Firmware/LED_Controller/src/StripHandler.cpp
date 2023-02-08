@@ -10,7 +10,7 @@ void StripHandler::begin(void) {
 void StripHandler::process(void) {
     if (!configuration.power) return;
 
-    strip_mode_t _mode = configuration.mode;
+    led_mode_t _mode = configuration.mode;
     if (_mode == MODE_NORMAL) {
         NormalFeature::process();
     }
@@ -26,7 +26,7 @@ void StripHandler::process(void) {
 }
 
 void StripHandler::reset(void) {
-    strip_mode_t _mode = configuration.mode;
+    led_mode_t _mode = configuration.mode;
     if (_mode == MODE_NORMAL) {
         NormalFeature::reset();
     }
@@ -43,7 +43,7 @@ void StripHandler::reset(void) {
 
 void StripHandler::refresh(void) {
     clear();
-    strip_mode_t _mode = configuration.mode;
+    led_mode_t _mode = configuration.mode;
     if (_mode == MODE_NORMAL) {
         NormalFeature::refresh();
     }

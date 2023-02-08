@@ -48,7 +48,7 @@ void ConnectHandler::_handle(WiFiClient& client) {
         msg_request_t request;
         request.msg = MSG_WRITE_CONFIG;
         request.user_data = NULL;
-        xQueueSend(messageHandler, &request, 1000);
+        xQueueSend(messageHandler, &request, QUEUE_TIMEOUT_MS);
 
         _package.pack(tx_buf, PKG_CMD_WRITE_REPLY);
     }
