@@ -14,11 +14,8 @@ public:
     void begin(void);
     void process(void);
     void refresh(void);
-    void reset(void);
     void clear(void);
     static void task(void* args);
-
-private:
 };
 
 extern StripHandler stripHandler;

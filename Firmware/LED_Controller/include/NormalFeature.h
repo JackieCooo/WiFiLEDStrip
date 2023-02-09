@@ -7,11 +7,7 @@
 
 class NormalFeature {
 public:
-    NormalFeature();
     void process(void);
     void refresh(void);
-    void reset(void);
-
-private:
 
 };

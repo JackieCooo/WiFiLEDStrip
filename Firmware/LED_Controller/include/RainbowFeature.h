@@ -15,7 +15,6 @@ class RainbowFeature {
 public:
     RainbowFeature();
     void process(void);
-    void reset(void);
     void refresh(void);
 
 private:

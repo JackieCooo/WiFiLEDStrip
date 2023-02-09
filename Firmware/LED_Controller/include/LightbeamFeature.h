@@ -13,7 +13,6 @@ class LightbeamFeature {
 public:
     LightbeamFeature();
     void process(void);
-    void reset(void);
     void refresh(void);
 
 private:

@@ -150,13 +150,9 @@ void BreathingFeature::process(void) {
     }
 }
 
-void BreathingFeature::reset(void) {
+void BreathingFeature::refresh(void) {
     if (_animations.IsAnimating()) {
         _animations.StopAll();
     }
     _stage = 0;
-}
-
-void BreathingFeature::refresh(void) {
-    reset();
 }

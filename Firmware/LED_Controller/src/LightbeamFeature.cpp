@@ -2,7 +2,6 @@
 
 LightbeamFeature::LightbeamFeature() {
     _cb = bind(&LightbeamFeature::_animUpdateFunc, this, placeholders::_1);
-    _refreshPattern();
 }
 
 void LightbeamFeature::process(void) {
@@ -14,20 +13,15 @@ void LightbeamFeature::process(void) {
     }
 }
 
-void LightbeamFeature::reset(void) {
+void LightbeamFeature::refresh(void) {
     if (_animations.IsAnimating()) {
         _animations.StopAll();
     }
     _ref = 0;
-}
-
-void LightbeamFeature::refresh(void) {
-    reset();
     _refreshPattern();
 }
 
 void LightbeamFeature::_refreshPattern(void) {
-    _ref = 0;
     RgbColor _color = configuration.setting.lightbeam.color;
     dir_t _dir = configuration.setting.lightbeam.dir;
     uint16_t _len = configuration.setting.lightbeam.len;

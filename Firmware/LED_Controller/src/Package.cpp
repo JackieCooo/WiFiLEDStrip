@@ -171,12 +171,10 @@ void Package::parseFromPackage(void) {
         configuration.power = _package.data.strip.power;
         configuration.mode = Package::packMode(_package.data.strip.mode);
         if (_package.data.strip.mode == PKG_MODE_NORMAL) {
-            Serial.println("Mode: normal");
             uint32_t rgb888 = Package::RGB565toRGB888(_package.data.strip.setting.normal.color);
             configuration.setting.normal.color = RgbColor(RGB888_R(rgb888), RGB888_G(rgb888), RGB888_B(rgb888));
         }
         else if (_package.data.strip.mode == PKG_MODE_BREATHING) {
-            Serial.println("Mode: breathing");
             uint32_t rgb888 = Package::RGB565toRGB888(_package.data.strip.setting.breathing.color);
             configuration.setting.breathing.color = RgbColor(RGB888_R(rgb888), RGB888_G(rgb888), RGB888_B(rgb888));
             configuration.setting.breathing.duration = _package.data.strip.setting.breathing.duration;
@@ -184,19 +182,17 @@ void Package::parseFromPackage(void) {
             configuration.setting.breathing.ease = Package::packEase(_package.data.strip.setting.breathing.ease);
         }
         else if (_package.data.strip.mode == PKG_MODE_LIGHTBEAM) {
-            Serial.println("Mode: lightbeam");
             uint32_t rgb888 = Package::RGB565toRGB888(_package.data.strip.setting.lightbeam.color);
             configuration.setting.lightbeam.color = RgbColor(RGB888_R(rgb888), RGB888_G(rgb888), RGB888_B(rgb888));
             configuration.setting.lightbeam.gap = _package.data.strip.setting.lightbeam.gap;
             configuration.setting.lightbeam.len = _package.data.strip.setting.lightbeam.len;
-            configuration.setting.lightbeam.speed = _package.data.strip.setting.lightbeam.speed;
+            configuration.setting.lightbeam.faded_end = Package::packFadedEnd(_package.data.strip.setting.lightbeam.faded_end);
             configuration.setting.lightbeam.tail_len = _package.data.strip.setting.lightbeam.tail_len;
             configuration.setting.lightbeam.head_len = _package.data.strip.setting.lightbeam.head_len;
-            configuration.setting.lightbeam.faded_end = Package::packFadedEnd(_package.data.strip.setting.lightbeam.faded_end);
             configuration.setting.lightbeam.dir = Package::packDirection(_package.data.strip.setting.lightbeam.dir);
+            configuration.setting.lightbeam.speed = _package.data.strip.setting.lightbeam.speed;
         }
         else if (_package.data.strip.mode == PKG_MODE_RAINBOW) {
-            Serial.println("Mode: rainbow");
             configuration.setting.rainbow.speed = _package.data.strip.setting.rainbow.speed;
         }
     }

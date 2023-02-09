@@ -21,19 +21,15 @@ void ConfigHandler::load(void) {
     File file;
 
     file = SPIFFS.open(CONFIG_FILE_PATH, FILE_READ);
-    if (file) {
+    if (file.available()) {
         Serial.println("Loading configuration file");
-        uint8_t buf[sizeof(configuration_t)];
-        file.read(buf, sizeof(configuration_t));
-        memcpy(&configuration, buf, sizeof(configuration_t));
+        file.read((uint8_t*)&configuration, sizeof(configuration_t));
         file.close();
     }
     file = SPIFFS.open(CONNECT_FILE_PATH, FILE_READ);
-    if (file) {
+    if (file.available()) {
         Serial.println("Loading connectivity file");
-        uint8_t buf[sizeof(connectivity_t)];
-        file.read(buf, sizeof(connectivity_t));
-        memcpy(&connectivity, buf, sizeof(connectivity_t));
+        file.read((uint8_t*)&connectivity, sizeof(connectivity_t));
         file.close();
     }
 }
@@ -46,13 +42,14 @@ void ConfigHandler::save(local_file_t cmd) {
     else if (cmd == FILE_CONNECT) {
         file = SPIFFS.open(CONNECT_FILE_PATH, FILE_WRITE);
     }
-    if (file) {
-        Serial.println("Saving...");
+    if (file.available()) {
         if (cmd == FILE_CONFIG) {
+            Serial.println("Save configuration file");
             file.write((uint8_t*)&configuration, sizeof(configuration_t));
         }
         else if (cmd == FILE_CONNECT) {
-            file.write((uint8_t*)&configuration, sizeof(configuration_t));
+            Serial.println("Save connectivity file");
+            file.write((uint8_t*)&connectivity, sizeof(connectivity_t));
         }
         file.close();
     }
@@ -60,7 +57,7 @@ void ConfigHandler::save(local_file_t cmd) {
 
 void ConfigHandler::process(void) {
     local_file_t cmd;
-    if (xQueueReceive(messageHandler, &cmd, portMAX_DELAY)) {
+    if (xQueueReceive(saveFileMessage, &cmd, portMAX_DELAY)) {
         save(cmd);
     }
 }

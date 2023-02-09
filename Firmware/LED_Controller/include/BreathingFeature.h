@@ -14,7 +14,6 @@ class BreathingFeature {
 public:
     BreathingFeature();
     void process(void);
-    void reset(void);
     void refresh(void);
 
 private:

@@ -14,15 +14,11 @@ void RainbowFeature::process(void) {
     }
 }
 
-void RainbowFeature::reset(void) {
+void RainbowFeature::refresh(void) {
     if (_animations.IsAnimating()) {
         _animations.StopAll();
     }
     _ref = 0;
-}
-
-void RainbowFeature::refresh(void) {
-    return;
 }
 
 void RainbowFeature::_animUpdateFunc(const AnimationParam& param) {

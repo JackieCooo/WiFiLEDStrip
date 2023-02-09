@@ -113,11 +113,11 @@ typedef struct {
             RgbColor color;
             uint8_t len;
             uint8_t gap;
+            faded_end_t faded_end;
             uint8_t head_len;
             uint8_t tail_len;
-            uint16_t speed;
-            faded_end_t faded_end;
             dir_t dir;
+            uint16_t speed;
         } lightbeam;
         struct {
             uint16_t speed;
@@ -152,5 +152,4 @@ typedef struct {
 extern configuration_t configuration;
 extern connectivity_t connectivity;
 extern NeoPixelBusType strip;
-extern xQueueHandle messageHandler;
 extern xQueueHandle saveFileMessage;

@@ -12,6 +12,7 @@ public:
     void load(void);
     void save(local_file_t cmd);
     void process(void);
+
     static void task(void* args);
 
 private:

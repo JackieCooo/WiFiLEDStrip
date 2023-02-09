@@ -4,7 +4,7 @@ NeoPixelBusType strip(LED_NUM, LED_PIN);
 
 void StripHandler::begin(void) {
     strip.Begin();
-    clear();
+    refresh();
 }
 
 void StripHandler::process(void) {
@@ -22,22 +22,6 @@ void StripHandler::process(void) {
     }
     else if (_mode == MODE_RAINBOW) {
         RainbowFeature::process();
-    }
-}
-
-void StripHandler::reset(void) {
-    led_mode_t _mode = configuration.mode;
-    if (_mode == MODE_NORMAL) {
-        NormalFeature::reset();
-    }
-    else if (_mode == MODE_BREATHING) {
-        BreathingFeature::reset();
-    }
-    else if (_mode == MODE_LIGHTBEAM) {
-        LightbeamFeature::reset();
-    }
-    else if (_mode == MODE_RAINBOW) {
-        RainbowFeature::reset();
     }
 }
 
