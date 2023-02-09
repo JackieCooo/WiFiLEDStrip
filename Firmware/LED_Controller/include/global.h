@@ -4,6 +4,7 @@
 #include <NeoPixelBus.h>
 
 #include "freertos/queue.h"
+#include "lwip/ip4_addr.h"
 
 #define LED_NUM             30
 #define LED_PIN             18

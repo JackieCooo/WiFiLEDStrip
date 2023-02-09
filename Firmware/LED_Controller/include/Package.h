@@ -108,6 +108,7 @@ public:
     bool parse(uint8_t* buf, uint8_t size);
     void pack(uint8_t* buf, uint8_t cmd);
     void parseFromPackage(void);
+    IPAddress parseTargetIP(void);
     package_t& getPackage(void);
 
     static uint32_t RGB565toRGB888(uint16_t rgb565);

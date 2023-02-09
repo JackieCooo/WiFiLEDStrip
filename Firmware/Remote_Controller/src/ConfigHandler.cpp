@@ -5,7 +5,7 @@ connectivity_t connectivity;
 xQueueHandle saveFileMessage;
 
 void ConfigHandler::begin(void) {
-    SPIFFS.format();
+    // SPIFFS.format();
     saveFileMessage = xQueueCreate(1, sizeof(local_file_t));
     if (SPIFFS.begin(true)) {
         Serial.println("SPIFFS init done");
@@ -18,25 +18,19 @@ void ConfigHandler::begin(void) {
 }
 
 void ConfigHandler::load(void) {
-    Serial.println("Loading configuration");
-
     File file = SPIFFS.open(CONFIG_FILE_PATH, FILE_READ);
-    if (file) {
-        uint8_t buf[sizeof(configuration_t)];
-        file.read(buf, sizeof(configuration_t));
-        memcpy(&configuration, buf, sizeof(configuration_t));
+    if (file.available()) {
+        Serial.println("Loading configuration file");
+        file.read((uint8_t*)&configuration, sizeof(configuration_t));
         file.close();
     }
 
     file = SPIFFS.open(CONNECT_FILE_PATH, FILE_READ);
-    if (file) {
-        uint8_t buf[sizeof(connectivity_t)];
-        file.read(buf, sizeof(connectivity_t));
-        memcpy(&connectivity, buf, sizeof(connectivity_t));
+    if (file.available()) {
+        Serial.println("Loading connectivity file");
+        file.read((uint8_t*)&connectivity, sizeof(connectivity_t));
         file.close();
     }
-
-    Serial.println("Configuration loaded");
 }
 
 void ConfigHandler::save(local_file_t cmd) {
@@ -47,12 +41,13 @@ void ConfigHandler::save(local_file_t cmd) {
     else if (cmd == FILE_CONNECT) {
         file = SPIFFS.open(CONNECT_FILE_PATH, FILE_WRITE);
     }
-    if (file) {
-        Serial.printf("Saving file, id: %d\n", cmd);
+    if (file.available()) {
         if (cmd == FILE_CONFIG) {
+            Serial.println("Save configuration file");
             file.write((uint8_t*)&configuration, sizeof(configuration_t));
         }
         else if (cmd == FILE_CONNECT) {
+            Serial.println("Save connectivity file");
             file.write((uint8_t*)&connectivity, sizeof(connectivity_t));
         }
         file.close();
@@ -107,18 +102,18 @@ void ConfigHandler::_initConnectivitySetting(File& file) {
 
 void ConfigHandler::_checkLocalFiles(void) {
     if (!SPIFFS.exists(CONFIG_FILE_PATH)) {
-        Serial.println("Config file not find, creating");
+        Serial.println("Missing configuration file, creating...");
         File file = SPIFFS.open(CONFIG_FILE_PATH, FILE_WRITE, true);
         _initConfigurationSetting(file);
         file.close();
-        Serial.println("Config file created");
+        Serial.println("Configuration file created");
     }
     if (!SPIFFS.exists(CONNECT_FILE_PATH)) {
-        Serial.println("WiFi config file not find, creating");
+        Serial.println("Missing connectivity file, creating...");
         File file = SPIFFS.open(CONNECT_FILE_PATH, FILE_WRITE, true);
         _initConnectivitySetting(file);
         file.close();
-        Serial.println("WiFi config file created");
+        Serial.println("connectivity file created");
     }
 }
 

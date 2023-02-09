@@ -20,9 +20,12 @@ class ConnectHandler {
 public:
     void begin(void);
     void process(void);
+
     static void task(void* args);
+
 private:
     WiFiServer _server;
+    WiFiUDP _matcher;
     Package _package;
 
     void _handle(WiFiClient& client);

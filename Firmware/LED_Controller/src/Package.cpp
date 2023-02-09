@@ -34,7 +34,7 @@ bool Package::parse(uint8_t* buf, uint8_t size) {
                     stage = 99;
                 }
                 else if (_package.cmd == PKG_CMD_MATCH) {
-                    stage = 99;
+                    stage = 5;
                 }
                 else {
                     return false;
@@ -58,6 +58,15 @@ bool Package::parse(uint8_t* buf, uint8_t size) {
                 else {
                     return false;
                 }
+                break;
+            case 5:
+                uint8_t a, b, c, d;
+                a = buf[i++];
+                b = buf[i++];
+                c = buf[i++];
+                d = buf[i++];
+                _package.data.ip.addr = PP_HTONL(LWIP_MAKEU32(a,b,c,d));
+                stage = 99;
                 break;
             case 23:  // write normal mode setting
                 _package.data.strip.setting.normal.color = PKG_CONCAT(buf[i++], buf[i++]);
@@ -196,6 +205,10 @@ void Package::parseFromPackage(void) {
             configuration.setting.rainbow.speed = _package.data.strip.setting.rainbow.speed;
         }
     }
+}
+
+IPAddress Package::parseTargetIP(void) {
+    return IPAddress(_package.data.ip.addr);
 }
 
 package_t& Package::getPackage(void) {
