@@ -25,3 +25,6 @@ tests/report/
 .DS_Store
 .vscode
 *.bak
+docs/
+demos/
+examples/
