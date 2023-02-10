@@ -178,14 +178,7 @@ typedef struct {
     char password[PSW_MAX_LEN];
 } wifi_connect_t;
 
-typedef enum {
-    FILE_CONFIG,
-    FILE_CONNECT,
-    FILE_SETTING,
-} local_file_t;
-
 extern configuration_t configuration;
-extern xQueueHandle saveFileMessage;
 extern connectivity_t connectivity;
 
 #ifdef __cplusplus

@@ -2,11 +2,10 @@
 
 configuration_t configuration;
 connectivity_t connectivity;
-xQueueHandle saveFileMessage;
 
 void ConfigHandler::begin(void) {
     // SPIFFS.format();
-    saveFileMessage = xQueueCreate(1, sizeof(local_file_t));
+    _saveFileMessage = xQueueCreate(1, sizeof(local_file_t));
     if (SPIFFS.begin(true)) {
         Serial.println("SPIFFS init done");
         _checkLocalFiles();
@@ -56,7 +55,7 @@ void ConfigHandler::save(local_file_t cmd) {
 
 void ConfigHandler::process(void) {
     local_file_t cmd;
-    if (xQueueReceive(saveFileMessage, &cmd, portMAX_DELAY)) {
+    if (xQueueReceive(_saveFileMessage, &cmd, portMAX_DELAY)) {
         save(cmd);
     }
 }
@@ -66,6 +65,10 @@ void ConfigHandler::task(void* args) {
         configHandler.process();
         vTaskDelay(10);
     }
+}
+
+void ConfigHandler::saveFile(local_file_t cmd) {
+    xQueueSend(_saveFileMessage, &cmd, QUEUE_TIMEOUT_MS);
 }
 
 void ConfigHandler::_initConfigurationSetting(File& file) {

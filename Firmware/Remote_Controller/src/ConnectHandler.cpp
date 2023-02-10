@@ -45,8 +45,7 @@ void ConnectHandler::process(void) {
                 _package.parseFromPackage();
                 Serial.printf("Host IP: %d.%d.%d.%d\n", ip4_addr1_val(connectivity.host_ip), ip4_addr2_val(connectivity.host_ip), ip4_addr3_val(connectivity.host_ip), ip4_addr4_val(connectivity.host_ip));
                 Serial.println("Matched");
-                local_file_t cmd = FILE_CONNECT;
-                xQueueSend(saveFileMessage, &cmd, QUEUE_TIMEOUT_MS);
+                configHandler.saveFile(FILE_CONNECT);
                 _matched = true;
                 reply.resp = true;
             }
@@ -74,8 +73,7 @@ void ConnectHandler::process(void) {
             reply.user_data = NULL;
             if (_transmit(PKG_CMD_READ_SETTING)) {
                 _package.parseFromPackage();
-                local_file_t cmd = FILE_CONFIG;
-                xQueueSend(saveFileMessage, &cmd, QUEUE_TIMEOUT_MS);
+                configHandler.saveFile(FILE_CONFIG);
                 reply.resp = true;
             }
             else {
@@ -88,8 +86,7 @@ void ConnectHandler::process(void) {
             msg_reply_t reply;
             reply.msg = MSG_WRITE_HOST;
             if (_transmit(PKG_CMD_WRITE_SETTING)) {
-                local_file_t cmd = FILE_CONFIG;
-                xQueueSend(saveFileMessage, &cmd, QUEUE_TIMEOUT_MS);
+                configHandler.saveFile(FILE_CONFIG);
             }
             else {
                 memcpy(&configuration, old_data, sizeof(configuration_t));  // if it failed, roll back to the old config
@@ -214,8 +211,7 @@ void ConnectHandler::_wifi_event_cb(arduino_event_id_t event, arduino_event_info
 
         lv_msg_send(MSG_WIFI_CONNECTED, NULL);
 
-        local_file_t cmd = FILE_CONNECT;
-        xQueueSend(saveFileMessage, &cmd, QUEUE_TIMEOUT_MS);  // save connectivity file
+        configHandler.saveFile(FILE_CONNECT);
 
         if (connectivity.host_ip.addr == IPADDR_ANY) {  // haven't match before
             sendMessage(MSG_MATCH_HOST, NULL);
