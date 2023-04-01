@@ -50,6 +50,8 @@ static void create_gui(void) {
 
 static void LvglTask(void* args)
 {
+	create_gui();
+	
 	for(;;)
 	{
 		lv_task_handler();
@@ -70,7 +72,6 @@ static void AppInitTask(void* args)
 	lv_port_disp_init();
 	lv_port_indev_init();
 	vTaskDelay(50);
-	create_gui();
 	
 	xTaskCreate(LvglTask, "LvglTask", 1024, NULL, 8, NULL);
 	xTaskCreate(ESP8266_Task, "ESP8266_Task", 512, NULL, 5, NULL);

@@ -38,12 +38,16 @@ void ESP8266_Init(void)
 
 void ESP8266_Task(void* args)
 {
-	uint8_t cmd_buf[5] = {0x11, 0x22, 0x33, 0x44, 0x55};
+	uint8_t cmd_buf[BUF_MAX_LEN];
 	
 	for(;;)
 	{
-		printf("Send: %x %x %x %x %x\n", cmd_buf[0], cmd_buf[1], cmd_buf[2], cmd_buf[3], cmd_buf[4]);
-		ESP8266_SendData(cmd_buf, 5);
+		for (uint8_t i = 0; i < 8; ++i)
+		{
+			cmd_buf[i] = i+1;
+		}
+		
+		ESP8266_SendData(cmd_buf, 8);
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
 }
