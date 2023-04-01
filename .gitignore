@@ -1,1 +1,9 @@
-
+*.o
+*.d
+*.crf
+*.htm
+*.lnp
+*.sct
+*.dep
+*.axf
+*.xmind
