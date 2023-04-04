@@ -5,6 +5,7 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
 
 #include <stdio.h>
 
@@ -22,6 +23,13 @@
 #define ESP8266_DMAx					DMA0
 #define ESP8266_DMA_CHy					DMA_CH3
 #define ESP8266_DMA_CLK					RCU_DMA0
+
+typedef struct {
+	uint8_t buf[BUF_MAX_LEN];
+	uint16_t size;
+} esp8266_buf_t;
+
+extern xQueueHandle CommandDataQueue;
 
 void ESP8266_Init(void);
 void ESP8266_Task(void* args);

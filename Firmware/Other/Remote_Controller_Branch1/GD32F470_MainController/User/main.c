@@ -13,40 +13,17 @@
 #include "esp8266/esp8266.h"
 #include "st7796/st7796.h"
 #include "gt911/gt911.h"
+#include "gui.h"
 
 #include <stdio.h>
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
 
 #include "lvgl.h"
 #include "lv_port_disp.h"
 #include "lv_port_indev.h"
-
-static uint8_t state = 0;
-
-static void btn_event_cb(lv_event_t* e) {
-  if (e->code == LV_EVENT_CLICKED) {
-    lv_obj_t* btn = lv_event_get_target(e);
-    if (state) {
-      lv_obj_set_style_bg_color(btn, lv_palette_main(LV_PALETTE_BLUE), 0);
-    }
-    else {
-      lv_obj_set_style_bg_color(btn, lv_palette_main(LV_PALETTE_RED), 0);
-    }
-    state = ~state;
-  }
-}
-
-static void create_gui(void) {
-  lv_obj_t* btn = lv_btn_create(lv_scr_act());
-  lv_obj_center(btn);
-  lv_obj_set_size(btn, 120, 50);
-  lv_obj_add_event_cb(btn, btn_event_cb, LV_EVENT_CLICKED, NULL);
-  lv_obj_t* label = lv_label_create(btn);
-  lv_label_set_text(label, "Test");
-  lv_obj_center(label);
-}
 
 static void LvglTask(void* args)
 {
@@ -65,6 +42,7 @@ static void AppInitTask(void* args)
 	taskENTER_CRITICAL();
 
 	nvic_priority_group_set(NVIC_PRIGROUP_PRE4_SUB0);
+	CommandDataQueue = xQueueCreate(3, sizeof(esp8266_buf_t));
 
 	DEBUG_Init();
 	ESP8266_Init();

@@ -337,10 +337,10 @@
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls></MiscControls>
+              <MiscControls>--diag_suppress=188, --diag_suppress=111, --diag_suppress=68</MiscControls>
               <Define>USE_STDPERIPH_DRIVER,GD32F470</Define>
               <Undefine></Undefine>
-              <IncludePath>.\User;.\Firmware\GD32F4xx_standard_peripheral\Include;.\Firmware\CMSIS;.\Firmware\CMSIS\GD\GD32F4xx\Include;.\Firmware\CMSIS\GD\GD32F4xx\Source\ARM;.\FreeRTOS\include;.\FreeRTOS\portable\RVDS\ARM_CM4F;.\LVGL;.\LVGL\porting;.\LVGL\src</IncludePath>
+              <IncludePath>.\User;.\Firmware\GD32F4xx_standard_peripheral\Include;.\Firmware\CMSIS;.\Firmware\CMSIS\GD\GD32F4xx\Include;.\Firmware\CMSIS\GD\GD32F4xx\Source\ARM;.\FreeRTOS\include;.\FreeRTOS\portable\RVDS\ARM_CM4F;.\LVGL;.\LVGL\porting;.\LVGL\src;.\User\gui</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -865,11 +865,6 @@
               <FilePath>.\LVGL\src\extra\widgets\spinbox\lv_spinbox.c</FilePath>
             </File>
             <File>
-              <FileName>lv_spinner.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\extra\widgets\spinner\lv_spinner.c</FilePath>
-            </File>
-            <File>
               <FileName>lv_font.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\LVGL\src\font\lv_font.c</FilePath>
@@ -890,119 +885,9 @@
               <FilePath>.\LVGL\src\font\lv_font_loader.c</FilePath>
             </File>
             <File>
-              <FileName>lv_font_montserrat_8.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_8.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_10.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_10.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_12.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_12.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_12_subpx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_12_subpx.c</FilePath>
-            </File>
-            <File>
               <FileName>lv_font_montserrat_14.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\LVGL\src\font\lv_font_montserrat_14.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_16.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_16.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_18.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_18.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_20.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_20.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_22.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_22.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_24.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_24.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_26.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_26.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_28.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_28.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_28_compressed.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_28_compressed.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_30.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_30.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_32.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_32.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_34.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_34.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_36.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_36.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_38.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_38.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_40.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_40.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_42.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_42.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_44.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_44.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_46.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_46.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_48.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_48.c</FilePath>
             </File>
             <File>
               <FileName>lv_font_simsun_16_cjk.c</FileName>
@@ -1200,11 +1085,6 @@
               <FilePath>.\LVGL\src\widgets\lv_objx_templ.c</FilePath>
             </File>
             <File>
-              <FileName>lv_roller.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\widgets\lv_roller.c</FilePath>
-            </File>
-            <File>
               <FileName>lv_slider.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\LVGL\src\widgets\lv_slider.c</FilePath>
@@ -1233,6 +1113,46 @@
               <FileName>lv_port_indev.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\LVGL\porting\lv_port_indev.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>GUI</GroupName>
+          <Files>
+            <File>
+              <FileName>animation_handler.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\gui\animation_handler.c</FilePath>
+            </File>
+            <File>
+              <FileName>author_avatar.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\gui\author_avatar.c</FilePath>
+            </File>
+            <File>
+              <FileName>checked_group.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\gui\checked_group.c</FilePath>
+            </File>
+            <File>
+              <FileName>confirm_panel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\gui\confirm_panel.c</FilePath>
+            </File>
+            <File>
+              <FileName>gui.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\gui\gui.c</FilePath>
+            </File>
+            <File>
+              <FileName>list.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\gui\list.c</FilePath>
+            </File>
+            <File>
+              <FileName>styled_spinbox.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\gui\styled_spinbox.c</FilePath>
             </File>
           </Files>
         </Group>

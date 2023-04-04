@@ -1,5 +1,7 @@
 #include "esp8266/esp8266.h"
 
+xQueueHandle CommandDataQueue;
+
 void ESP8266_Init(void)
 {
     /* enable GPIO clock */
@@ -38,17 +40,12 @@ void ESP8266_Init(void)
 
 void ESP8266_Task(void* args)
 {
-	uint8_t cmd_buf[BUF_MAX_LEN];
+	esp8266_buf_t esp8266_buf;
 	
 	for(;;)
 	{
-		for (uint8_t i = 0; i < 8; ++i)
-		{
-			cmd_buf[i] = i+1;
-		}
-		
-		ESP8266_SendData(cmd_buf, 8);
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
+		xQueueReceive(CommandDataQueue, &esp8266_buf, portMAX_DELAY);
+		ESP8266_SendData(esp8266_buf.buf, esp8266_buf.size);
 	}
 }
 
