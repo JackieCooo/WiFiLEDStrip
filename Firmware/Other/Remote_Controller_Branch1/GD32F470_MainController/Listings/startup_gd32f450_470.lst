@@ -84,23 +84,23 @@ ARM Macro Assembler    Page 2
    50 00000400         ;   <o>  Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
    51 00000400         ; </h>
    52 00000400         
-   53 00000400 00000400 
+   53 00000400 00000800 
                        Heap_Size
-                               EQU              0x00000400
+                               EQU              0x00000800
    54 00000400         
    55 00000400                 AREA             HEAP, NOINIT, READWRITE, ALIGN=
 3
    56 00000000         __heap_base
    57 00000000         Heap_Mem
                                SPACE            Heap_Size
-   58 00000400         __heap_limit
-   59 00000400         
-   60 00000400                 PRESERVE8
-   61 00000400                 THUMB
-   62 00000400         
-   63 00000400         ;               /* reset Vector Mapped to at Address 0 *
+   58 00000800         __heap_limit
+   59 00000800         
+   60 00000800                 PRESERVE8
+   61 00000800                 THUMB
+   62 00000800         
+   63 00000800         ;               /* reset Vector Mapped to at Address 0 *
                        /
-   64 00000400                 AREA             RESET, DATA, READONLY
+   64 00000800                 AREA             RESET, DATA, READONLY
    65 00000000                 EXPORT           __Vectors
    66 00000000                 EXPORT           __Vectors_End
    67 00000000                 EXPORT           __Vectors_Size
@@ -811,7 +811,7 @@ _470.s
       At line 434 in file Firmware\CMSIS\GD\GD32F4xx\Source\ARM\startup_gd32f45
 0_470.s
 Comment: __heap_base used once
-__heap_limit 00000400
+__heap_limit 00000800
 
 Symbol: __heap_limit
    Definitions
@@ -2201,7 +2201,7 @@ _470.s
 ARM Macro Assembler    Page 1 Alphabetic symbol ordering
 Absolute symbols
 
-Heap_Size 00000400
+Heap_Size 00000800
 
 Symbol: Heap_Size
    Definitions

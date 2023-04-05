@@ -870,11 +870,6 @@
               <FilePath>.\LVGL\src\font\lv_font.c</FilePath>
             </File>
             <File>
-              <FileName>lv_font_dejavu_16_persian_hebrew.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_dejavu_16_persian_hebrew.c</FilePath>
-            </File>
-            <File>
               <FileName>lv_font_fmt_txt.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\LVGL\src\font\lv_font_fmt_txt.c</FilePath>
@@ -883,26 +878,6 @@
               <FileName>lv_font_loader.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\LVGL\src\font\lv_font_loader.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_montserrat_14.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_montserrat_14.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_simsun_16_cjk.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_simsun_16_cjk.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_unscii_8.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_unscii_8.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font_unscii_16.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LVGL\src\font\lv_font_unscii_16.c</FilePath>
             </File>
             <File>
               <FileName>lv_hal_disp.c</FileName>
@@ -1114,6 +1089,11 @@
               <FileType>1</FileType>
               <FilePath>.\LVGL\porting\lv_port_indev.c</FilePath>
             </File>
+            <File>
+              <FileName>lv_font_montserrat_16.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\LVGL\src\font\lv_font_montserrat_16.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1153,6 +1133,21 @@
               <FileName>styled_spinbox.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\gui\styled_spinbox.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>HAL</GroupName>
+          <Files>
+            <File>
+              <FileName>package.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\hal\package.c</FilePath>
+            </File>
+            <File>
+              <FileName>message_handler.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\hal\message_handler.c</FilePath>
             </File>
           </Files>
         </Group>
