@@ -6,4 +6,6 @@
 *.sct
 *.dep
 *.axf
+*.map
+*.lst
 *.xmind
