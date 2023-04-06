@@ -1,5 +1,7 @@
 #include "hal/package.h"
 
+configuration_t configuration;
+
 static uint8_t parseFadedEnd(faded_end_t value);
 
 void pack(uint8_t* buf, uint8_t cmd) {
@@ -52,7 +54,32 @@ void pack(uint8_t* buf, uint8_t cmd) {
     buf[PKG_BUF_SIZE_INDEX] = i - 4;  // package size
 }
 
-uint8_t parseFadedEnd(faded_end_t value) {
+void init_configuration(void)
+{
+	configuration.mode = DEFAULT_MODE;
+	configuration.power = DEFAULT_POWER;
+	
+	configuration.setting.normal.color = DEFAULT_COLOR;
+	
+	configuration.setting.breathing.color = DEFAULT_COLOR;
+	configuration.setting.breathing.duration = DEFAULT_DURATION;
+	configuration.setting.breathing.interval = DEFAULT_INTERVAL;
+	configuration.setting.breathing.ease = DEFAULT_EASE;
+	
+	configuration.setting.lightbeam.color = DEFAULT_COLOR;
+	configuration.setting.lightbeam.len = DEFAULT_LEN;
+	configuration.setting.lightbeam.gap = DEFAULT_GAP;
+	if (DEFAULT_FADED_END & PKG_FADED_HEAD) configuration.setting.lightbeam.faded_end.FADED_HEAD = 1;
+	if (DEFAULT_FADED_END & PKG_FADED_TAIL) configuration.setting.lightbeam.faded_end.FADED_TAIL = 1;
+	configuration.setting.lightbeam.head_len = DEFAULT_HEAD_LEN;
+	configuration.setting.lightbeam.tail_len = DEFAULT_TAIL_LEN;
+	configuration.setting.lightbeam.speed = DEFAULT_SPEED;
+	configuration.setting.lightbeam.dir = DEFAULT_DIR;
+	
+	configuration.setting.rainbow.speed = DEFAULT_SPEED;
+}
+
+static uint8_t parseFadedEnd(faded_end_t value) {
     uint8_t faded_end = 0;
     if (value.FADED_HEAD) faded_end |= PKG_FADED_HEAD;
     if (value.FADED_TAIL) faded_end |= PKG_FADED_TAIL;

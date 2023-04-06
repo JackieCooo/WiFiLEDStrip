@@ -5,40 +5,23 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
+
 #include "lvgl.h"
 
-typedef struct {
-    uint16_t color;
-} normal_data_t;
-
-typedef struct {
-    uint16_t color;
-    uint16_t duration;
-    uint16_t interval;
-    uint8_t ease;
-} breathing_data_t;
-
-typedef struct {
-    uint16_t color;
-    uint8_t len;
-    uint8_t gap;
-    uint8_t head_len;
-    uint8_t tail_len;
-    uint16_t speed;
-    uint8_t faded_end;
-    uint8_t dir;
-} lightbeam_data_t;
-
-typedef struct {
-    uint16_t speed;
-} rainbow_data_t;
-
-typedef union {
-    normal_data_t normal;
-    breathing_data_t breathing;
-    lightbeam_data_t lightbeam;
-    rainbow_data_t rainbow;
-} setting_data_t;
+#define DEFAULT_MODE				MODE_NORMAL
+#define DEFAULT_POWER				false
+#define DEFAULT_COLOR				lv_palette_main(LV_PALETTE_BLUE)
+#define DEFAULT_DURATION			2000
+#define DEFAULT_INTERVAL			1000
+#define DEFAULT_EASE				EASE_LINEAR
+#define DEFAULT_LEN					2
+#define DEFAULT_GAP					2
+#define DEFAULT_HEAD_LEN			4
+#define DEFAULT_TAIL_LEN			4
+#define DEFAULT_SPEED				8
+#define DEFAULT_FADED_END			3
+#define DEFAULT_DIR					MOVE_LEFT
 
 typedef enum {
     MODE_NORMAL,
@@ -107,11 +90,11 @@ typedef struct {
             lv_color_t color;
             uint8_t len;
             uint8_t gap;
+            faded_end_t faded_end;
             uint8_t head_len;
             uint8_t tail_len;
-            uint16_t speed;
-            faded_end_t faded_end;
             dir_t dir;
+            uint16_t speed;
         } lightbeam;
         struct {
             uint16_t speed;

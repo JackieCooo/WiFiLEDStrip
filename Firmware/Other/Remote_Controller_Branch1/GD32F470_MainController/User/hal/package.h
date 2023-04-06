@@ -1,12 +1,13 @@
 #ifndef _PACKAGE_H
 #define _PACKAGE_H
 
-#include "gd32f4xx.h"
+#include <stdint.h>
 
 #include "global.h"
 
 #define PKG_BUF_MAX_LEN                     (32)
 #define PKG_BUF_SIZE_INDEX                  (2)
+#define PKG_BUF_SIZE(x)						(x[PKG_BUF_SIZE_INDEX])
 
 #define PKG_FRAME_HEAD1                     (0xAA)
 #define PKG_FRAME_HEAD2                     (0xBB)
@@ -72,5 +73,6 @@
 #define PKG_CONCAT(x, y)                    (((uint16_t)x) << 8 | y)
 
 void pack(uint8_t* buf, uint8_t cmd);
+void init_configuration(void);
 
 #endif

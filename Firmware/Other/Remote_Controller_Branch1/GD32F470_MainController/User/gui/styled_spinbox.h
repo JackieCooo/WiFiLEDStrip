@@ -18,5 +18,6 @@ lv_obj_t* create_styled_spinbox(lv_obj_t* parent);
 void styled_spinbox_set_range(lv_obj_t* obj, int32_t min, int32_t max);
 void styled_spinbox_set_step(lv_obj_t* obj, uint32_t step);
 uint32_t styled_spinbox_get_value(lv_obj_t* obj);
+void styled_spinbox_set_value(lv_obj_t* obj, uint32_t value);
 
 #endif //LVGL_STYLED_SPINBOX_H

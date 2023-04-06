@@ -1,7 +1,7 @@
 #include "confirm_panel.h"
 
-uint32_t EVENT_CONFIRMED;
-uint32_t EVENT_APPLIED;
+uint32_t EVENT_CONFIRM_PANEL_CONFIRMED;
+uint32_t EVENT_CONFIRM_PANEL_APPLIED;
 
 static void confirm_btn_event_cb(lv_event_t* e);
 static void apply_btn_event_cb(lv_event_t* e);
@@ -33,16 +33,21 @@ lv_obj_t* create_confirm_panel(lv_obj_t* parent) {
     return panel;
 }
 
+void confirm_panel_register_event_id(void) {
+    EVENT_CONFIRM_PANEL_CONFIRMED = lv_event_register_id();
+    EVENT_CONFIRM_PANEL_APPLIED = lv_event_register_id();
+}
+
 static void confirm_btn_event_cb(lv_event_t* e) {
     if (e->code == LV_EVENT_CLICKED) {
         lv_obj_t* obj = (lv_obj_t*) lv_event_get_user_data(e);
-        lv_event_send(obj, EVENT_CONFIRMED, NULL);
+        lv_event_send(obj, EVENT_CONFIRM_PANEL_CONFIRMED, NULL);
     }
 }
 
 static void apply_btn_event_cb(lv_event_t* e) {
     if (e->code == LV_EVENT_CLICKED) {
         lv_obj_t* obj = (lv_obj_t*) lv_event_get_user_data(e);
-        lv_event_send(obj, EVENT_APPLIED, NULL);
+        lv_event_send(obj, EVENT_CONFIRM_PANEL_APPLIED, NULL);
     }
 }

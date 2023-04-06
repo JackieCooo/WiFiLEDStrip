@@ -2,6 +2,16 @@
 
 xQueueHandle CommandDataQueue;
 
+static void dump_buf_to_serial(uint8_t* buf, uint16_t size)
+{
+	printf("Send: ");
+	for (uint16_t i = 0; i < size; i++)
+	{
+		printf("%02X ", buf[i]);
+	}
+	printf("\n");
+}
+
 void ESP8266_Init(void)
 {
     /* enable GPIO clock */
@@ -46,6 +56,7 @@ void ESP8266_Task(void* args)
 	{
 		xQueueReceive(CommandDataQueue, &esp8266_buf, portMAX_DELAY);
 		ESP8266_SendData(esp8266_buf.buf, esp8266_buf.size);
+		dump_buf_to_serial(esp8266_buf.buf, esp8266_buf.size);
 	}
 }
 

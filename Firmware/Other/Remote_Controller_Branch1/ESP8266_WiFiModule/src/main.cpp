@@ -13,7 +13,7 @@ static uint8_t cmd_buf[BUF_MAX_LEN];
 static uint8_t resp_buf[BUF_MAX_LEN];
 
 WiFiClient client;
-IPAddress SERVER_IP(192, 168, 3, 66);
+IPAddress SERVER_IP(192, 168, 3, 192);
 
 static void dump_buf_to_serial(uint8_t* buf, uint16_t size) {
   Serial.print("Data: ");

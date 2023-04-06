@@ -2,6 +2,7 @@
 
 static void styled_spinbox_decrease_event_cb(lv_event_t* e);
 static void styled_spinbox_increase_event_cb(lv_event_t* e);
+static void int2str(uint32_t val, char* str);
 
 lv_obj_t* create_styled_spinbox(lv_obj_t* parent) {
     lv_obj_t* panel = lv_obj_create(parent);
@@ -47,6 +48,14 @@ uint32_t styled_spinbox_get_value(lv_obj_t* obj) {
     return atoi(text);
 }
 
+void styled_spinbox_set_value(lv_obj_t* obj, uint32_t value) {
+    lv_obj_t* spinbox = lv_obj_get_child(obj, 1);
+    char text[8];
+	memset(text, 0x00, sizeof(text));
+    int2str(value, text);
+    lv_textarea_set_text(spinbox, text);
+}
+
 static void styled_spinbox_decrease_event_cb(lv_event_t* e) {
     if (e->code == LV_EVENT_CLICKED) {
         lv_obj_t* obj = (lv_obj_t*) lv_event_get_user_data(e);
@@ -61,4 +70,20 @@ static void styled_spinbox_increase_event_cb(lv_event_t* e) {
         lv_obj_t* spinbox = lv_obj_get_child(obj, 1);
         lv_spinbox_increment(spinbox);
     }
+}
+
+static void int2str(uint32_t val, char* str)
+{
+	char tmp[32];
+	uint8_t i = 0;
+	
+	for (; val; val /= 10)
+	{
+		tmp[i++] = (val % 10) + '0';
+	}
+	
+	for (uint8_t j = 0; i; --i, ++j)
+	{
+		str[j] = tmp[i-1];
+	}
 }
