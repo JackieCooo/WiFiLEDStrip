@@ -1,6 +1,6 @@
 #include "ConfigHandler.h"
 
-configuration_t configuration;
+// configuration_t configuration;
 connectivity_t connectivity;
 xQueueHandle saveFileMessage;
 
@@ -21,11 +21,11 @@ void ConfigHandler::load(void) {
     File file;
 
     file = SPIFFS.open(CONFIG_FILE_PATH, FILE_READ);
-    if (file.available()) {
-        Serial.println("Loading configuration file");
-        file.read((uint8_t*)&configuration, sizeof(configuration_t));
-        file.close();
-    }
+    // if (file.available()) {
+    //     Serial.println("Loading configuration file");
+    //     file.read((uint8_t*)&configuration, sizeof(configuration_t));
+    //     file.close();
+    // }
     file = SPIFFS.open(CONNECT_FILE_PATH, FILE_READ);
     if (file.available()) {
         Serial.println("Loading connectivity file");
@@ -43,15 +43,15 @@ void ConfigHandler::save(local_file_t cmd) {
         file = SPIFFS.open(CONNECT_FILE_PATH, FILE_WRITE);
     }
     if (file.available()) {
-        if (cmd == FILE_CONFIG) {
-            Serial.println("Save configuration file");
-            file.write((uint8_t*)&configuration, sizeof(configuration_t));
-        }
-        else if (cmd == FILE_CONNECT) {
-            Serial.println("Save connectivity file");
-            file.write((uint8_t*)&connectivity, sizeof(connectivity_t));
-        }
-        file.close();
+        // if (cmd == FILE_CONFIG) {
+        //     Serial.println("Save configuration file");
+        //     file.write((uint8_t*)&configuration, sizeof(configuration_t));
+        // }
+        // else if (cmd == FILE_CONNECT) {
+        //     Serial.println("Save connectivity file");
+        //     file.write((uint8_t*)&connectivity, sizeof(connectivity_t));
+        // }
+        // file.close();
     }
 }
 
@@ -87,8 +87,8 @@ void ConfigHandler::_checkFileIntergrality(void) {
 }
 
 void ConfigHandler::_initLocalConfigurationFile(File& file) {
-    memset(&configuration, 0x00, sizeof(configuration_t));
-    file.write((uint8_t*)&configuration, sizeof(configuration_t));
+    // memset(&configuration, 0x00, sizeof(configuration_t));
+    // file.write((uint8_t*)&configuration, sizeof(configuration_t));
 }
 
 void ConfigHandler::_initLocalConnectivityFile(File& file) {

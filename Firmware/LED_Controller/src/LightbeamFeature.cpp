@@ -9,7 +9,7 @@ void LightbeamFeature::process(void) {
         _animations.UpdateAnimations();
     }
     else {
-        _animations.StartAnimation(0, _translateSpeed(configuration.setting.lightbeam.speed), _cb);
+        _animations.StartAnimation(0, _translateSpeed(_data.speed), _cb);
     }
 }
 
@@ -21,14 +21,22 @@ void LightbeamFeature::refresh(void) {
     _refreshPattern();
 }
 
+void LightbeamFeature::setData(const LightbeamData& data) {
+    this->_data = data;
+}
+
+LightbeamData LightbeamFeature::getData(void) const {
+    return this->_data;
+}
+
 void LightbeamFeature::_refreshPattern(void) {
-    RgbColor _color = configuration.setting.lightbeam.color;
-    dir_t _dir = configuration.setting.lightbeam.dir;
-    uint16_t _len = configuration.setting.lightbeam.len;
-    uint16_t _gap = configuration.setting.lightbeam.gap;
-    faded_end_t _faded_end = configuration.setting.lightbeam.faded_end;
-    uint16_t _head_len = configuration.setting.lightbeam.head_len;
-    uint16_t _tail_len = configuration.setting.lightbeam.tail_len;
+    RgbColor _color = _data.color;
+    dir_t _dir = _data.dir;
+    uint16_t _len = _data.len;
+    uint16_t _gap = _data.gap;
+    faded_end_t _faded_end = _data.faded_end;
+    uint16_t _head_len = _data.head_len;
+    uint16_t _tail_len = _data.tail_len;
     uint16_t psize = _len + _gap + (_faded_end.FADED_HEAD ? _tail_len : 0) + (_faded_end.FADED_TAIL ? _head_len : 0);
     _pattern.resize(psize);
     
@@ -82,7 +90,7 @@ void LightbeamFeature::_animUpdateFunc(const AnimationParam& param) {
             strip.SetPixelColor(i, _pattern[(i+_ref)%_pattern.size()]);
         }
         strip.Show();
-        dir_t _dir = configuration.setting.lightbeam.dir;
+        dir_t _dir = _data.dir;
         if (_dir == MOVE_LEFT) {
             _ref = (++_ref) % _pattern.size();
         }

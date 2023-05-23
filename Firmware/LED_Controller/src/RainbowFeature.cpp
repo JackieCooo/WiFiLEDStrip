@@ -10,7 +10,7 @@ void RainbowFeature::process(void) {
         _animations.UpdateAnimations();
     }
     else {
-        _animations.StartAnimation(0, _translateSpeed(configuration.setting.rainbow.speed), _cb);
+        _animations.StartAnimation(0, _translateSpeed(_data.speed), _cb);
     }
 }
 
@@ -19,6 +19,14 @@ void RainbowFeature::refresh(void) {
         _animations.StopAll();
     }
     _ref = 0;
+}
+
+void RainbowFeature::setData(const RainbowData& data) {
+    this->_data = data;
+}
+
+RainbowData RainbowFeature::getData(void) const {
+    return this->_data;
 }
 
 void RainbowFeature::_animUpdateFunc(const AnimationParam& param) {

@@ -1,14 +1,28 @@
 #include <NormalFeature.h>
 
-void NormalFeature::process(void) {
-    return;
+NormalFeature::NormalFeature() {
+    _refreshed = false;
 }
 
 void NormalFeature::refresh(void) {
-    if (configuration.power) {
+    _refreshed = false;
+}
+
+void NormalFeature::process(void) {
+    if (!_refreshed) {
         for (uint16_t i = 0; i < strip.PixelCount(); i++) {
-            strip.SetPixelColor(i, configuration.setting.normal.color);
+            strip.SetPixelColor(i, _data.color);
         }
         strip.Show();
+        _refreshed = true;
     }
+}
+
+void NormalFeature::setData(const NormalData& data) {
+    this->_data = data;
+    refresh();
+}
+
+NormalData NormalFeature::getData(void) const {
+    return this->_data;
 }

@@ -9,6 +9,7 @@
 #include "BreathingFeature.h"
 #include "LightbeamFeature.h"
 #include "RainbowFeature.h"
+#include "StripHandler.h"
 #include "global.h"
 
 #define PKG_BUF_MAX_LEN                     (32)
@@ -77,16 +78,6 @@
 #define PKG_LOW(x)                          ((uint8_t)x)
 #define PKG_CONCAT(x, y)                    (((uint16_t)x) << 8 | y)
 
-#define RGB565_R(x)                         ((uint8_t)((x & 0xF800) >> 11))
-#define RGB565_G(x)                         ((uint8_t)((x & 0x07E0) >> 5))
-#define RGB565_B(x)                         ((uint8_t)((x & 0x001F) >> 0))
-#define CONCAT_RGB565(r, g, b)              (((uint16_t)r << 11) + ((uint16_t)g << 5) + (uint16_t)b)
-
-#define RGB888_R(x)                         ((uint8_t)((x & 0xFF0000) >> 16))
-#define RGB888_G(x)                         ((uint8_t)((x & 0x00FF00) >> 8))
-#define RGB888_B(x)                         ((uint8_t)((x & 0x0000FF) >> 0))
-#define CONCAT_RGB888(r, g, b)              (((uint32_t)r << 16) + ((uint32_t)g << 8) + (uint32_t)b)
-
 typedef struct {
     uint8_t size;
     uint8_t cmd;
@@ -94,7 +85,30 @@ typedef struct {
         struct {
             uint8_t power;
             uint8_t mode;
-            setting_data_t setting;
+            union {
+                struct {
+                    uint16_t color;
+                } normal;
+                struct {
+                    uint16_t color;
+                    uint16_t duration;
+                    uint16_t interval;
+                    uint8_t ease;
+                } breathing;
+                struct {
+                    uint16_t color;
+                    uint8_t len;
+                    uint8_t gap;
+                    uint8_t faded;
+                    uint8_t head;
+                    uint8_t tail;
+                    uint8_t dir;
+                    uint16_t speed;
+                } lightbeam;
+                struct {
+                    uint16_t speed;
+                } rainbow;
+            } setting;
         } strip;
         struct {
             uint8_t resp;
@@ -105,20 +119,11 @@ typedef struct {
 
 class Package {
 public:
-    bool parse(uint8_t* buf, uint8_t size);
-    void pack(uint8_t* buf, uint8_t cmd);
+    static bool parse(uint8_t* buf, uint16_t size, package_t* pack);
+    static void pack(uint8_t* buf, uint16_t size, package_t* pack);
     void parseFromPackage(void);
     IPAddress parseTargetIP(void);
-    package_t& getPackage(void);
 
-    static uint32_t RGB565toRGB888(uint16_t rgb565);
-    static uint16_t RGB888toRGB565(uint32_t rgb888);
-    static ease_t packEase(uint8_t& ease);
-    static dir_t packDirection(uint8_t& dir);
-    static led_mode_t packMode(uint8_t& mode);
     static faded_end_t packFadedEnd(uint8_t& value);
     static uint8_t parseFadedEnd(faded_end_t& value);
-
-private:
-    package_t _package;
 };

@@ -5,16 +5,57 @@ BreathingFeature::BreathingFeature() {
     _stage = 0;
 }
 
+void BreathingFeature::process(void) {
+    if (_animations.IsAnimating()) {
+        _animations.UpdateAnimations();
+    }
+    else {
+        switch (_stage)
+        {
+            case 0:
+                _animations.StartAnimation(0, _data.duration, _cb);
+                break;
+            case 1:
+                _animations.StartAnimation(1, _data.interval, _cb);
+                break;
+            case 2:
+                _animations.StartAnimation(2, _data.duration, _cb);
+                break;
+            case 3:
+                _animations.StartAnimation(3, _data.interval, _cb);
+                break;
+            default:
+                break;
+        }
+        _stage = (_stage + 1) % STAGE_NUM;
+    }
+}
+
+void BreathingFeature::refresh(void) {
+    if (_animations.IsAnimating()) {
+        _animations.StopAll();
+    }
+    _stage = 0;
+}
+
+void BreathingFeature::setData(const BreathingData& data) {
+    this->_data = data;
+}
+
+BreathingData BreathingFeature::getData(void) const {
+    return this->_data;
+}
+
 void BreathingFeature::_animUpdateFunc(const AnimationParam& param) {
     RgbColor updatedColor;
-    AnimEaseFunction func = _translateEase(configuration.setting.breathing.ease);
+    AnimEaseFunction func = _translateEase(_data.ease);
     float progress = func(param.progress);
     
     if (param.index == 0) {
-        updatedColor = RgbColor::LinearBlend(RgbColor(0), configuration.setting.breathing.color, progress);
+        updatedColor = RgbColor::LinearBlend(RgbColor(0), _data.color, progress);
     }
     else if (param.index == 2) {
-        updatedColor = RgbColor::LinearBlend(configuration.setting.breathing.color, RgbColor(0), progress);
+        updatedColor = RgbColor::LinearBlend(_data.color, RgbColor(0), progress);
     }
 
     if (param.index == 0 || param.index == 2) {
@@ -124,35 +165,3 @@ AnimEaseFunction BreathingFeature::_translateEase(ease_t& ease) {
     return NeoEase::Linear;
 }
 
-void BreathingFeature::process(void) {
-    if (_animations.IsAnimating()) {
-        _animations.UpdateAnimations();
-    }
-    else {
-        switch (_stage)
-        {
-            case 0:
-                _animations.StartAnimation(0, configuration.setting.breathing.duration, _cb);
-                break;
-            case 1:
-                _animations.StartAnimation(1, configuration.setting.breathing.interval, _cb);
-                break;
-            case 2:
-                _animations.StartAnimation(2, configuration.setting.breathing.duration, _cb);
-                break;
-            case 3:
-                _animations.StartAnimation(3, configuration.setting.breathing.interval, _cb);
-                break;
-            default:
-                break;
-        }
-        _stage = (_stage + 1) % STAGE_NUM;
-    }
-}
-
-void BreathingFeature::refresh(void) {
-    if (_animations.IsAnimating()) {
-        _animations.StopAll();
-    }
-    _stage = 0;
-}
