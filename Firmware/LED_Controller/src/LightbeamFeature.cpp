@@ -34,15 +34,15 @@ void LightbeamFeature::_refreshPattern(void) {
     dir_t _dir = _data.dir;
     uint16_t _len = _data.len;
     uint16_t _gap = _data.gap;
-    faded_end_t _faded_end = _data.faded_end;
-    uint16_t _head_len = _data.head_len;
-    uint16_t _tail_len = _data.tail_len;
-    uint16_t psize = _len + _gap + (_faded_end.FADED_HEAD ? _tail_len : 0) + (_faded_end.FADED_TAIL ? _head_len : 0);
+    Fade _fade = _data.fade;
+    uint16_t _head_len = _data.head;
+    uint16_t _tail_len = _data.tail;
+    uint16_t psize = _len + _gap + (_fade.FADED_HEAD ? _tail_len : 0) + (_fade.FADED_TAIL ? _head_len : 0);
     _pattern.resize(psize);
     
     uint16_t i = 0;
     NeoGamma<NeoGammaTableMethod> colorGamma;
-    if ((_faded_end.FADED_HEAD) && _dir == MOVE_LEFT) {
+    if ((_fade.FADED_HEAD) && _dir == MOVE_LEFT) {
         HslColor hsl(_color);
         float offset = hsl.L / (_head_len + 1);
         hsl.L = 0;
@@ -51,7 +51,7 @@ void LightbeamFeature::_refreshPattern(void) {
             _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
         }
     }
-    else if ((_faded_end.FADED_TAIL) && _dir == MOVE_RIGHT) {
+    else if ((_fade.FADED_TAIL) && _dir == MOVE_RIGHT) {
         HslColor hsl(_color);
         float offset = hsl.L / (_tail_len + 1);
         hsl.L = 0;
@@ -63,7 +63,7 @@ void LightbeamFeature::_refreshPattern(void) {
     for (uint16_t j = 0; j < _len; ++j) {
         _pattern[i++] = _color;
     }
-    if ((_faded_end.FADED_HEAD) && _dir == MOVE_RIGHT) {
+    if ((_fade.FADED_HEAD) && _dir == MOVE_RIGHT) {
         HslColor hsl(_color);
         float offset = hsl.L / (_head_len + 1);
         for (uint16_t j = 0; j < _head_len; j++) {
@@ -71,7 +71,7 @@ void LightbeamFeature::_refreshPattern(void) {
             _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
         }
     }
-    else if ((_faded_end.FADED_TAIL) && _dir == MOVE_LEFT) {
+    else if ((_fade.FADED_TAIL) && _dir == MOVE_LEFT) {
         HslColor hsl(_color);
         float offset = hsl.L / (_tail_len + 1);
         for (uint16_t j = 0; j < _tail_len; j++) {

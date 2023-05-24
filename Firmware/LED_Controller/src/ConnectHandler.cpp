@@ -69,11 +69,12 @@ void ConnectHandler::_handle(WiFiClient& client, package_t& pack) {
     uint8_t tx_buf[PKG_BUF_MAX_LEN];
 
     if (pack.cmd == CMD_WRITE) {
+        Serial.println("Write setting cmd");
         Package::apply(pack);
         stripHandler.refresh();
 
-        local_file_t cmd = FILE_CONFIG;
-        xQueueSend(saveFileMessage, &cmd, QUEUE_TIMEOUT_MS);
+        // local_file_t cmd = FILE_CONFIG;
+        // xQueueSend(saveFileMessage, &cmd, QUEUE_TIMEOUT_MS);
 
         Package::accquire(pack, CMD_WRITE_REPLY);
         Package::pack(tx_buf, sizeof(tx_buf), pack);

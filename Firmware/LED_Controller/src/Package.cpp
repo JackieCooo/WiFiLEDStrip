@@ -173,7 +173,6 @@ void Package::pack(uint8_t* buf, uint16_t size, const package_t& pack) {
 
 void Package::apply(const package_t& pack) {
     if (pack.cmd == CMD_WRITE) {
-        Serial.println("Apply LED settings");
         stripHandler.setPower(pack.data.strip.power);
         stripHandler.setMode(static_cast<led_mode_t>(pack.data.strip.mode));
         if (pack.data.strip.mode == MODE_NORMAL) {

@@ -12,7 +12,7 @@ using namespace std;
 
 typedef enum {
     MOVE_LEFT,
-    MOVE_RIGHT
+    MOVE_RIGHT,
 } dir_t;
 
 struct Fade {
