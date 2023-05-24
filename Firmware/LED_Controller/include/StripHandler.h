@@ -36,6 +36,10 @@ public:
     void setData(const BreathingData& data);
     void setData(const LightbeamData& data);
     void setData(const RainbowData& data);
+    void getData(NormalData& data);
+    void getData(BreathingData& data);
+    void getData(LightbeamData& data);
+    void getData(RainbowData& data);
 
     static void task(void* args);
 

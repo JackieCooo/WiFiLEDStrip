@@ -97,6 +97,22 @@ void StripHandler::setData(const RainbowData& data) {
     _rainbow.setData(data);
 }
 
+void StripHandler::getData(NormalData& data) {
+    data = _normal.getData();
+}
+
+void StripHandler::getData(BreathingData& data) {
+    data = _breathing.getData();
+}
+
+void StripHandler::getData(LightbeamData& data) {
+    data = _lightbeam.getData();
+}
+
+void StripHandler::getData(RainbowData& data) {
+    data = _rainbow.getData();
+}
+
 void StripHandler::task(void* args) {
     for (;;) {
         stripHandler.process();

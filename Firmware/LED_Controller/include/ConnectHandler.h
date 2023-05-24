@@ -26,9 +26,8 @@ public:
 private:
     WiFiServer _server;
     WiFiUDP _matcher;
-    Package _package;
 
-    void _handle(WiFiClient& client);
+    void _handle(WiFiClient& client, package_t& pack);
 };
 
 extern ConnectHandler connHandler;

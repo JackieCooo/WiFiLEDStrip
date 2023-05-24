@@ -11,20 +11,24 @@ void ConnectHandler::begin(void) {
     _server.begin(SERVER_PORT);
     Serial.printf("Server running at port %d\n", SERVER_PORT);
     _matcher.begin(MATCH_PORT);
-    Serial.printf("Match server running at port %d\n", MATCH_PORT);
+    Serial.printf("Matching server running at port %d\n", MATCH_PORT);
 }
 
 void ConnectHandler::process(void) {
+    uint8_t rx_buf[PKG_BUF_MAX_LEN];
+
+    // respond to client request
     WiFiClient client = _server.available();
     if (client) {
         Serial.println("Client connected");
         while (client.connected()) {
-            uint8_t rx_buf[PKG_BUF_MAX_LEN];
             memset(rx_buf, 0x00, sizeof(rx_buf));
             if (client.available()) {
+                package_t p;
+
                 client.read(rx_buf, sizeof(rx_buf));
-                if (_package.parse(rx_buf, sizeof(rx_buf))) {
-                    _handle(client);
+                if (Package::parse(rx_buf, sizeof(rx_buf), p)) {
+                    _handle(client, p);
                 }
                 break;
             }
@@ -34,16 +38,20 @@ void ConnectHandler::process(void) {
 
     // respond to match request
     if (_matcher.parsePacket()) {
-        uint8_t rx_buf[PKG_BUF_MAX_LEN];
+        package_t p;
+
         memset(rx_buf, 0x00, sizeof(rx_buf));
         _matcher.read(rx_buf, sizeof(rx_buf));
-        if (_package.parse(rx_buf, sizeof(rx_buf))) {
+        if (Package::parse(rx_buf, sizeof(rx_buf), p)) {
             WiFiUDP sender;
             uint8_t tx_buf[PKG_BUF_MAX_LEN];
-            IPAddress ip = _package.parseTargetIP();
-            Serial.printf("Match request from %s\n", ip.toString().c_str());
-            _package.pack(tx_buf, PKG_CMD_MATCH_REPLY);
-            sender.beginPacket(ip, MATCH_PORT);
+            IPAddress clientIP(p.data.ip.addr);
+            
+            Serial.printf("Match request from %s\n", clientIP.toString().c_str());
+            Package::accquire(p, CMD_MATCH_REPLY);
+            Package::pack(tx_buf, sizeof(tx_buf), p);
+
+            sender.beginPacket(clientIP, MATCH_PORT);
             sender.write(tx_buf, BUF_SIZE(tx_buf));
             sender.endPacket();
         }
@@ -57,27 +65,30 @@ void ConnectHandler::task(void* args) {
     }
 }
 
-void ConnectHandler::_handle(WiFiClient& client) {
-    package_t& p = _package.getPackage();
+void ConnectHandler::_handle(WiFiClient& client, package_t& pack) {
     uint8_t tx_buf[PKG_BUF_MAX_LEN];
-    if (p.cmd == PKG_CMD_WRITE_SETTING) {
-        _package.parseFromPackage();
+
+    if (pack.cmd == CMD_WRITE) {
+        Package::apply(pack);
         stripHandler.refresh();
 
         local_file_t cmd = FILE_CONFIG;
         xQueueSend(saveFileMessage, &cmd, QUEUE_TIMEOUT_MS);
 
-        _package.pack(tx_buf, PKG_CMD_WRITE_REPLY);
+        Package::accquire(pack, CMD_WRITE_REPLY);
+        Package::pack(tx_buf, sizeof(tx_buf), pack);
     }
-    else if (p.cmd == PKG_CMD_READ_SETTING) {
+    else if (pack.cmd == CMD_READ) {
         Serial.println("Read setting cmd");
 
-        _package.pack(tx_buf, PKG_CMD_READ_REPLY);
+        Package::accquire(pack, CMD_READ_REPLY);
+        Package::pack(tx_buf, sizeof(tx_buf), pack);
     }
-    else if (p.cmd == PKG_CMD_ACK) {
+    else if (pack.cmd == CMD_ACK) {
         Serial.println("Ack cmd");
 
-        _package.pack(tx_buf, PKG_CMD_ACK_REPLY);
+        Package::accquire(pack, CMD_ACK_REPLY);
+        Package::pack(tx_buf, sizeof(tx_buf), pack);
     }
 
     client.write(tx_buf, BUF_SIZE(tx_buf));

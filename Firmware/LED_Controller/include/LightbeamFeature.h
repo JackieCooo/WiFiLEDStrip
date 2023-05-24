@@ -15,23 +15,39 @@ typedef enum {
     MOVE_RIGHT
 } dir_t;
 
-typedef struct {
+struct Fade {
     uint8_t FADED_HEAD : 1;
     uint8_t FADED_TAIL : 1;
-} faded_end_t;
+
+    Fade() = default;
+    Fade(bool head, bool tail) {
+        if (head) FADED_HEAD = 1;
+        if (tail) FADED_TAIL = 1;
+    }
+    explicit Fade(uint8_t val) {
+        if (val & 0x01) FADED_HEAD = 1;
+        if (val & 0x02) FADED_TAIL = 1;
+    }
+    explicit operator uint8_t() const {
+        uint8_t r = 0;
+        if (FADED_HEAD) r |= 0x01;
+        if (FADED_TAIL) r |= 0x02;
+        return r;
+    }
+};
 
 struct LightbeamData {
     RgbColor color;
     uint8_t len;
     uint8_t gap;
-    faded_end_t faded_end;
-    uint8_t head_len;
-    uint8_t tail_len;
+    Fade fade;
+    uint8_t head;
+    uint8_t tail;
     dir_t dir;
     uint16_t speed;
 
     LightbeamData() {}
-    LightbeamData(RgbColor color, uint8_t len, uint8_t gap, faded_end_t faded_end, uint8_t head_len, uint8_t tail_len, dir_t dir, uint16_t speed) : color(color), len(len), gap(gap), faded_end(faded_end), head_len(head_len), tail_len(tail_len), dir(dir), speed(speed) {}
+    LightbeamData(RgbColor color, uint8_t len, uint8_t gap, Fade fade, uint8_t head_len, uint8_t tail_len, dir_t dir, uint16_t speed) : color(color), len(len), gap(gap), fade(fade), head(head), tail(tail), dir(dir), speed(speed) {}
 };
 
 class LightbeamFeature : public BaseFeature {

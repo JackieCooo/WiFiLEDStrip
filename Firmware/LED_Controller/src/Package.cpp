@@ -1,6 +1,6 @@
 #include "Package.h"
 
-bool Package::parse(uint8_t* buf, uint16_t size, package_t* pack) {
+bool Package::parse(uint8_t* buf, uint16_t size, package_t& pack) {
     uint8_t stage = 0;
     uint8_t i = 0;
 
@@ -20,21 +20,21 @@ bool Package::parse(uint8_t* buf, uint16_t size, package_t* pack) {
                 else return false;
                 break;
             case 2:  // frame size
-                pack->size = buf[i++];
+                pack.size = buf[i++];
                 stage = 3;
                 break;
             case 3:  // cmd
-                pack->cmd = buf[i++];
-                if (pack->cmd == PKG_CMD_WRITE_SETTING) {
+                pack.cmd = buf[i++];
+                if (pack.cmd == CMD_WRITE) {
                     stage = 4;
                 }
-                else if (pack->cmd == PKG_CMD_READ_SETTING) {
+                else if (pack.cmd == CMD_READ) {
                     stage = 99;
                 }
-                else if (pack->cmd == PKG_CMD_ACK) {
+                else if (pack.cmd == CMD_ACK) {
                     stage = 99;
                 }
-                else if (pack->cmd == PKG_CMD_MATCH) {
+                else if (pack.cmd == CMD_MATCH) {
                     stage = 5;
                 }
                 else {
@@ -42,18 +42,18 @@ bool Package::parse(uint8_t* buf, uint16_t size, package_t* pack) {
                 }
                 break;
             case 4:  // write setting cmd
-                pack->data.strip.power = buf[i++];
-                pack->data.strip.mode = buf[i++];
-                if (pack->data.strip.mode == PKG_MODE_NORMAL) {
+                pack.data.strip.power = buf[i++];
+                pack.data.strip.mode = buf[i++];
+                if (pack.data.strip.mode == MODE_NORMAL) {
                     stage = 23;
                 }
-                else if (pack->data.strip.mode == PKG_MODE_BREATHING) {
+                else if (pack.data.strip.mode == MODE_BREATHING) {
                     stage = 24;
                 }
-                else if (pack->data.strip.mode == PKG_MODE_LIGHTBEAM) {
+                else if (pack.data.strip.mode == MODE_LIGHTBEAM) {
                     stage = 25;
                 }
-                else if (pack->data.strip.mode == PKG_MODE_RAINBOW) {
+                else if (pack.data.strip.mode == MODE_RAINBOW) {
                     stage = 26;
                 }
                 else {
@@ -66,33 +66,33 @@ bool Package::parse(uint8_t* buf, uint16_t size, package_t* pack) {
                 b = buf[i++];
                 c = buf[i++];
                 d = buf[i++];
-                pack->data.ip.addr = PP_HTONL(LWIP_MAKEU32(a,b,c,d));
+                pack.data.ip.addr = PP_HTONL(LWIP_MAKEU32(a,b,c,d));
                 stage = 99;
                 break;
             case 23:  // write normal mode setting
-                pack->data.strip.setting.normal.color = PKG_CONCAT(buf[i++], buf[i++]);
+                pack.data.strip.setting.normal.color = PKG_CONCAT(buf[i++], buf[i++]);
                 stage = 99;
                 break;
             case 24:  // write breathing mode setting
-                pack->data.strip.setting.breathing.color = PKG_CONCAT(buf[i++], buf[i++]);
-                pack->data.strip.setting.breathing.duration = PKG_CONCAT(buf[i++], buf[i++]);
-                pack->data.strip.setting.breathing.interval = PKG_CONCAT(buf[i++], buf[i++]);
-                pack->data.strip.setting.breathing.ease = buf[i++];
+                pack.data.strip.setting.breathing.color = PKG_CONCAT(buf[i++], buf[i++]);
+                pack.data.strip.setting.breathing.duration = PKG_CONCAT(buf[i++], buf[i++]);
+                pack.data.strip.setting.breathing.interval = PKG_CONCAT(buf[i++], buf[i++]);
+                pack.data.strip.setting.breathing.ease = buf[i++];
                 stage = 99;
                 break;
             case 25:  // write lightbeam mode setting
-                pack->data.strip.setting.lightbeam.color = PKG_CONCAT(buf[i++], buf[i++]);
-                pack->data.strip.setting.lightbeam.len = buf[i++];
-                pack->data.strip.setting.lightbeam.gap = buf[i++];
-                pack->data.strip.setting.lightbeam.faded = buf[i++];
-                pack->data.strip.setting.lightbeam.head = buf[i++];
-                pack->data.strip.setting.lightbeam.tail = buf[i++];
-                pack->data.strip.setting.lightbeam.dir = buf[i++];
-                pack->data.strip.setting.lightbeam.speed = PKG_CONCAT(buf[i++], buf[i++]);
+                pack.data.strip.setting.lightbeam.color = PKG_CONCAT(buf[i++], buf[i++]);
+                pack.data.strip.setting.lightbeam.len = buf[i++];
+                pack.data.strip.setting.lightbeam.gap = buf[i++];
+                pack.data.strip.setting.lightbeam.fade = buf[i++];
+                pack.data.strip.setting.lightbeam.head = buf[i++];
+                pack.data.strip.setting.lightbeam.tail = buf[i++];
+                pack.data.strip.setting.lightbeam.dir = buf[i++];
+                pack.data.strip.setting.lightbeam.speed = PKG_CONCAT(buf[i++], buf[i++]);
                 stage = 99;
                 break;
             case 26:  // write rainbow mode setting
-                pack->data.strip.setting.rainbow.speed = PKG_CONCAT(buf[i++], buf[i++]);
+                pack.data.strip.setting.rainbow.speed = PKG_CONCAT(buf[i++], buf[i++]);
                 stage = 99;
                 break;
             case 99:  // frame tail 1
@@ -110,140 +110,118 @@ bool Package::parse(uint8_t* buf, uint16_t size, package_t* pack) {
     return false;
 }
 
-void Package::pack(uint8_t* buf, uint16_t size, package_t* pack) {
+void Package::pack(uint8_t* buf, uint16_t size, const package_t& pack) {
     uint8_t i = 0;
 
     buf[i++] = PKG_FRAME_HEAD1;
     buf[i++] = PKG_FRAME_HEAD2;
     buf[i++] = 0;  // fill it later
-    if (pack->cmd == PKG_CMD_READ_REPLY) {
-        buf[i++] = PKG_CMD_READ_REPLY;
-        buf[i++] = pack->data.strip.power;
-        buf[i++] = pack->data.strip.mode;
-        if (pack->data.strip.mode == MODE_NORMAL) {
-            uint16_t color = Rgb16Color(pack->data.strip.setting.normal.color).Color565;
+    buf[i++] = pack.cmd;
+    if (pack.cmd == CMD_READ_REPLY) {
+        buf[i++] = pack.data.strip.power;
+        buf[i++] = pack.data.strip.mode;
+        if (pack.data.strip.mode == MODE_NORMAL) {
+            uint16_t color = pack.data.strip.setting.normal.color;
             buf[i++] = PKG_HIGH(color);
             buf[i++] = PKG_LOW(color);
         }
-        else if (pack->data.strip.mode == MODE_BREATHING) {
-            uint16_t color = Rgb16Color(pack->data.strip.setting.normal.color).Color565;
+        else if (pack.data.strip.mode == MODE_BREATHING) {
+            uint16_t color = pack.data.strip.setting.normal.color;
             buf[i++] = PKG_HIGH(color);
             buf[i++] = PKG_LOW(color);
-            buf[i++] = PKG_HIGH(pack->data.strip.setting.breathing.duration);
-            buf[i++] = PKG_LOW(pack->data.strip.setting.breathing.duration);
-            buf[i++] = PKG_HIGH(pack->data.strip.setting.breathing.interval);
-            buf[i++] = PKG_LOW(pack->data.strip.setting.breathing.interval);
-            buf[i++] = pack->data.strip.setting.breathing.ease;
+            buf[i++] = PKG_HIGH(pack.data.strip.setting.breathing.duration);
+            buf[i++] = PKG_LOW(pack.data.strip.setting.breathing.duration);
+            buf[i++] = PKG_HIGH(pack.data.strip.setting.breathing.interval);
+            buf[i++] = PKG_LOW(pack.data.strip.setting.breathing.interval);
+            buf[i++] = pack.data.strip.setting.breathing.ease;
         }
-        else if (pack->data.strip.mode == MODE_LIGHTBEAM) {
-            uint16_t color = Rgb16Color(pack->data.strip.setting.normal.color).Color565;
+        else if (pack.data.strip.mode == MODE_LIGHTBEAM) {
+            uint16_t color = pack.data.strip.setting.normal.color;
             buf[i++] = PKG_HIGH(color);
             buf[i++] = PKG_LOW(color);
-            buf[i++] = pack->data.strip.setting.lightbeam.len;
-            buf[i++] = pack->data.strip.setting.lightbeam.gap;
-            buf[i++] = Package::parseFadedEnd(pack->data.strip.setting.lightbeam.faded);
-            buf[i++] = pack->data.strip.setting.lightbeam.head;
-            buf[i++] = pack->data.strip.setting.lightbeam.tail;
-            buf[i++] = pack->data.strip.setting.lightbeam.dir;
-            buf[i++] = PKG_HIGH(pack->data.strip.setting.lightbeam.speed);
-            buf[i++] = PKG_LOW(pack->data.strip.setting.lightbeam.speed);
+            buf[i++] = pack.data.strip.setting.lightbeam.len;
+            buf[i++] = pack.data.strip.setting.lightbeam.gap;
+            buf[i++] = pack.data.strip.setting.lightbeam.fade;
+            buf[i++] = pack.data.strip.setting.lightbeam.head;
+            buf[i++] = pack.data.strip.setting.lightbeam.tail;
+            buf[i++] = pack.data.strip.setting.lightbeam.dir;
+            buf[i++] = PKG_HIGH(pack.data.strip.setting.lightbeam.speed);
+            buf[i++] = PKG_LOW(pack.data.strip.setting.lightbeam.speed);
         }
-        else if (pack->data.strip.mode == MODE_RAINBOW) {
-            buf[i++] = PKG_HIGH(pack->data.strip.setting.rainbow.speed);
-            buf[i++] = PKG_LOW(pack->data.strip.setting.rainbow.speed);
+        else if (pack.data.strip.mode == MODE_RAINBOW) {
+            buf[i++] = PKG_HIGH(pack.data.strip.setting.rainbow.speed);
+            buf[i++] = PKG_LOW(pack.data.strip.setting.rainbow.speed);
         }
     }
-    else if (pack->cmd == PKG_CMD_WRITE_REPLY) {
-        buf[i++] = PKG_CMD_WRITE_REPLY;
-        buf[i++] = PKG_REPLY_OK;
+    else if (pack.cmd == CMD_WRITE_REPLY) {
+        buf[i++] = pack.data.reply.resp;
     }
-    else if (pack->cmd == PKG_CMD_ACK_REPLY) {
-        buf[i++] = PKG_CMD_ACK_REPLY;
-        buf[i++] = PKG_REPLY_OK;
+    else if (pack.cmd == CMD_ACK_REPLY) {
+        buf[i++] = pack.data.reply.resp;
     }
-    else if (pack->cmd == PKG_CMD_MATCH_REPLY) {
-        buf[i++] = PKG_CMD_MATCH_REPLY;
-        IPAddress ip = WiFi.localIP();
-        buf[i++] = ip[0];
-        buf[i++] = ip[1];
-        buf[i++] = ip[2];
-        buf[i++] = ip[3];
+    else if (pack.cmd == CMD_MATCH_REPLY) {
+        buf[i++] = ip4_addr1_val(pack.data.ip);
+        buf[i++] = ip4_addr2_val(pack.data.ip);
+        buf[i++] = ip4_addr3_val(pack.data.ip);
+        buf[i++] = ip4_addr4_val(pack.data.ip);
     }
     buf[i++] = PKG_FRAME_TAIL1;
     buf[i++] = PKG_FRAME_TAIL2;
 
-    buf[PKG_BUF_SIZE_INDEX] = i;  // package size
+    buf[PKG_BUF_SIZE_INDEX] = i - 4;  // package size
 }
 
-void Package::parseFromPackage(void) {
-    if (pack->cmd == PKG_CMD_WRITE_SETTING) {
-        Serial.println("Write setting cmd");
-        pack->data.strip.power = pack->data.strip.power;
-        pack->data.strip.mode = Package::packMode(pack->data.strip.mode);
-        if (pack->data.strip.mode == PKG_MODE_NORMAL) {
-            uint32_t rgb888 = Package::RGB565toRGB888(pack->data.strip.setting.normal.color);
-            pack->data.strip.setting.normal.color = RgbColor(RGB888_R(rgb888), RGB888_G(rgb888), RGB888_B(rgb888));
+void Package::apply(const package_t& pack) {
+    if (pack.cmd == CMD_WRITE) {
+        Serial.println("Apply LED settings");
+        stripHandler.setPower(pack.data.strip.power);
+        stripHandler.setMode(static_cast<led_mode_t>(pack.data.strip.mode));
+        if (pack.data.strip.mode == MODE_NORMAL) {
+            stripHandler.setData(NormalData(RgbColor(Rgb16Color(pack.data.strip.setting.normal.color))));
         }
-        else if (pack->data.strip.mode == PKG_MODE_BREATHING) {
-            uint32_t rgb888 = Package::RGB565toRGB888(pack->data.strip.setting.breathing.color);
-            pack->data.strip.setting.breathing.color = RgbColor(RGB888_R(rgb888), RGB888_G(rgb888), RGB888_B(rgb888));
-            pack->data.strip.setting.breathing.duration = pack->data.strip.setting.breathing.duration;
-            pack->data.strip.setting.breathing.interval = pack->data.strip.setting.breathing.interval;
-            pack->data.strip.setting.breathing.ease = Package::packEase(pack->data.strip.setting.breathing.ease);
+        else if (pack.data.strip.mode == MODE_BREATHING) {
+            stripHandler.setData(BreathingData(RgbColor(Rgb16Color(pack.data.strip.setting.breathing.color)), pack.data.strip.setting.breathing.duration, pack.data.strip.setting.breathing.interval, static_cast<ease_t>(pack.data.strip.setting.breathing.ease)));
         }
-        else if (pack->data.strip.mode == PKG_MODE_LIGHTBEAM) {
-            uint32_t rgb888 = Package::RGB565toRGB888(pack->data.strip.setting.lightbeam.color);
-            pack->data.strip.setting.lightbeam.color = RgbColor(RGB888_R(rgb888), RGB888_G(rgb888), RGB888_B(rgb888));
-            pack->data.strip.setting.lightbeam.gap = pack->data.strip.setting.lightbeam.gap;
-            pack->data.strip.setting.lightbeam.len = pack->data.strip.setting.lightbeam.len;
-            pack->data.strip.setting.lightbeam.faded_end = Package::packFadedEnd(pack->data.strip.setting.lightbeam.faded_end);
-            pack->data.strip.setting.lightbeam.tail_len = pack->data.strip.setting.lightbeam.tail_len;
-            pack->data.strip.setting.lightbeam.head_len = pack->data.strip.setting.lightbeam.head_len;
-            pack->data.strip.setting.lightbeam.dir = Package::packDirection(pack->data.strip.setting.lightbeam.dir);
-            pack->data.strip.setting.lightbeam.speed = pack->data.strip.setting.lightbeam.speed;
+        else if (pack.data.strip.mode == MODE_LIGHTBEAM) {
+            stripHandler.setData(LightbeamData(RgbColor(Rgb16Color(pack.data.strip.setting.lightbeam.color)), pack.data.strip.setting.lightbeam.len, pack.data.strip.setting.lightbeam.gap, Fade(pack.data.strip.setting.lightbeam.fade), pack.data.strip.setting.lightbeam.head, pack.data.strip.setting.lightbeam.tail, static_cast<dir_t>(pack.data.strip.setting.lightbeam.dir), pack.data.strip.setting.lightbeam.speed));
         }
-        else if (pack->data.strip.mode == PKG_MODE_RAINBOW) {
-            pack->data.strip.setting.rainbow.speed = pack->data.strip.setting.rainbow.speed;
+        else if (pack.data.strip.mode == MODE_RAINBOW) {
+            stripHandler.setData(RainbowData(pack.data.strip.setting.rainbow.speed));
         }
     }
 }
 
-IPAddress Package::parseTargetIP(void) {
-    return IPAddress(pack->data.ip.addr);
-}
+void Package::accquire(package_t& pack, cmd_t cmd) {
+    pack.cmd = cmd;
+    if (cmd == CMD_READ_REPLY) {
+        pack.data.strip.power = stripHandler.getPower();
 
-uint32_t Package::RGB565toRGB888(uint16_t rgb565) {
-    uint8_t r = (RGB565_R(rgb565) << 3) + (uint8_t)((rgb565 >> 11) & 0x07);
-    uint8_t g = (RGB565_G(rgb565) << 2) + (uint8_t)((rgb565 >> 5) & 0x03);
-    uint8_t b = (RGB565_B(rgb565) << 3) + (uint8_t)(rgb565 & 0x07);
-    return CONCAT_RGB888(r, g, b);
-}
-
-uint16_t Package::RGB888toRGB565(uint32_t rgb888) {
-    uint8_t r = RGB888_R(rgb888) >> 3;
-    uint8_t g = RGB888_G(rgb888) >> 2;
-    uint8_t b = RGB888_B(rgb888) >> 3;
-    return CONCAT_RGB565(r, g, b);
-}
-
-faded_end_t Package::packFadedEnd(uint8_t& value) {
-    faded_end_t faded_end;
-    if (value & PKG_FADED_HEAD) {
-        faded_end.FADED_HEAD = 1;
+        led_mode_t mode = stripHandler.getMode();
+        if (mode == MODE_NORMAL) {
+            NormalData data;
+            stripHandler.getData(data);
+        }
+        else if (mode == MODE_BREATHING) {
+            BreathingData data;
+            stripHandler.getData(data);
+        }
+        else if (mode == MODE_LIGHTBEAM) {
+            LightbeamData data;
+            stripHandler.getData(data);
+        }
+        else if (mode == MODE_RAINBOW) {
+            RainbowData data;
+            stripHandler.getData(data);
+        }
     }
-    if (value & PKG_FADED_TAIL) {
-        faded_end.FADED_TAIL = 1;
+    else if (cmd == CMD_MATCH_REPLY) {
+        IPAddress ip = WiFi.localIP();
+        pack.data.ip.addr = (uint32_t)ip;
     }
-    return faded_end;
-}
-
-uint8_t Package::parseFadedEnd(faded_end_t& value) {
-    uint8_t faded_end = 0;
-    if (value.FADED_HEAD) {
-        faded_end |= PKG_FADED_HEAD;
+    else if (cmd == CMD_ACK_REPLY) {
+        pack.data.reply.resp = PKG_OK;
     }
-    if (value.FADED_TAIL) {
-        faded_end |= PKG_FADED_TAIL;
+    else if (cmd == CMD_WRITE_REPLY) {
+        pack.data.reply.resp = PKG_OK;
     }
-    return faded_end;
 }
