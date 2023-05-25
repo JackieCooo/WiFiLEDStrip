@@ -40,6 +40,7 @@ void BreathingFeature::refresh(void) {
 
 void BreathingFeature::setData(const BreathingData& data) {
     this->_data = data;
+    refresh();
 }
 
 BreathingData BreathingFeature::getData(void) const {

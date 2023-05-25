@@ -47,7 +47,7 @@ struct LightbeamData {
     uint16_t speed;
 
     LightbeamData() {}
-    LightbeamData(RgbColor color, uint8_t len, uint8_t gap, Fade fade, uint8_t head_len, uint8_t tail_len, dir_t dir, uint16_t speed) : color(color), len(len), gap(gap), fade(fade), head(head), tail(tail), dir(dir), speed(speed) {}
+    LightbeamData(RgbColor color, uint8_t len, uint8_t gap, Fade fade, uint8_t head, uint8_t tail, dir_t dir, uint16_t speed) : color(color), len(len), gap(gap), fade(fade), head(head), tail(tail), dir(dir), speed(speed) {}
 };
 
 class LightbeamFeature : public BaseFeature {
@@ -68,4 +68,10 @@ private:
     void _refreshPattern(void);
     void _animUpdateFunc(const AnimationParam& param);
     static uint16_t _translateSpeed(uint16_t &speed);
+
+    void _dump_data(void) {
+#if DEBUG_LOG
+        Serial.printf("Color: 0x%04X, Len: %d, Gap: %d, Fade: %02X, Head: %d, Tail: %d, Dir: %02X, Speed: %d\n", Rgb16Color(_data.color).Color565, _data.len, _data.gap, (uint8_t)_data.fade, _data.head, _data.tail, _data.dir, _data.speed);
+#endif
+    }
 };

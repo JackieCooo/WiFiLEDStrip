@@ -6,6 +6,7 @@
 
 #include "Package.h"
 #include "StripHandler.h"
+#include "FileManager.h"
 #include "global.h"
 
 #define WIFI_SSID               "HUAWEI-10GJ0E"
@@ -14,7 +15,7 @@
 #define MATCH_PORT              20002
 #define TIMEOUT_MS              5000
 
-#define BUF_SIZE(x)             (x[2])
+#define BUF_SIZE(x)             (x[2] + 4)
 
 class ConnectHandler {
 public:

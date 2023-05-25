@@ -23,6 +23,7 @@ void RainbowFeature::refresh(void) {
 
 void RainbowFeature::setData(const RainbowData& data) {
     this->_data = data;
+    refresh();
 }
 
 RainbowData RainbowFeature::getData(void) const {

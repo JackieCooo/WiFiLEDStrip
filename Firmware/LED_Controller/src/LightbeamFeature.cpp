@@ -23,6 +23,8 @@ void LightbeamFeature::refresh(void) {
 
 void LightbeamFeature::setData(const LightbeamData& data) {
     this->_data = data;
+    _dump_data();
+    refresh();
 }
 
 LightbeamData LightbeamFeature::getData(void) const {
@@ -42,7 +44,8 @@ void LightbeamFeature::_refreshPattern(void) {
     
     uint16_t i = 0;
     NeoGamma<NeoGammaTableMethod> colorGamma;
-    if ((_fade.FADED_HEAD) && _dir == MOVE_LEFT) {
+
+    if (_fade.FADED_HEAD && _dir == MOVE_LEFT) {
         HslColor hsl(_color);
         float offset = hsl.L / (_head_len + 1);
         hsl.L = 0;
@@ -51,7 +54,7 @@ void LightbeamFeature::_refreshPattern(void) {
             _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
         }
     }
-    else if ((_fade.FADED_TAIL) && _dir == MOVE_RIGHT) {
+    else if (_fade.FADED_TAIL && _dir == MOVE_RIGHT) {
         HslColor hsl(_color);
         float offset = hsl.L / (_tail_len + 1);
         hsl.L = 0;
@@ -60,10 +63,12 @@ void LightbeamFeature::_refreshPattern(void) {
             _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
         }
     }
+
     for (uint16_t j = 0; j < _len; ++j) {
         _pattern[i++] = _color;
     }
-    if ((_fade.FADED_HEAD) && _dir == MOVE_RIGHT) {
+
+    if (_fade.FADED_HEAD && _dir == MOVE_RIGHT) {
         HslColor hsl(_color);
         float offset = hsl.L / (_head_len + 1);
         for (uint16_t j = 0; j < _head_len; j++) {
@@ -71,7 +76,7 @@ void LightbeamFeature::_refreshPattern(void) {
             _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
         }
     }
-    else if ((_fade.FADED_TAIL) && _dir == MOVE_LEFT) {
+    else if (_fade.FADED_TAIL && _dir == MOVE_LEFT) {
         HslColor hsl(_color);
         float offset = hsl.L / (_tail_len + 1);
         for (uint16_t j = 0; j < _tail_len; j++) {
@@ -79,6 +84,7 @@ void LightbeamFeature::_refreshPattern(void) {
             _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
         }
     }
+
     for (uint16_t j = 0; j < _gap; ++j) {
         _pattern[i++] = RgbColor(0);
     }
@@ -90,6 +96,7 @@ void LightbeamFeature::_animUpdateFunc(const AnimationParam& param) {
             strip.SetPixelColor(i, _pattern[(i+_ref)%_pattern.size()]);
         }
         strip.Show();
+
         dir_t _dir = _data.dir;
         if (_dir == MOVE_LEFT) {
             _ref = (++_ref) % _pattern.size();
