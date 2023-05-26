@@ -16,7 +16,7 @@
 #define MATCH_TIMEOUT_MS            5000
 #define TIMEOUT_MS                  3000
 
-#define BUF_SIZE(x)                 (x[2])
+#define BUF_SIZE(x)                 (x[2] + 4)
 
 using namespace std;
 

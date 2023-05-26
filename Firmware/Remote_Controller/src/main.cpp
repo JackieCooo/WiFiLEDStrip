@@ -3,7 +3,7 @@
 #include "lvgl.h"
 #include "display.h"
 #include "indev.h"
-#include "gui.h"
+#include "./gui/gui.h"
 #include "global.h"
 #include "message_handler.h"
 #include "ConnectHandler.h"

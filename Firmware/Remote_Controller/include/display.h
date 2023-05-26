@@ -3,7 +3,6 @@
 
 #include <lvgl.h>
 #include <TFT_eSPI.h>
-#include <esp_heap_caps.h>
 
 class Display
 {
