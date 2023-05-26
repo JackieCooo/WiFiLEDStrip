@@ -43,24 +43,23 @@ void LightbeamFeature::_refreshPattern(void) {
     _pattern.resize(psize);
     
     uint16_t i = 0;
-    NeoGamma<NeoGammaTableMethod> colorGamma;
 
-    if (_fade.FADED_HEAD && _dir == MOVE_LEFT) {
-        HslColor hsl(_color);
-        float offset = hsl.L / (_head_len + 1);
-        hsl.L = 0;
+    if (_fade.FADED_HEAD && _dir == DIR_BACKWARD) {
+        uint8_t offset = (uint8_t)(255.0 / (_head_len + 1.0));
+        uint8_t val = 0;
+
         for (uint16_t j = 0; j < _head_len; j++) {
-            hsl.L += offset;
-            _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
+            val += offset;
+            _pattern[i++] = _data.color.Dim(val);
         }
     }
-    else if (_fade.FADED_TAIL && _dir == MOVE_RIGHT) {
-        HslColor hsl(_color);
-        float offset = hsl.L / (_tail_len + 1);
-        hsl.L = 0;
+    else if (_fade.FADED_TAIL && _dir == DIR_FORWARD) {
+        uint8_t offset = (uint8_t)(255.0 / (_tail_len + 1.0));
+        uint8_t val = 0;
+
         for (uint16_t j = 0; j < _tail_len; j++) {
-            hsl.L += offset;
-            _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
+            val += offset;
+            _pattern[i++] = _data.color.Dim(val);
         }
     }
 
@@ -68,20 +67,22 @@ void LightbeamFeature::_refreshPattern(void) {
         _pattern[i++] = _color;
     }
 
-    if (_fade.FADED_HEAD && _dir == MOVE_RIGHT) {
-        HslColor hsl(_color);
-        float offset = hsl.L / (_head_len + 1);
+    if (_fade.FADED_HEAD && _dir == DIR_FORWARD) {
+        uint8_t offset = (uint8_t)(255.0 / (_head_len + 1.0));
+        uint8_t val = 255;
+
         for (uint16_t j = 0; j < _head_len; j++) {
-            hsl.L -= offset;
-            _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
+            val -= offset;
+            _pattern[i++] = _data.color.Dim(val);
         }
     }
-    else if (_fade.FADED_TAIL && _dir == MOVE_LEFT) {
-        HslColor hsl(_color);
-        float offset = hsl.L / (_tail_len + 1);
+    else if (_fade.FADED_TAIL && _dir == DIR_BACKWARD) {
+        uint8_t offset = (uint8_t)(255.0 / (_tail_len + 1.0));
+        uint8_t val = 255;
+
         for (uint16_t j = 0; j < _tail_len; j++) {
-            hsl.L -= offset;
-            _pattern[i++] = colorGamma.Correct(RgbColor(hsl));
+            val -= offset;
+            _pattern[i++] = _data.color.Dim(val);
         }
     }
 
@@ -98,10 +99,10 @@ void LightbeamFeature::_animUpdateFunc(const AnimationParam& param) {
         strip.Show();
 
         dir_t _dir = _data.dir;
-        if (_dir == MOVE_LEFT) {
+        if (_dir == DIR_BACKWARD) {
             _ref = (++_ref) % _pattern.size();
         }
-        else if (_dir == MOVE_RIGHT) {
+        else if (_dir == DIR_FORWARD) {
             _ref = _ref ? --_ref : _pattern.size() - 1;
         }
     }

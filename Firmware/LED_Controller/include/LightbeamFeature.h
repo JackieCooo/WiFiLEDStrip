@@ -11,8 +11,8 @@
 using namespace std;
 
 typedef enum {
-    MOVE_LEFT,
-    MOVE_RIGHT,
+    DIR_BACKWARD,
+    DIR_FORWARD,
 } dir_t;
 
 struct Fade {
