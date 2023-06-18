@@ -14,29 +14,22 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="Mainwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="layoutDirection">
+    <enum>Qt::LeftToRight</enum>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <property name="sizeConstraint">
+     <enum>QLayout::SetDefaultConstraint</enum>
+    </property>
     <item>
-     <widget class="QWidget" name="TopPanel" native="true">
+     <widget class="QWidget" name="MenuBar" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QPushButton" name="pushButton_2">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Refresh</string>
-         </property>
-        </widget>
-       </item>
+      <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <widget class="QPushButton" name="pushButton">
          <property name="sizePolicy">
@@ -50,6 +43,19 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_2">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Refresh</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>
@@ -58,10 +64,22 @@
       <property name="lineWidth">
        <number>0</number>
       </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
       <widget class="QWidget" name="ControllPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QScrollArea" name="DeviceList">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
@@ -70,22 +88,35 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>377</width>
-             <height>531</height>
+             <width>93</width>
+             <height>579</height>
             </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>
-             <widget class="QPushButton" name="pushButton_3">
+             <widget class="QLabel" name="label">
               <property name="text">
-               <string>PushButton</string>
+               <string>TextLabel</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_4">
+             <widget class="QLabel" name="label_2">
               <property name="text">
-               <string>PushButton</string>
+               <string>TextLabel</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>TextLabel</string>
               </property>
              </widget>
             </item>
@@ -95,6 +126,12 @@
         </item>
         <item>
          <widget class="QScrollArea" name="DeviceControlPanel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
@@ -103,8 +140,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>377</width>
-             <height>531</height>
+             <width>562</width>
+             <height>579</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_3">

@@ -11,9 +11,10 @@ set(CMAKE_PREFIX_PATH "D:/Tools/Qt/6.2.4/mingw_64/lib/cmake")
 include_directories(
         gui/components
         gui/widgets
+        utils
 )
 
-file(GLOB_RECURSE GUI_LIST gui/*.h gui/*.cpp)
+file(GLOB_RECURSE PROJ_LIST gui/*.h gui/*.cpp utils/*.h utils/*.cpp)
 
 find_package(Qt6 COMPONENTS
         Core
@@ -21,7 +22,7 @@ find_package(Qt6 COMPONENTS
         Widgets
         REQUIRED)
 
-add_executable(HueController main.cpp ${GUI_LIST})
+add_executable(HueController main.cpp ${PROJ_LIST})
 target_link_libraries(HueController
         Qt::Core
         Qt::Gui
@@ -64,7 +65,7 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
                 COMMAND ${CMAKE_COMMAND} -E make_directory
                 "$<TARGET_FILE_DIR:${PROJECT_NAME}>/icons")
     endif ()
-    file(GLOB ICON_LIST gui/icons/*.ico)
+    file(GLOB ICON_LIST gui/icons/*.png)
     foreach (icon ${ICON_LIST})
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy

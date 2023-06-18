@@ -9,20 +9,29 @@
 #include <QPen>
 #include <QFontMetrics>
 #include <QRect>
-#include <iostream>
+#include <QColor>
+#include <QPalette>
+#include <QEvent>
 
 class IconBtn : public QAbstractButton {
     Q_OBJECT
 
 public:
+    static const int Width = 120;
+    static const int Height = 50;
+    static const int Padding = 10;
+
     explicit IconBtn(QWidget* parent);
+    IconBtn(QWidget* parent, const QString& text, const QString& iconPath);
     void setIcon(const QString& filepath);
     [[nodiscard]] QImage getIcon() const;
 
 protected:
     void paintEvent(QPaintEvent *e) override;
+    bool event(QEvent* e) override;
 
 private:
+    bool hovered = false;
     QImage img;
 
     void setupUI();

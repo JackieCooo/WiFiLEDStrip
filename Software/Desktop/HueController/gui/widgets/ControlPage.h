@@ -1,9 +1,10 @@
 #pragma once
 
 #include <QWidget>
-#include <QVBoxLayout>
+#include <QHBoxLayout>
 
-#include "TopPanel.h"
+#include "DevicePanel.h"
+#include "ControlPanel.h"
 
 class ControlPage : public QWidget {
     Q_OBJECT
@@ -12,7 +13,8 @@ public:
     explicit ControlPage(QWidget* parent = nullptr);
 
 private:
-    TopPanel* topPanel = nullptr;
+    DevicePanel* devicePanel = nullptr;
+    ControlPanel* controlPanel = nullptr;
 
     void setupUI();
 };
