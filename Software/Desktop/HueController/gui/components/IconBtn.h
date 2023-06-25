@@ -17,9 +17,9 @@ class IconBtn : public QAbstractButton {
     Q_OBJECT
 
 public:
-    static const int Width = 120;
-    static const int Height = 50;
-    static const int Padding = 10;
+    static constexpr int Width = 120;
+    static constexpr int Height = 50;
+    static constexpr int Padding = 10;
 
     explicit IconBtn(QWidget* parent);
     IconBtn(QWidget* parent, const QString& text, const QString& iconPath);

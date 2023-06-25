@@ -88,7 +88,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>93</width>
+             <width>72</width>
              <height>579</height>
             </rect>
            </property>
@@ -140,7 +140,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>562</width>
+             <width>583</width>
              <height>579</height>
             </rect>
            </property>
@@ -156,6 +156,13 @@
              <widget class="QPushButton" name="pushButton_6">
               <property name="text">
                <string>PushButton</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="horizontalSlider">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
               </property>
              </widget>
             </item>

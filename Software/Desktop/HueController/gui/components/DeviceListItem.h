@@ -17,10 +17,12 @@ class DeviceListItem : public QAbstractButton {
     Q_OBJECT
 
 public:
-    static const int Height = 100;
+    static constexpr int Height = 100;
 
     explicit DeviceListItem(QWidget* parent);
-    DeviceListItem(QWidget* parent, const QString& text, const QString& imgPath = nullptr);
+    DeviceListItem(QWidget* parent, unsigned int pid, const QString& text, const QString& imgPath = nullptr);
+    [[nodiscard]] unsigned int getPid() const;
+    void setPid(unsigned int pid);
 
 protected:
     void paintEvent(QPaintEvent* e) override;
@@ -29,6 +31,7 @@ protected:
 private:
     bool hovered = false;
     QImage img;
+    unsigned int pid;
 
     void setupUI();
 };

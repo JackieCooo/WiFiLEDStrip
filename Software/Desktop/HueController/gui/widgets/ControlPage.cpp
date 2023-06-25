@@ -20,5 +20,3 @@ void ControlPage::setupUI() {
 
     this->setLayout(hLayout);
 }
-
-

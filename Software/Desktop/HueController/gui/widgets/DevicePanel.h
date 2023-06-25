@@ -14,7 +14,7 @@ class DevicePanel : public QWidget {
     Q_OBJECT
 
 public:
-    static const int Width = 300;
+    static constexpr int Width = 300;
 
     explicit DevicePanel(QWidget* parent);
 

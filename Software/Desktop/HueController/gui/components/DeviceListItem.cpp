@@ -4,7 +4,7 @@ DeviceListItem::DeviceListItem(QWidget *parent) : QAbstractButton(parent) {
     this->setupUI();
 }
 
-DeviceListItem::DeviceListItem(QWidget *parent, const QString &text, const QString &imgPath) : QAbstractButton(parent) {
+DeviceListItem::DeviceListItem(QWidget *parent, const unsigned int pid, const QString &text, const QString &imgPath) : QAbstractButton(parent), pid(pid) {
     this->setText(text);
     if (imgPath != nullptr) img.load(imgPath);
     this->setupUI();
@@ -67,4 +67,12 @@ bool DeviceListItem::event(QEvent *e) {
     }
 
     return QAbstractButton::event(e);
+}
+
+unsigned int DeviceListItem::getPid() const {
+    return this->pid;
+}
+
+void DeviceListItem::setPid(unsigned int pid) {
+    this->pid = pid;
 }

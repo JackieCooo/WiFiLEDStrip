@@ -8,7 +8,7 @@ class DeviceListViewport : public QWidget {
     Q_OBJECT
 
 public:
-    static const int ItemSpacing = 20;
+    static constexpr int ItemSpacing = 20;
 
     explicit DeviceListViewport(QWidget* parent);
 

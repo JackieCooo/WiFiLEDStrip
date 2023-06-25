@@ -4,6 +4,7 @@ DeviceList::DeviceList(QWidget *parent) : QAbstractScrollArea(parent) {
     viewport = new DeviceListViewport(this);
     itemList.setExclusive(true);
     this->setupUI();
+    this->setupListener();
 }
 
 void DeviceList::setupUI() {
@@ -17,18 +18,18 @@ void DeviceList::setupUI() {
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setViewportMargins(0, 0, 0, 0);
 
-    addItem("Product1");
-    addItem("Product2");
-    addItem("Product3");
-    addItem("Product4");
-    addItem("Product5");
-    addItem("Product6");
-    addItem("Product7");
-    addItem("Product8");
+    addItem(0x00, "Product1");
+    addItem(0x01, "Product2");
+    addItem(0x02, "Product3");
+    addItem(0x03, "Product4");
+    addItem(0x04, "Product5");
+    addItem(0x05, "Product6");
+    addItem(0x06, "Product7");
+    addItem(0x07, "Product8");
 }
 
-void DeviceList::addItem(const QString &text, const QString &imgPath) {
-    auto* item = new DeviceListItem(viewport, text, imgPath);
+void DeviceList::addItem(const unsigned int pid, const QString &text, const QString &imgPath) {
+    auto* item = new DeviceListItem(viewport, pid, text, imgPath);
 
     itemList.addButton(item);
     viewport->setFixedHeight(this->viewportSizeHint().height());
@@ -67,3 +68,15 @@ QSize DeviceList::viewportSizeHint() const {
     return {this->width(), cnt * DeviceListItem::Height + cnt * DeviceListViewport::ItemSpacing};
 }
 
+void DeviceList::setupListener() {
+    connect(&itemList, SIGNAL(idClicked(int)), this, SLOT(handleItemSelected(int)));
+}
+
+void DeviceList::handleItemSelected(int id) {
+    if (id == this->lastSelected) return;
+//    qDebug("id: %d", id);
+    auto* item = dynamic_cast<DeviceListItem*>(itemList.button(id));
+    emit deviceSelected(item->getPid());
+    this->lastSelected = id;
+//    qDebug("pid: %d", item->getPid());
+}

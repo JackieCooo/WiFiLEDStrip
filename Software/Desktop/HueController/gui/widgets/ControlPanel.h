@@ -12,6 +12,10 @@
 #include <QVBoxLayout>
 #include <QSizePolicy>
 #include <QLabel>
+#include <QDebug>
+
+#include "DeviceList.h"
+#include "PidUtils.h"
 
 class ControlPanel : public QWidget {
     Q_OBJECT
@@ -19,6 +23,7 @@ class ControlPanel : public QWidget {
 public:
     explicit ControlPanel(QWidget* parent);
     [[nodiscard]] bool getState() const;
+    void showControlOption(unsigned int pid);
 
 public slots:
     void setState(bool state);
@@ -30,4 +35,9 @@ private:
     bool state = false;
 
     void setupUI();
+    void setupListener();
+    void clearLayoutWidgets();
+
+private slots:
+    void handleDeviceSelected(unsigned int pid);
 };
