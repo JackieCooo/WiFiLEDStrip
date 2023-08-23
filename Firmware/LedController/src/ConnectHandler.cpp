@@ -1,9 +1,9 @@
 #include "ConnectHandler.h"
 
-void ConnectHandler::begin(void) {
+void ConnectHandler::begin() {
     WiFi.begin(WIFI_SSID, WIFI_PWR);
     Serial.print("WiFi connecting");
-    while (WiFi.status() != WL_CONNECTED) {
+    while (WiFiClass::status() != WL_CONNECTED) {
         Serial.print(".");
         delay(500);
     }
@@ -14,7 +14,7 @@ void ConnectHandler::begin(void) {
     Serial.printf("Matching server running at port %d\n", MATCH_PORT);
 }
 
-void ConnectHandler::process(void) {
+void ConnectHandler::process() {
     uint8_t rx_buf[PKG_BUF_MAX_LEN];
 
     // respond to client request

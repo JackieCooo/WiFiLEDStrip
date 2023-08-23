@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
-#include <string.h>
+#include <cstring>
 
 #include "Package.h"
 #include "StripHandler.h"
@@ -19,8 +19,8 @@
 
 class ConnectHandler {
 public:
-    void begin(void);
-    void process(void);
+    void begin();
+    void process();
 
     static void task(void* args);
 
@@ -28,7 +28,7 @@ private:
     WiFiServer _server;
     WiFiUDP _matcher;
 
-    void _handle(WiFiClient& client, package_t& pack);
+    static void _handle(WiFiClient& client, package_t& pack);
 };
 
 extern ConnectHandler connHandler;

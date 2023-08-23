@@ -50,17 +50,17 @@ struct BreathingData {
     uint16_t interval;
     ease_t ease;
 
-    BreathingData() {}
+    BreathingData() = default;
     BreathingData(RgbColor color, uint16_t duration, uint16_t interval, ease_t ease) : color(color), duration(duration), interval(interval), ease(ease) {}
 };
 
 class BreathingFeature : public BaseFeature {
 public:
     BreathingFeature();
-    void process(void) override;
-    void refresh(void) override;
+    void process() override;
+    void refresh() override;
     void setData(const BreathingData& data);
-    BreathingData getData(void) const;
+    BreathingData getData() const;
 
 private:
     NeoPixelAnimator _animations = NeoPixelAnimator(STAGE_NUM);

@@ -100,9 +100,8 @@ bool Package::parse(uint8_t* buf, uint16_t size, package_t& pack) {
                 else return false;
                 break;
             case 100:  // frmae tail 2
-                if (buf[i++] == PKG_FRAME_TAIL2) return true;
+                if (buf[i] == PKG_FRAME_TAIL2) return true;
                 else return false;
-                break;
             default:
                 break;
         }

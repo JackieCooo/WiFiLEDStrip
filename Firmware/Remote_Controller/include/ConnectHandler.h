@@ -5,10 +5,10 @@
 
 #include "Package.h"
 #include "lvgl.h"
-#include "gui.h"
+#include "gui/gui.h"
 #include "global.h"
 #include "message_handler.h"
-#include "ConfigHandler.h"
+// #include "ConfigHandler.h"
 
 #define SERVER_PORT                 20001
 #define MATCH_PORT                  20002

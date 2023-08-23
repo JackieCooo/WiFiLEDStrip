@@ -19,7 +19,7 @@ led_mode_t config_get_mode(void) {
 }
 
 void config_set_normal_data(const normal_data_t* data) {
-    memcpy(config.normal, data, sizeof(normal_data_t));
+    memcpy(&config.normal, data, sizeof(normal_data_t));
 }
 
 normal_data_t config_get_normal_data(void) {
@@ -27,7 +27,7 @@ normal_data_t config_get_normal_data(void) {
 }
 
 void config_set_breathing_data(const breathing_data_t* data) {
-    memcpy(config.breathing, data, sizeof(breathing_data_t));
+    memcpy(&config.breathing, data, sizeof(breathing_data_t));
 }
 
 breathing_data_t config_get_breathing_data(void) {
@@ -35,7 +35,7 @@ breathing_data_t config_get_breathing_data(void) {
 }
 
 void config_set_lightbeam_data(const lightbeam_data_t* data) {
-    memcpy(config.lightbeam, data, sizeof(lightbeam_data_t));
+    memcpy(&config.lightbeam, data, sizeof(lightbeam_data_t));
 }
 
 lightbeam_data_t config_get_lightbeam_data(void) {
@@ -43,7 +43,7 @@ lightbeam_data_t config_get_lightbeam_data(void) {
 }
 
 void config_set_rainbow_data(const rainbow_data_t* data) {
-    memcpy(config.rainbow, data, sizeof(rainbow_data_t));
+    memcpy(&config.rainbow, data, sizeof(rainbow_data_t));
 }
 
 rainbow_data_t config_get_rainbow_data(void) {

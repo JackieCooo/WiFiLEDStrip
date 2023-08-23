@@ -10,7 +10,7 @@ extern "C" {
 #include "lvgl.h"
 #include "freertos/queue.h"
 #include "lwip/ip4_addr.h"
-#include "list.h"
+#include "gui/list.h"
 
 #define MSG_MATCH_RESULT                2
 #define MSG_ACK_RESULT                  3
@@ -66,7 +66,6 @@ typedef struct {
     char password[PSW_MAX_LEN];
 } wifi_connect_t;
 
-extern configuration_t configuration;
 extern connectivity_t connectivity;
 
 #ifdef __cplusplus

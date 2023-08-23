@@ -7,7 +7,7 @@
 #include "global.h"
 #include "message_handler.h"
 #include "ConnectHandler.h"
-#include "ConfigHandler.h"
+// #include "ConfigHandler.h"
 
 Display display;
 Indev indev;
@@ -41,7 +41,7 @@ void setup(void) {
   Serial.println("connect init done");
 
   xTaskCreate(ConnectHandler::task, "ConnectHandlerTask", 4096, NULL, 5, NULL);
-  xTaskCreate(ConfigHandler::task, "ConfigHandlerTask", 4096, NULL, 4, NULL);
+  // xTaskCreate(ConfigHandler::task, "ConfigHandlerTask", 4096, NULL, 4, NULL);
 }
 
 void loop(void) {

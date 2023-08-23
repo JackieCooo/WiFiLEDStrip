@@ -1,6 +1,5 @@
 #include "ConfigHandler.h"
 
-configuration_t configuration;
 connectivity_t connectivity;
 
 void ConfigHandler::begin(void) {

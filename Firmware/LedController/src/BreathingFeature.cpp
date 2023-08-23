@@ -5,7 +5,7 @@ BreathingFeature::BreathingFeature() {
     _stage = 0;
 }
 
-void BreathingFeature::process(void) {
+void BreathingFeature::process() {
     if (_animations.IsAnimating()) {
         _animations.UpdateAnimations();
     }
@@ -31,7 +31,7 @@ void BreathingFeature::process(void) {
     }
 }
 
-void BreathingFeature::refresh(void) {
+void BreathingFeature::refresh() {
     if (_animations.IsAnimating()) {
         _animations.StopAll();
     }
@@ -43,7 +43,7 @@ void BreathingFeature::setData(const BreathingData& data) {
     refresh();
 }
 
-BreathingData BreathingFeature::getData(void) const {
+BreathingData BreathingFeature::getData() const {
     return this->_data;
 }
 

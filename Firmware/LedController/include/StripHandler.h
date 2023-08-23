@@ -17,6 +17,7 @@ typedef enum {
     MODE_BREATHING,
     MODE_LIGHTBEAM,
     MODE_RAINBOW,
+    MODE_RHYTHM,
     MODE_NUM
 } led_mode_t;
 
@@ -24,14 +25,14 @@ class StripHandler {
 public:
     StripHandler();
 
-    void begin(void);
-    void process(void);
-    void refresh(void);
-    void clear(void);
+    void begin();
+    void process();
+    void refresh();
+    void clear();
     void setMode(led_mode_t mode);
-    led_mode_t getMode(void) const;
+    led_mode_t getMode() const;
     void setPower(bool pwr);
-    bool getPower(void) const;
+    bool getPower() const;
     void setData(const NormalData& data);
     void setData(const BreathingData& data);
     void setData(const LightbeamData& data);

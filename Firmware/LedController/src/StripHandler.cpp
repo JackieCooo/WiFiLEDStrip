@@ -3,15 +3,17 @@
 NeoPixelBusType strip(LED_NUM, LED_PIN);
 
 StripHandler::StripHandler() {
+    this->_mode = MODE_NORMAL;
+    this->_pwr = false;
     begin();
 }
 
-void StripHandler::begin(void) {
+void StripHandler::begin() {
     strip.Begin();
     clear();
 }
 
-void StripHandler::process(void) {
+void StripHandler::process() {
     if (_pwr) {
         switch (_mode)
         {
@@ -33,7 +35,7 @@ void StripHandler::process(void) {
     }
 }
 
-void StripHandler::refresh(void) {
+void StripHandler::refresh() {
     switch (_mode)
     {
         case MODE_NORMAL:
@@ -53,7 +55,7 @@ void StripHandler::refresh(void) {
     }
 }
 
-void StripHandler::clear(void) {
+void StripHandler::clear() {
     RgbColor black(0);
     for (uint16_t i = 0; i < strip.PixelCount(); i++) {
         strip.SetPixelColor(i, black);
@@ -66,7 +68,7 @@ void StripHandler::setMode(led_mode_t mode) {
     this->_mode = mode;
 }
 
-led_mode_t StripHandler::getMode(void) const {
+led_mode_t StripHandler::getMode() const {
     return this->_mode;
 }
 
@@ -77,7 +79,7 @@ void StripHandler::setPower(bool pwr) {
     }
 }
 
-bool StripHandler::getPower(void) const {
+bool StripHandler::getPower() const {
     return this->_pwr;
 }
 
