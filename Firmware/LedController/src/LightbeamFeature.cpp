@@ -1,10 +1,11 @@
 #include <LightbeamFeature.h>
 
 LightbeamFeature::LightbeamFeature() {
+    _ref = 0;
     _cb = bind(&LightbeamFeature::_animUpdateFunc, this, placeholders::_1);
 }
 
-void LightbeamFeature::process(void) {
+void LightbeamFeature::process() {
     if (_animations.IsAnimating()) {
         _animations.UpdateAnimations();
     }
@@ -13,7 +14,7 @@ void LightbeamFeature::process(void) {
     }
 }
 
-void LightbeamFeature::refresh(void) {
+void LightbeamFeature::refresh() {
     if (_animations.IsAnimating()) {
         _animations.StopAll();
     }
@@ -27,11 +28,11 @@ void LightbeamFeature::setData(const LightbeamData& data) {
     refresh();
 }
 
-LightbeamData LightbeamFeature::getData(void) const {
+LightbeamData LightbeamFeature::getData() const {
     return this->_data;
 }
 
-void LightbeamFeature::_refreshPattern(void) {
+void LightbeamFeature::_refreshPattern() {
     RgbColor _color = _data.color;
     dir_t _dir = _data.dir;
     uint16_t _len = _data.len;

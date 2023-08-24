@@ -9,18 +9,18 @@
 struct NormalData {
     RgbColor color;
 
-    NormalData() {}
-    NormalData(RgbColor color) : color(color) {}
+    NormalData() {color = RgbColor(0);}
+    explicit NormalData(RgbColor color) : color(color) {}
 };
 
 class NormalFeature : public BaseFeature {
 public:
     NormalFeature();
 
-    void refresh(void) override;
-    void process(void) override;
+    void refresh() override;
+    void process() override;
     void setData(const NormalData& data);
-    NormalData getData(void) const;
+    NormalData getData() const;
 
 private:
     bool _refreshed;

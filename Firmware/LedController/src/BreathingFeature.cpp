@@ -165,4 +165,3 @@ AnimEaseFunction BreathingFeature::_translateEase(ease_t& ease) {
     }
     return NeoEase::Linear;
 }
-

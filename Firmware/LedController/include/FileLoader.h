@@ -5,6 +5,6 @@
 
 class FileLoader {
 public:
-    bool load(const char* filepath, uint8_t* buf, uint16_t len);
-    bool save(const char* filepath, uint8_t* buf, uint16_t len);
+    static bool load(const char* filepath, uint8_t* buf, uint16_t len);
+    static bool save(const char* filepath, uint8_t* buf, uint16_t len);
 };

@@ -29,6 +29,9 @@ void StripHandler::process() {
             case MODE_RAINBOW:
                 _rainbow.process();
                 break;
+            case MODE_RHYTHM:
+                _rhythm.process();
+                break;
             default:
                 break;
         }
@@ -49,6 +52,9 @@ void StripHandler::refresh() {
             break;
         case MODE_RAINBOW:
             _rainbow.refresh();
+            break;
+        case MODE_RHYTHM:
+            _rhythm.refresh();
             break;
         default:
             break;
@@ -115,11 +121,19 @@ void StripHandler::getData(RainbowData& data) {
     data = _rainbow.getData();
 }
 
-void StripHandler::task(void* args) {
+[[noreturn]] void StripHandler::task(void* args) {
     for (;;) {
         stripHandler.process();
         vTaskDelay(10);
     }
+}
+
+void StripHandler::setData(const RhythmData &data) {
+    _rhythm.setData(data);
+}
+
+void StripHandler::getData(RhythmData &data) {
+    data = _rhythm.getData();
 }
 
 StripHandler stripHandler;

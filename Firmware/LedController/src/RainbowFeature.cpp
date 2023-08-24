@@ -1,11 +1,12 @@
 #include <RainbowFeature.h>
 
 RainbowFeature::RainbowFeature() {
+    _ref = 0;
     _cb = bind(&RainbowFeature::_animUpdateFunc, this, placeholders::_1);
     _initPattern();
 }
 
-void RainbowFeature::process(void) {
+void RainbowFeature::process() {
     if (_animations.IsAnimating()) {
         _animations.UpdateAnimations();
     }
@@ -14,7 +15,7 @@ void RainbowFeature::process(void) {
     }
 }
 
-void RainbowFeature::refresh(void) {
+void RainbowFeature::refresh() {
     if (_animations.IsAnimating()) {
         _animations.StopAll();
     }
@@ -26,7 +27,7 @@ void RainbowFeature::setData(const RainbowData& data) {
     refresh();
 }
 
-RainbowData RainbowFeature::getData(void) const {
+RainbowData RainbowFeature::getData() const {
     return this->_data;
 }
 
@@ -40,7 +41,7 @@ void RainbowFeature::_animUpdateFunc(const AnimationParam& param) {
     }
 }
 
-void RainbowFeature::_initPattern(void) {
+void RainbowFeature::_initPattern() {
     uint8_t pixels_per_stage = 256 / COLOR_GAP;
     uint16_t psize = 6 * (uint16_t)pixels_per_stage;
     _pattern.resize(psize);

@@ -9,6 +9,7 @@
 #include "BreathingFeature.h"
 #include "LightbeamFeature.h"
 #include "RainbowFeature.h"
+#include "RhythmFeature.h"
 #include "global.h"
 
 #define CONFIG_FILE_PATH        "/config.bin"
@@ -40,17 +41,21 @@ typedef struct {
         struct {
             uint16_t speed;
         } rainbow;
+        struct {
+            uint16_t color;
+            uint8_t freq;
+        } rhythm;
     } setting;
 } config_t;
 
 class FileManager : public FileLoader {
 public:
-    void begin(void);
-    void checkFileIntergrality(void);
-    void initConfigurationFile(config_t& file);
-    void initConnectivityFile(connectivity_t& file);
-    void saveConfiguration(void);
-    void loadConfiguration(void);
+    void begin();
+    static void checkFile();
+    static void initConfigurationFile(config_t& file);
+    static void initConnectivityFile(connectivity_t& file);
+    void saveConfiguration();
+    void loadConfiguration();
 
 private:
     void _dump_buf(uint8_t* buf, uint16_t len) {

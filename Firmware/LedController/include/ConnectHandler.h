@@ -22,7 +22,7 @@ public:
     void begin();
     void process();
 
-    static void task(void* args);
+    [[noreturn]] static void task(void* args);
 
 private:
     WiFiServer _server;

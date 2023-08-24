@@ -50,7 +50,7 @@ struct BreathingData {
     uint16_t interval;
     ease_t ease;
 
-    BreathingData() = default;
+    BreathingData() {color = RgbColor(0); duration = 0; interval = 0; ease = EASE_LINEAR;}
     BreathingData(RgbColor color, uint16_t duration, uint16_t interval, ease_t ease) : color(color), duration(duration), interval(interval), ease(ease) {}
 };
 

@@ -1,11 +1,11 @@
 #include "FileManager.h"
 
-void FileManager::begin(void) {
+void FileManager::begin() {
     // SPIFFS.format();
     if (SPIFFS.begin(true)) {
         Serial.println("SPIFFS init done");
 
-        checkFileIntergrality();
+        checkFile();
         loadConfiguration();
     }
     else {
@@ -13,7 +13,7 @@ void FileManager::begin(void) {
     }
 }
 
-void FileManager::checkFileIntergrality(void) {
+void FileManager::checkFile() {
     if (!SPIFFS.exists(CONFIG_FILE_PATH)) {
         Serial.println("Missing configuration file, creating...");
         config_t f;
@@ -21,6 +21,17 @@ void FileManager::checkFileIntergrality(void) {
         save(CONFIG_FILE_PATH, (uint8_t*)&f, sizeof(config_t));
         Serial.println("Local configuration file created");
     }
+    else {
+        config_t f;
+        bool ret = load(CONFIG_FILE_PATH, (uint8_t*)&f, sizeof(config_t));
+        if (!ret) {
+            Serial.println("Config file broken, fixing...");
+            initConfigurationFile(f);
+            save(CONFIG_FILE_PATH, (uint8_t*)&f, sizeof(config_t));
+            Serial.println("Config file fixed");
+        }
+    }
+
     if (!SPIFFS.exists(CONNECT_FILE_PATH)) {
         Serial.println("Missing connectivity file, creating...");
         connectivity_t f;
@@ -51,6 +62,9 @@ void FileManager::initConfigurationFile(config_t& file) {
     file.setting.lightbeam.speed = 8;
 
     file.setting.rainbow.speed = 8;
+
+    file.setting.rhythm.color = 0x001f;
+    file.setting.rhythm.freq = 2;
 }
 
 void FileManager::initConnectivityFile(connectivity_t& file) {
@@ -58,7 +72,7 @@ void FileManager::initConnectivityFile(connectivity_t& file) {
     memset(file.password, 0x00, sizeof(file.password));
 }
 
-void FileManager::saveConfiguration(void) {
+void FileManager::saveConfiguration() {
     config_t f;
 
     f.power = stripHandler.getPower();
@@ -90,12 +104,17 @@ void FileManager::saveConfiguration(void) {
     stripHandler.getData(rb);
     f.setting.rainbow.speed = rb.speed;
 
+    RhythmData rhb;
+    stripHandler.getData(rhb);
+    f.setting.rhythm.color = Rgb16Color(RgbColor(rhb.color)).Color565;
+    f.setting.rhythm.freq = rhb.freq;
+
     _dump_buf((uint8_t*)&f, sizeof(config_t));
     save(CONFIG_FILE_PATH, (uint8_t*)&f, sizeof(config_t));
-    Serial.println("Configuration file saved");
+    Serial.println("Config file saved");
 }
 
-void FileManager::loadConfiguration(void) {
+void FileManager::loadConfiguration() {
     config_t f;
 
     load(CONFIG_FILE_PATH, (uint8_t*)&f, sizeof(config_t));
@@ -103,10 +122,42 @@ void FileManager::loadConfiguration(void) {
 
     stripHandler.setPower(f.power);
     stripHandler.setMode(static_cast<led_mode_t>(f.mode));
-    stripHandler.setData(NormalData(RgbColor(Rgb16Color(f.setting.normal.color))));
-    stripHandler.setData(BreathingData(RgbColor(Rgb16Color(f.setting.breathing.color)), f.setting.breathing.duration, f.setting.breathing.interval, static_cast<ease_t>(f.setting.breathing.ease)));
-    stripHandler.setData(LightbeamData(RgbColor(Rgb16Color(f.setting.lightbeam.color)), f.setting.lightbeam.len, f.setting.lightbeam.gap, Fade(f.setting.lightbeam.fade), f.setting.lightbeam.head, f.setting.lightbeam.tail, static_cast<dir_t>(f.setting.lightbeam.dir), f.setting.lightbeam.speed));
-    stripHandler.setData(RainbowData(f.setting.rainbow.speed));
+    stripHandler.setData(
+            NormalData(
+                    RgbColor(Rgb16Color(f.setting.normal.color))
+            )
+    );
+    stripHandler.setData(
+            BreathingData(
+                    RgbColor(Rgb16Color(f.setting.breathing.color)),
+                    f.setting.breathing.duration,
+                    f.setting.breathing.interval,
+                    static_cast<ease_t>(f.setting.breathing.ease)
+            )
+    );
+    stripHandler.setData(
+            LightbeamData(
+                    RgbColor(Rgb16Color(f.setting.lightbeam.color)),
+                    f.setting.lightbeam.len,
+                    f.setting.lightbeam.gap,
+                    Fade(f.setting.lightbeam.fade),
+                    f.setting.lightbeam.head,
+                    f.setting.lightbeam.tail,
+                    static_cast<dir_t>(f.setting.lightbeam.dir),
+                    f.setting.lightbeam.speed
+            )
+    );
+    stripHandler.setData(
+            RainbowData(
+                    f.setting.rainbow.speed
+            )
+    );
+    stripHandler.setData(
+            RhythmData(
+                    RgbColor(Rgb16Color(f.setting.rhythm.color)),
+                    static_cast<freq_enum>(f.setting.rhythm.freq)
+            )
+    );
 }
 
 FileManager fileManager;

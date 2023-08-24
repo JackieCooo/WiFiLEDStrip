@@ -4,11 +4,11 @@ NormalFeature::NormalFeature() {
     _refreshed = false;
 }
 
-void NormalFeature::refresh(void) {
+void NormalFeature::refresh() {
     _refreshed = false;
 }
 
-void NormalFeature::process(void) {
+void NormalFeature::process() {
     if (!_refreshed) {
         for (uint16_t i = 0; i < strip.PixelCount(); i++) {
             strip.SetPixelColor(i, _data.color);
@@ -23,6 +23,6 @@ void NormalFeature::setData(const NormalData& data) {
     refresh();
 }
 
-NormalData NormalFeature::getData(void) const {
+NormalData NormalFeature::getData() const {
     return this->_data;
 }

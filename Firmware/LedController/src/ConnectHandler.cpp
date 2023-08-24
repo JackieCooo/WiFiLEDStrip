@@ -58,7 +58,7 @@ void ConnectHandler::process() {
     }
 }
 
-void ConnectHandler::task(void* args) {
+[[noreturn]] void ConnectHandler::task(void* args) {
     for (;;) {
         connHandler.process();
         vTaskDelay(10);

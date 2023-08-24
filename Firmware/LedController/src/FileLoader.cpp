@@ -7,9 +7,9 @@ bool FileLoader::load(const char* filepath, uint8_t* buf, uint16_t len) {
 
     File file = SPIFFS.open(filepath, FILE_READ);
     if (file) {
-        file.read(buf, len);
+        size_t size = file.read(buf, len);
         file.close();
-        return true;
+        if (size == len) return true;
     }
     return false;
 }

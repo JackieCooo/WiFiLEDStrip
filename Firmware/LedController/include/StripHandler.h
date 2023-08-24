@@ -9,6 +9,7 @@
 #include "NormalFeature.h"
 #include "LightbeamFeature.h"
 #include "RainbowFeature.h"
+#include "RhythmFeature.h"
 
 using namespace std;
 
@@ -25,10 +26,10 @@ class StripHandler {
 public:
     StripHandler();
 
-    void begin();
+    static void begin();
     void process();
     void refresh();
-    void clear();
+    static void clear();
     void setMode(led_mode_t mode);
     led_mode_t getMode() const;
     void setPower(bool pwr);
@@ -37,12 +38,14 @@ public:
     void setData(const BreathingData& data);
     void setData(const LightbeamData& data);
     void setData(const RainbowData& data);
+    void setData(const RhythmData& data);
     void getData(NormalData& data);
     void getData(BreathingData& data);
     void getData(LightbeamData& data);
     void getData(RainbowData& data);
+    void getData(RhythmData& data);
 
-    static void task(void* args);
+    [[noreturn]] static void task(void* args);
 
 private:
     led_mode_t _mode;
@@ -51,6 +54,7 @@ private:
     BreathingFeature _breathing;
     LightbeamFeature _lightbeam;
     RainbowFeature _rainbow;
+    RhythmFeature _rhythm;
 };
 
 extern StripHandler stripHandler;

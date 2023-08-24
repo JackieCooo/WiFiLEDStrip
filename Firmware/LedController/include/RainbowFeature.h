@@ -15,26 +15,26 @@ using namespace std;
 struct RainbowData {
     uint16_t speed;
 
-    RainbowData() {}
-    RainbowData(uint16_t speed) : speed(speed) {}
+    RainbowData() {speed = 0;}
+    explicit RainbowData(uint16_t speed) : speed(speed) {}
 };
 
 class RainbowFeature : public BaseFeature {
 public:
     RainbowFeature();
-    void process(void) override;
-    void refresh(void) override;
+    void process() override;
+    void refresh() override;
     void setData(const RainbowData& data);
-    RainbowData getData(void) const;
+    RainbowData getData() const;
 
 private:
     vector<RgbColor> _pattern;
-    uint16_t _ref;  // the first pixel's referance to the pattern
+    uint16_t _ref;  // the first pixel's reference to the pattern
     NeoPixelAnimator _animations = NeoPixelAnimator(1);
     AnimUpdateCallback _cb;
     RainbowData _data;
 
     void _animUpdateFunc(const AnimationParam& param);
-    void _initPattern(void);
+    void _initPattern();
     static uint16_t _translateSpeed(uint16_t &speed);
 };
