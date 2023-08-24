@@ -1,4 +1,4 @@
-#include "wifi_list_item.h"
+#include "gui/wifi_list_item.h"
 
 lv_obj_t* create_wifi_list_item(lv_obj_t* parent, char* ssid) {
     lv_obj_t* panel = lv_obj_create(parent);

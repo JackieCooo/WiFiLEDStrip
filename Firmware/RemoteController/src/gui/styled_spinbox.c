@@ -1,4 +1,4 @@
-#include "styled_spinbox.h"
+#include "gui/styled_spinbox.h"
 
 static void styled_spinbox_decrease_event_cb(lv_event_t* e);
 static void styled_spinbox_increase_event_cb(lv_event_t* e);

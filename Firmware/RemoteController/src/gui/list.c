@@ -1,4 +1,4 @@
-#include "list.h"
+#include "gui/list.h"
 
 static struct list_elem_t* list_back_ptr(list_t* list);
 static struct list_elem_t* list_front_ptr(list_t* list);

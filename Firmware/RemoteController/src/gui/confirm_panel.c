@@ -1,4 +1,4 @@
-#include "confirm_panel.h"
+#include "gui/confirm_panel.h"
 
 uint32_t EVENT_CONFIRM_PANEL_CONFIRMED;
 uint32_t EVENT_CONFIRM_PANEL_APPLIED;

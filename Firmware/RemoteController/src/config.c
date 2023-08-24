@@ -50,7 +50,7 @@ rainbow_data_t config_get_rainbow_data(void) {
     return config.rainbow;
 }
 
-led_mode_t translate_mode(uint8_t val) {
+led_mode_t val_to_mode(uint8_t val) {
     switch (val)
     {
         case 0:
@@ -72,7 +72,7 @@ led_mode_t translate_mode(uint8_t val) {
     return MODE_NORMAL;
 }
 
-ease_t translate_ease(uint8_t val) {
+ease_t val_to_ease(uint8_t val) {
     switch (val)
     {
         case 0:
@@ -189,7 +189,7 @@ uint8_t fade_to_val(fade_t fade) {
     return val;
 }
 
-dir_t translate_dir(uint8_t val) {
+dir_t val_to_dir(uint8_t val) {
     switch (val)
     {
         case 0:

@@ -1,4 +1,4 @@
-#include "loading_gui.h"
+#include "gui/loading_gui.h"
 
 static lv_obj_t* loading = NULL;
 

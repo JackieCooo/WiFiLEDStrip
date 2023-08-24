@@ -9,13 +9,13 @@ extern "C" {
 #include <malloc.h>
 
 #include "lvgl.h"
-#include "./gui/checked_group.h"
-#include "./gui/animation_handler.h"
-#include "./gui/styled_spinbox.h"
-#include "./gui/confirm_panel.h"
-#include "./gui/wifi_list_item.h"
-#include "./gui/loading_gui.h"
-#include "./gui/optional_dialog.h"
+#include "gui/checked_group.h"
+#include "gui/animation_handler.h"
+#include "gui/styled_spinbox.h"
+#include "gui/confirm_panel.h"
+#include "gui/wifi_list_item.h"
+#include "gui/loading_gui.h"
+#include "gui/optional_dialog.h"
 #include "message_handler.h"
 #include "global.h"
 

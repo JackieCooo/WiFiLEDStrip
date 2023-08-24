@@ -106,11 +106,11 @@ lightbeam_data_t config_get_lightbeam_data(void);
 void config_set_rainbow_data(const rainbow_data_t* data);
 rainbow_data_t config_get_rainbow_data(void);
 
-led_mode_t translate_mode(uint8_t val);
-ease_t translate_ease(uint8_t val);
+led_mode_t val_to_mode(uint8_t val);
+ease_t val_to_ease(uint8_t val);
 fade_t val_to_fade(uint8_t val);
 uint8_t fade_to_val(fade_t fade);
-dir_t translate_dir(uint8_t val);
+dir_t val_to_dir(uint8_t val);
 
 #ifdef __cplusplus
 } /* extern "C" */

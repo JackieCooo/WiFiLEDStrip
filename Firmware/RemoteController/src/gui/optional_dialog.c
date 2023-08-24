@@ -1,4 +1,4 @@
-#include "optional_dialog.h"
+#include "gui/optional_dialog.h"
 
 uint32_t EVENT_DIALOG_LEFT_BTN_CLICKED;
 uint32_t EVENT_DIALOG_RIGHT_BTN_CLICKED;
